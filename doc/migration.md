@@ -35,8 +35,8 @@ The module manifest orders runtime setup and Lazy specs. LuaDoc in each owning `
 - Core mappings cover saving, windows, buffers, native comments, project navigation, terminal reuse, theme selection, and explicit encoding conversions.
 - Smart Escape, keyguide groups, and explicit buffer cleanup now have native Neovim tests.
 - Plugin owners cover Snacks, navigation, Harpoon, Markdown, Tree-sitter, LSP, completion, DAP, Mason, Conform, nvim-lint, and Hangar.
-- Pinned real upstream Linux/Windows tests exercise icons, Git signs, LuaSnip T-SQL, WhichKey, Noice, Trouble, Harpoon, Conform, and nvim-lint.
-- A real nvim-dap client performs an attach and breakpoint handshake against a pure-Lua TCP adapter. Backend debuggee sessions remain unverified.
+- Pinned real upstream Linux/Windows tests exercise icons, Git signs, LuaSnip T-SQL, WhichKey, Noice, Trouble, Harpoon, Conform, nvim-lint, Hangar state/NUI, and Obsidian vault attachment and frontmatter writes.
+- A real nvim-dap client performs an attach and breakpoint handshake against a pure-Lua TCP adapter. Real TypeScript diagnostics and C#/SQL Tree-sitter grammar injections also have cross-platform integration coverage. Backend debuggee and Roslyn sessions remain unverified.
 - Native `packadd` installation and root initialization have an isolated local-checkout acceptance test.
 
 ## Outstanding legacy contracts
@@ -45,7 +45,7 @@ The module manifest orders runtime setup and Lazy specs. LuaDoc in each owning `
 - Verify long-running terminal processes and window restoration with real Windows shell sessions.
 - Verify theme reload integration, dashboard artwork, and remaining highlight ownership.
 - Verify editorconfig replay, custom snippet collections, SQLFluff commands, and language-specific integrations.
-- Run actual Tree-sitter grammar injections and live Roslyn, TypeScript, DAP, and plugin sessions on both platforms.
+- Extend actual Tree-sitter grammar injection cases and live plugin sessions; verify Roslyn and backend DAP sessions on both platforms.
 - Audit renamed commands, persisted state, public keys, README installation steps, performance, and release rules.
 
 ## Completion order
