@@ -133,6 +133,11 @@ jobs:
           nvim --headless -u NONE -l tests/filepost_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'FilePost event tests failed' }
 
+      - name: Test gitsigns feature specs
+        run: |
+          nvim --headless -u NONE -l tests/git_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'gitsigns feature specs failed' }
+
       - name: Reject old runtime names
         run: |
           nvim --headless -u NONE -l scripts/check_legacy_names.lua

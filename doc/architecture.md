@@ -25,7 +25,7 @@ An omitted option takes its declared default. An unknown option or invalid type 
 
 ## Future integration
 
-The `orbit.plugins` spec import scans the module manifest. Modules that implement `spec()` contribute Lazy declarations without a second feature inventory. `lua/plugins/init.lua` is only a compatibility import shim. The initial icons owner generates a mini.icons declaration without loading external code.
+The `orbit.plugins` spec import scans the module manifest. Modules that implement `spec()` contribute Lazy declarations without a second feature inventory. `lua/plugins/init.lua` is only a compatibility import shim. The icons and git owners produce Lazy declarations without loading external code. The git owner preserves the original staged and unstaged glyph defaults and uses the one-shot FilePost event.
 
 The opt-in plugin module owns one package searcher and one demand-event group. It initializes an existing Lazy installation on first use. Newly registered file observers receive only the missed event. Setup does not clone plugins or require the network. First demand may clone the stable Lazy source when explicitly authorized by `bootstrap = true`. The optional lockfile pins the checkout. Existing installations are never replaced by bootstrap. All plugin options are restart-only because loaded plugins cannot be rolled back.
 

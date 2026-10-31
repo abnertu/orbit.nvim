@@ -265,6 +265,92 @@
           },
           "type": "object"
         },
+        "git": {
+          "additionalProperties": false,
+          "description": "Lazy gitsigns integration.",
+          "properties": {
+            "enabled": {
+              "default": true,
+              "description": "Include gitsigns in the plugin specs.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "marks": {
+              "additionalProperties": false,
+              "default": {},
+              "description": "Unstaged change markers.",
+              "properties": {
+                "add": {
+                  "default": "▎",
+                  "description": "Added line marker.",
+                  "type": "string"
+                },
+                "change": {
+                  "default": "▎",
+                  "description": "Changed line marker.",
+                  "type": "string"
+                },
+                "changedelete": {
+                  "default": "▎",
+                  "description": "Changed-and-deleted marker.",
+                  "type": "string"
+                },
+                "delete": {
+                  "default": "",
+                  "description": "Deleted line marker.",
+                  "type": "string"
+                },
+                "topdelete": {
+                  "default": "",
+                  "description": "Top-deleted line marker.",
+                  "type": "string"
+                },
+                "untracked": {
+                  "default": "▎",
+                  "description": "Untracked line marker.",
+                  "type": "string"
+                }
+              },
+              "type": "object",
+              "x-orbit-restart": true
+            },
+            "staged": {
+              "additionalProperties": false,
+              "default": {},
+              "description": "Staged change markers.",
+              "properties": {
+                "add": {
+                  "default": " ",
+                  "description": "Staged addition marker.",
+                  "type": "string"
+                },
+                "change": {
+                  "default": " ",
+                  "description": "Staged modification marker.",
+                  "type": "string"
+                },
+                "changedelete": {
+                  "default": "▎",
+                  "description": "Staged changed-and-deleted marker.",
+                  "type": "string"
+                },
+                "delete": {
+                  "default": " ",
+                  "description": "Staged deletion marker.",
+                  "type": "string"
+                },
+                "topdelete": {
+                  "default": "",
+                  "description": "Staged top-deletion marker.",
+                  "type": "string"
+                }
+              },
+              "type": "object",
+              "x-orbit-restart": true
+            }
+          },
+          "type": "object"
+        },
         "icons": {
           "additionalProperties": false,
           "description": "Optional mini.icons integration.",

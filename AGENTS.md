@@ -45,6 +45,7 @@
 - Treat activated plugin managers as restart-only; do not claim rollback of external plugin state.
 - Make one owner responsible for each shared task.
 - Collect Lazy specs from existing module entries. Do not maintain a second feature inventory.
+- Keep each plugin spec independent of external plugin imports until Lazy activates that feature.
 - Declare module types, defaults, bounds and descriptions only in the owning `init.lua` LuaDoc.
 - Generate `settings.schema.json` from LuaDoc annotations. Do not author module `schema.json` files.
 - Use local LuaDoc classes for nested objects and typed arrays. Reject recursive class schemas.
