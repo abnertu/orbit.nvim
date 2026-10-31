@@ -29,6 +29,8 @@ Keep plugin loading with Lazy until a separate benchmark and compatibility plan 
 
 The editor module owns core statusline, clipboard, mouse, indentation and signcolumn defaults. Its schema declares every migrated scalar option.
 
+The commands module owns the settings command and restores its registration after failed activation. It does not replace other commands.
+
 The filetypes module owns only Compose YAML and JSX detection. It captures the existing Neovim registry entries before registration and restores them on rollback or disable.
 
 Port each feature behind the public module contract. Preserve previous behavior until the feature's targeted checks pass. Avoid persistent compatibility aliases that hide old names in new code.

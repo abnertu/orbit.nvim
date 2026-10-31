@@ -4,7 +4,7 @@ A modular Neovim configuration with independently configurable features and gene
 
 [![Neovim](https://img.shields.io/badge/Neovim-0.12%2B-57A143?logo=neovim&logoColor=white)](https://neovim.io/)
 
-> Development preview: this package currently implements only the editor and keymaps modules. It does not replace the existing configuration yet.
+> Development preview: this package implements editor, filetype, keymaps and settings-command modules. It does not replace the existing configuration yet.
 
 ## Requirements
 
@@ -63,6 +63,10 @@ end
 ```
 
 Reading never creates or rewrites the file. See [saved settings](doc/settings.md) for precedence and current limitations.
+
+## Settings command
+
+`:OrbitSettings` opens the settings file and creates it only when missing, with a reference to the generated schema. `:OrbitSettings reload` validates and applies saved options. `:OrbitSettings info` shows accepted values. Configure its name or path through `modules.commands`.
 
 ## Generate the JSON Schema
 
