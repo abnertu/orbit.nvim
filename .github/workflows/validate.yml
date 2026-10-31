@@ -63,6 +63,11 @@ jobs:
           nvim --headless -u NONE -l scripts/generate_schema.lua --check
           if ($LASTEXITCODE -ne 0) { throw 'Generated schema is stale' }
 
+      - name: Test native package install and init.lua loading
+        run: |
+          nvim --headless -u NONE -l tests/native_install_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Native package installation test failed' }
+
       - name: Test schema contracts
         run: |
           nvim --headless -u NONE -l tests/schema_spec.lua

@@ -32,16 +32,18 @@ A case-insensitive code search identified old identifiers across runtime files, 
 The module manifest orders runtime setup and Lazy specs. LuaDoc in each owning `init.lua` generates the settings schema. No feature module supplies a handwritten schema.
 
 - Core editor options, filetypes, independent events, settings commands, Windows ShaDa recovery, Pyright stub recovery, and transactional rollback now have Lua tests.
-- Core mappings cover file saving, window movement, visual line movement, buffer cycling, native comments, project roots, diagnostics, settings, and explicit encoding conversions.
-- The keyguide owner now supplies WhichKey grouping and explicit list/query keys without legacy Base46 caches.
-- Plugin features include Snacks, navigation, Harpoon, Markdown preview, Obsidian, Tree-sitter, LSP providers, completion, DAP, Mason, Conform, nvim-lint, and Hangar.
-- Linux and Windows CI validate contracts, but hermetic plugin mocks do not prove upstream runtime parity.
+- Core mappings cover saving, windows, buffers, native comments, project navigation, terminal reuse, theme selection, and explicit encoding conversions.
+- Smart Escape, keyguide groups, and explicit buffer cleanup now have native Neovim tests.
+- Plugin owners cover Snacks, navigation, Harpoon, Markdown, Tree-sitter, LSP, completion, DAP, Mason, Conform, nvim-lint, and Hangar.
+- Pinned real upstream Linux/Windows tests exercise icons, Git signs, LuaSnip T-SQL, WhichKey, Noice, Trouble, Harpoon, Conform, and nvim-lint.
+- A real nvim-dap client performs an attach and breakpoint handshake against a pure-Lua TCP adapter. Backend debuggee sessions remain unverified.
+- Native `packadd` installation and root initialization have an isolated local-checkout acceptance test.
 
 ## Outstanding legacy contracts
 
-- Restore smart Escape/menu/snippet cleanup, close-other-buffer and tabufline-close actions.
-- Migrate terminal splits and toggles with Windows shell handling and buffer ownership.
-- Restore theme controls, the UI reload event, and missing dashboard/highlight behavior.
+- Verify Escape/menu/snippet cleanup against real completion UI and plugin sessions.
+- Verify long-running terminal processes and window restoration with real Windows shell sessions.
+- Verify theme reload integration, dashboard artwork, and remaining highlight ownership.
 - Verify editorconfig replay, custom snippet collections, SQLFluff commands, and language-specific integrations.
 - Run actual Tree-sitter grammar injections and live Roslyn, TypeScript, DAP, and plugin sessions on both platforms.
 - Audit renamed commands, persisted state, public keys, README installation steps, performance, and release rules.

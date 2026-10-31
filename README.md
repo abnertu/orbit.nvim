@@ -6,6 +6,26 @@ A modular Neovim configuration with independently configurable features and gene
 
 > Development preview: this package now contains modular editor, navigation, language tooling, and plugin integrations. It is not yet a drop-in replacement for the legacy configuration.
 
+## Install with Neovim's native package loader
+
+Neovim can load orbit.nvim directly from its built-in `pack/start` directory. A separate plugin manager is not required.
+
+1. In Neovim, run `:echo stdpath('data')` to find the platform-specific data directory.
+2. Clone this repository into `<data-dir>/site/pack/orbit/start/orbit.nvim`. Replace `<data-dir>` with the reported path.
+3. Add the following lines to your Neovim `init.lua` under `stdpath('config')`:
+
+```lua
+-- Load the package before calling its Lua API during init.lua.
+vim.cmd.packadd("orbit.nvim")
+require("orbit").setup()
+```
+
+4. Restart Neovim and verify `:OrbitSettings info` is available.
+
+The explicit `:packadd` is necessary when requiring the package during `init.lua`. The automatic `pack/start` scan occurs later in Neovim's startup sequence.
+
+`plugins.enabled` defaults to `false`. The installation above loads Orbit's native features without downloading Lazy or any managed plugins. Enable Lazy only after choosing a pre-existing Lazy checkout or an explicit `bootstrap = true` configuration.
+
 ## Requirements
 
 - Neovim 0.12 or newer.
