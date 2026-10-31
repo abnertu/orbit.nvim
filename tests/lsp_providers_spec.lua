@@ -67,6 +67,46 @@ check("Roslyn condition honors Hangar state and executable gating", function()
   assert(ok, tostring(err))
 end)
 
+check("Roslyn config disables its eager upstream LSP when Hangar rejects it", function()
+  local item = owner.spec()[1]
+  local old_hangar = package.loaded.hangar
+  local old_state = package.loaded["hangar.state"]
+  local old_roslyn = package.loaded.roslyn
+  local old_preload = package.preload.roslyn
+  local old_enable = vim.lsp.enable
+  local enabled, configured, disabled = false, nil, 0
+  package.loaded.hangar = {}
+  package.loaded["hangar.state"] = {
+    is_enabled = function(category, name)
+      assert(category == "lsp" and name == "roslyn")
+      return enabled
+    end,
+  }
+  package.loaded.roslyn = nil
+  package.preload.roslyn = function()
+    return { setup = function(opts) configured = opts end }
+  end
+  vim.lsp.enable = function(name, value)
+    assert(name == "roslyn" and value == false)
+    disabled = disabled + 1
+  end
+  local ok, err = xpcall(function()
+    item.config(nil, item.opts)
+    assert(disabled == 1 and configured == nil)
+    assert(package.loaded.roslyn == nil,
+      "disabled Roslyn must not require its setup module")
+    enabled = true
+    item.config(nil, item.opts)
+    assert(disabled == 1 and configured == item.opts)
+  end, debug.traceback)
+  vim.lsp.enable = old_enable
+  package.loaded.hangar = old_hangar
+  package.loaded["hangar.state"] = old_state
+  package.loaded.roslyn = old_roslyn
+  package.preload.roslyn = old_preload
+  assert(ok, tostring(err))
+end)
+
 check("Roslyn selects one matching solution and rejects ambiguous targets", function()
   local project = vim.fn.tempname()
   vim.fn.mkdir(vim.fs.joinpath(project, ".git"), "p")

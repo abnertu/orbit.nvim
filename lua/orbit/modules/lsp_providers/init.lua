@@ -46,6 +46,15 @@ function M.spec()
         silent = true,
         choose_target = require("orbit.modules.lsp_providers.runtime").choose_target,
       },
+      config = function(_, opts)
+        -- roslyn.nvim enables the LSP in plugin/roslyn.lua before config runs.
+        -- Lazy evaluates cond before Hangar's startup config, so check again.
+        if not require("orbit.hangar_bridge").is_enabled("lsp", "roslyn") then
+          vim.lsp.enable("roslyn", false)
+          return
+        end
+        require("roslyn").setup(opts)
+      end,
     }
   end
 
