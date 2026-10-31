@@ -2,6 +2,9 @@
 -- nvim-treesitter pins grammar revisions; compiled parsers run in Neovim.
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
+-- In a -u NONE script, adding a package root does not auto-add its after/.
+-- Real package startup adds this tail so extension queries can load.
+vim.opt.rtp:append(vim.fs.joinpath(root, "after"))
 
 local pinned = "a9c4e1457e2e59f1b82c8f78dcdb3b2517555200"
 local source = "https://github.com/nvim-treesitter/nvim-treesitter.git"
@@ -63,6 +66,17 @@ local ok, err = xpcall(function()
   })
   vim.api.nvim_set_option_value("filetype", "cs", { buf = buffer })
   local parser = assert(vim.treesitter.get_parser(buffer, "c_sharp"))
+  local query_files = vim.treesitter.query.get_files("c_sharp", "injections")
+  local extension = vim.fs.normalize(vim.fs.joinpath(root,
+    "after", "queries", "c_sharp", "injections.scm"))
+  local found_extension = false
+  for _, file in ipairs(query_files) do
+    if vim.fs.normalize(file) == extension then
+      found_extension = true
+    end
+  end
+  assert(found_extension, "Orbit C# extension query was not loaded: "
+    .. vim.inspect(query_files))
   local query = assert(vim.treesitter.query.get("c_sharp", "injections"),
     "merged upstream/Orbit C# injections query is unavailable")
   local matches = {}
@@ -86,7 +100,6 @@ local ok, err = xpcall(function()
     print("DEBUG C# query files: " .. vim.inspect(
       vim.treesitter.query.get_files("c_sharp", "injections")))
     print("DEBUG C# query captures: " .. vim.inspect(query.captures))
-    print("DEBUG C# parse tree: " .. parser:parse()[1]:root():to_sexp():sub(1, 5000))
     print("DEBUG collected SQL matches: " .. vim.inspect(matches))
   end
   assert(matches["SELECT 10"] == 1,
