@@ -12,6 +12,7 @@
     "diagnostics_plugins",
     "snacks",
     "mason",
+    "treesitter_plugins",
     "plugins"
   ]
 }
