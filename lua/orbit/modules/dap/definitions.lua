@@ -6,6 +6,7 @@ local M = {}
 function M.build(opts)
   local python = require("orbit.modules.dap.python")
   return {
+    enabled = { python = opts.python, coreclr = opts.coreclr },
     adapters = {
       python = function(callback, config)
         if config.request == "launch" then

@@ -203,6 +203,11 @@ jobs:
           nvim --headless -u NONE -l tests/hangar_bridge_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Hangar bridge tests failed' }
 
+      - name: Test DAP adapters and debug UI lifecycle
+        run: |
+          nvim --headless -u NONE -l tests/dap_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'DAP runtime tests failed' }
+
       - name: Reject old runtime names
         run: |
           nvim --headless -u NONE -l scripts/check_legacy_names.lua

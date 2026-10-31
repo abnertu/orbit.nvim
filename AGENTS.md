@@ -48,6 +48,7 @@
 - Collect Lazy specs from existing module entries. Do not maintain a second feature inventory.
 - Use the Hangar registry as the canonical inventory for managed language tools and parsers.
 - Use orbit.hangar_bridge for tool activation; do not read or rewrite Hangar state files from consumers.
+- Keep Python debug adapter paths platform-aware and delegate CoreCLR registration to its dotnet-cli owner.
 - Keep each plugin spec independent of external plugin imports until Lazy activates that feature.
 - Do not hardcode the total number of registered features in shared integration fixtures.
 - Declare module types, defaults, bounds and descriptions only in the owning `init.lua` LuaDoc.
