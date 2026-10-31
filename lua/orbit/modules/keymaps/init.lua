@@ -55,6 +55,12 @@ local definitions = {
   { lhs = "<leader>tf", mode = "n", rhs = function()
     vim.diagnostic.open_float()
   end, desc = "Show diagnostics in a floating window" },
+  { lhs = "<leader>ut", mode = "n", rhs = function()
+    require("orbit.modules.keymaps.theme").select()
+  end, desc = "Select an installed colorscheme" },
+  { lhs = "<leader>ur", mode = "n", rhs = function()
+    require("orbit.modules.keymaps.theme").reload()
+  end, desc = "Reload the active colorscheme" },
   { lhs = "<leader>fu", mode = "n", rhs = function()
     require("orbit.modules.keymaps.conversion").dos_to_unix()
   end, desc = "Convert DOS line endings to Unix" },
