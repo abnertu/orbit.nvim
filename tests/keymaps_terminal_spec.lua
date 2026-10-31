@@ -134,6 +134,40 @@ check("floating toggle preserves window layout and blocks foreign floats", funct
   vim.api.nvim_buf_delete(buffer, { force = true })
 end)
 
+check("terminal toggle preserves the last normal window beside a foreign float", function()
+  vim.cmd.tabnew()
+  local tab = vim.api.nvim_get_current_tabpage()
+  local original = vim.api.nvim_get_current_win()
+  local before_spawns = spawns
+  assert(term.toggle("vsp", "lastNormalTerm"))
+  local terminal = vim.api.nvim_get_current_buf()
+  assert(spawns == before_spawns + 1)
+  vim.api.nvim_win_close(original, true)
+
+  -- Floating windows do not count as a second normal window.
+  local popup_buffer = vim.api.nvim_create_buf(false, true)
+  local popup = vim.api.nvim_open_win(popup_buffer, false, {
+    relative = "editor", row = 1, col = 1, width = 10, height = 2,
+  })
+  assert(#vim.api.nvim_tabpage_list_wins(tab) == 2)
+  assert(term.toggle("vsp", "lastNormalTerm"))
+  assert(vim.api.nvim_get_current_tabpage() == tab)
+  assert(vim.api.nvim_win_is_valid(popup))
+  assert(#vim.api.nvim_tabpage_list_wins(tab) == 2)
+  assert(vim.api.nvim_buf_is_valid(terminal))
+  assert(vim.api.nvim_get_current_buf() ~= terminal)
+  assert(vim.bo[vim.api.nvim_get_current_buf()].buflisted)
+
+  vim.api.nvim_win_close(popup, true)
+  vim.api.nvim_buf_delete(popup_buffer, { force = true })
+  assert(term.toggle("vsp", "lastNormalTerm"))
+  assert(vim.api.nvim_get_current_buf() == terminal)
+  assert(spawns == before_spawns + 1)
+  vim.api.nvim_win_close(vim.api.nvim_get_current_win(), true)
+  vim.api.nvim_buf_delete(terminal, { force = true })
+  vim.cmd.tabclose()
+end)
+
 check("shell arguments are an argv vector and match the host platform", function()
   local original = vim.o.shell
   vim.o.shell = vim.fn.has("win32") == 1 and "pwsh.exe" or "/bin/sh"
