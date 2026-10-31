@@ -259,6 +259,25 @@
           },
           "type": "object"
         },
+        "icons": {
+          "additionalProperties": false,
+          "description": "Optional mini.icons integration.",
+          "properties": {
+            "enabled": {
+              "default": true,
+              "description": "Include mini.icons in the Lazy specification.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "mock_devicons": {
+              "default": true,
+              "description": "Provide an nvim-web-devicons compatibility adapter.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            }
+          },
+          "type": "object"
+        },
         "keymaps": {
           "additionalProperties": false,
           "description": "Minimal key mappings owned by orbit.nvim.",

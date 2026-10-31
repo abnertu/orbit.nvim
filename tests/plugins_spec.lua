@@ -19,6 +19,8 @@ package.preload.lazy = function()
   return {
     setup = function(specs, config)
       assert(specs[1].import == "plugins")
+      local entries = require("plugins")
+      assert(#entries == 1 and entries[1][1] == "nvim-mini/mini.icons")
       assert(config.defaults.lazy == true)
       assert(config.rocks.enabled == false)
       loaded = loaded + 1

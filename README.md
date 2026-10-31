@@ -29,6 +29,22 @@ When enabled at first setup, Lazy initializes on the first demand event or missi
 
 Set `bootstrap = true` to clone Lazy only when first demanded and not already installed. The default Git source is `https://github.com/folke/lazy.nvim.git`. When a `lazy-lock.json` exists, the bootstrap checks out its `lazy.nvim` commit, rather than the current stable head. The optional `lockfile` and `source` fields support custom locations and hermetic local Git tests. No network is needed for CI.
 
+## Declarative plugin features
+
+The `plugins` Lazy import delegates to `orbit.plugins`, which reads the same module manifest as the configuration system. Each feature can expose `spec()` and is independently configurable using LuaDoc. The first ported plugin is `nvim-mini/mini.icons`, which can optionally install its devicons compatibility adapter.
+
+```lua
+require("orbit").setup({
+  modules = {
+    plugins = { enabled = true, bootstrap = true,
+      path = vim.fn.stdpath("data") .. "/lazy/lazy.nvim" },
+    icons = { enabled = true, mock_devicons = true },
+  },
+})
+```
+
+Plugin specifications are not evaluated during normal startup when the Lazy owner is disabled. More legacy features still require migration.
+
 ## Try the preview
 
 Run these commands from the extracted `orbit.nvim` directory:
