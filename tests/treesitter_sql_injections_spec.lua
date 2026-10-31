@@ -114,12 +114,12 @@ check("disabled marker and auto injection options are independently respected", 
   assert(run("comment-injection-enabled", node("comment", "// language=sql")))
 end)
 
-check("source query is loadable and references the registered predicate names", function()
+check("source query references the registered predicate names", function()
   local path = vim.fs.joinpath(root, "after", "queries", "c_sharp", "injections.scm")
   local lines = vim.fn.readfile(path)
   local source = table.concat(lines, "\n")
   assert(source:find("; extends", 1, true))
-  assert(source:find("(raw_string_literal)", 1, true))
+  assert(source:find("(raw_string_literal", 1, true))
   assert(source:find("(interpolated_string_expression", 1, true))
   for _, name in ipairs({
     "string-supported", "comment-injection-enabled", "auto-injection-enabled",
