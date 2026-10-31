@@ -113,6 +113,11 @@ jobs:
           nvim --headless -u NONE -l tests/corekeys_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Core keymap tests failed' }
 
+      - name: Test smart Escape lifecycle
+        run: |
+          nvim --headless -u NONE -l tests/corekeys_escape_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Smart Escape tests failed' }
+
       - name: Test leader file and project actions
         run: |
           nvim --headless -u NONE -l tests/keymaps_actions_spec.lua
