@@ -683,6 +683,69 @@
             }
           },
           "type": "object"
+        },
+        "treesitter_plugins": {
+          "additionalProperties": false,
+          "description": "Tree-sitter parser and companion plugins.",
+          "properties": {
+            "autotag": {
+              "default": true,
+              "description": "Enable HTML/XML auto tags.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "autotag_close": {
+              "default": true,
+              "description": "Insert closing tags.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "autotag_close_slash": {
+              "default": false,
+              "description": "Close tags after slash.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "autotag_rename": {
+              "default": true,
+              "description": "Rename matching tags.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "context": {
+              "default": true,
+              "description": "Enable Tree-sitter context view.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "context_lines": {
+              "default": 3,
+              "description": "Context line limit.",
+              "maximum": 50,
+              "minimum": 0,
+              "type": "integer",
+              "x-orbit-restart": true
+            },
+            "core": {
+              "default": true,
+              "description": "Install the main parser manager.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "enabled": {
+              "default": true,
+              "description": "Include Tree-sitter plugin specs.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "install_dir": {
+              "default": "",
+              "description": "Optional parser installation directory.",
+              "type": "string",
+              "x-orbit-restart": true
+            }
+          },
+          "type": "object"
         }
       },
       "type": "object"
