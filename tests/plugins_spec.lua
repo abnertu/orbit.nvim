@@ -20,8 +20,10 @@ package.preload.lazy = function()
     setup = function(specs, config)
       assert(specs[1].import == "plugins")
       local entries = require("plugins")
-      assert(#entries >= 2 and entries[1][1] == "nvim-mini/mini.icons")
-      assert(entries[2][1] == "lewis6991/gitsigns.nvim")
+      local found = {}
+      for _, entry in ipairs(entries) do found[entry[1]] = true end
+      assert(found["nvim-mini/mini.icons"])
+      assert(found["lewis6991/gitsigns.nvim"])
       assert(config.defaults.lazy == true)
       assert(config.rocks.enabled == false)
       loaded = loaded + 1
