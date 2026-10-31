@@ -44,6 +44,7 @@
 - Put module defaults and configuration metadata in the owning `schema.json`.
 - Derive the bundled settings schema from those module definitions.
 - Preserve global, buffer-local and window-local option scope during migrations.
+- Preserve pre-existing Neovim filetype mappings when a feature disables or rolls back.
 - Do not introduce global variables for internal state.
 - Preserve commands, mappings and persistent data unless the approved plan changes them.
 - Keep Linux and Windows as equal targets for migrated features.

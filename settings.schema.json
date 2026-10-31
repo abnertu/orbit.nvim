@@ -141,6 +141,30 @@
           },
           "type": "object"
         },
+        "filetypes": {
+          "additionalProperties": false,
+          "description": "Filename and extension detection rules.",
+          "properties": {
+            "compose": {
+              "default": "yaml.docker-compose",
+              "description": "Filetype for Compose YAML filenames.",
+              "minLength": 1,
+              "type": "string"
+            },
+            "enabled": {
+              "default": true,
+              "description": "Register custom filetype detections.",
+              "type": "boolean"
+            },
+            "jsx": {
+              "default": "jsx",
+              "description": "Filetype for JSX extensions.",
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
         "keymaps": {
           "additionalProperties": false,
           "description": "Minimal key mappings owned by orbit.nvim.",

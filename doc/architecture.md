@@ -29,6 +29,8 @@ Keep plugin loading with Lazy until a separate benchmark and compatibility plan 
 
 The editor module owns core statusline, clipboard, mouse, indentation and signcolumn defaults. Its schema declares every migrated scalar option.
 
+The filetypes module owns only Compose YAML and JSX detection. It captures the existing Neovim registry entries before registration and restores them on rollback or disable.
+
 Port each feature behind the public module contract. Preserve previous behavior until the feature's targeted checks pass. Avoid persistent compatibility aliases that hide old names in new code.
 
 Keep startup side effects outside module imports. Complete asynchronous work only while its buffer or owner remains valid. Every module must implement `capture(opts)` and `restore(snapshot)` beside `setup(opts)`. The root captures all modules before activation and restores activated modules in reverse order on failure. Repeated setup must replace owned mappings and subscriptions instead of duplicating them.
