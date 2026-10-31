@@ -37,7 +37,7 @@ local ok, err = xpcall(function()
     "real Trouble command registration missing")
 
   local custom = require("trouble.config").get("diagnostic_preview_float")
-  assert(custom.mode == "diagnostics")
+  assert(custom.mode == "diagnostic_preview_float")
   assert(custom.preview.type == "float")
   assert(custom.preview.border == "rounded")
   assert(custom.preview.size.width == 0.3)
