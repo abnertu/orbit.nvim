@@ -138,6 +138,11 @@ jobs:
           nvim --headless -u NONE -l tests/git_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'gitsigns feature specs failed' }
 
+      - name: Test first-demand Lazy startup with locked local Git
+        run: |
+          nvim --headless -u NONE -l tests/plugins_integration_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Integrated Lazy startup tests failed' }
+
       - name: Reject old runtime names
         run: |
           nvim --headless -u NONE -l scripts/check_legacy_names.lua
