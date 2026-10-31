@@ -44,6 +44,7 @@
 - Clone Lazy only on explicit opt-in demand. Respect locked revisions and never replace existing checkouts.
 - Treat activated plugin managers as restart-only; do not claim rollback of external plugin state.
 - Native LSP must not duplicate Roslyn or TypeScript-tools registration.
+- Keep specialist LSP diagnostics and solution selection independent of generic server registration.
 - Make one owner responsible for each shared task.
 - Collect Lazy specs from existing module entries. Do not maintain a second feature inventory.
 - Use the Hangar registry as the canonical inventory for managed language tools and parsers.

@@ -213,6 +213,11 @@ jobs:
           nvim --headless -u NONE -l tests/completion_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Completion feature tests failed' }
 
+      - name: Test Roslyn and TypeScript provider ownership
+        run: |
+          nvim --headless -u NONE -l tests/lsp_providers_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Specialist LSP provider tests failed' }
+
       - name: Reject old runtime names
         run: |
           nvim --headless -u NONE -l scripts/check_legacy_names.lua
