@@ -129,7 +129,8 @@ local ok, err = xpcall(function()
   vim.api.nvim_buf_set_lines(buffer, 0, -1, false, { "print('DAP fixture')" })
   dap.set_breakpoint()
   local bps = require("dap.breakpoints").get(buffer)
-  assert(#bps == 1, "real nvim-dap breakpoint was not recorded")
+  assert(type(bps[buffer]) == "table" and #bps[buffer] == 1,
+    "real nvim-dap breakpoint was not recorded")
 
   local config = {
     type = "python", request = "attach", name = "Orbit live Python attach",
