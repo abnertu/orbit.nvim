@@ -75,6 +75,7 @@ function M.typescript_options(opts)
         includeInlayEnumMemberValueHints = hints,
         includeInlayParameterNameHints = hints and "literals" or "none",
         includeInlayVariableTypeHints = hints,
+        includeInlayVariableTypeHintsWhenTypeMatchesName = hints,
         includeInlayFunctionLikeReturnTypeHints = hints,
       },
     },
