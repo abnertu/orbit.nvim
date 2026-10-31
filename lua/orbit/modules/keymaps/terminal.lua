@@ -50,15 +50,20 @@ local function float_options()
   }
 end
 
-local function display(buffer, pos)
+local function display(buffer, pos, on_open)
+  local win
   if pos == "float" then
-    vim.api.nvim_open_win(buffer, true, float_options())
+    win = vim.api.nvim_open_win(buffer, true, float_options())
   else
     vim.cmd(pos == "sp" and "split" or "vsplit")
-    vim.api.nvim_win_set_buf(0, buffer)
+    win = vim.api.nvim_get_current_win()
+  end
+  -- Record ownership before later window setup can throw or switch focus.
+  on_open(win)
+  if pos ~= "float" then
+    vim.api.nvim_win_set_buf(win, buffer)
   end
 
-  local win = vim.api.nvim_get_current_win()
   if pos == "sp" then
     vim.api.nvim_win_set_height(win,
       math.max(1, math.floor(vim.o.lines * 0.3)))
@@ -94,17 +99,17 @@ function M.open(pos, id)
   local origin = vim.api.nvim_get_current_win()
   local displayed
   local ok, err = xpcall(function()
-    displayed = display(buffer, pos)
+    display(buffer, pos, function(win) displayed = win end)
     if created then M.spawn() end
     vim.bo[buffer].filetype = "Term_" .. pos
     M.start_insert()
   end, debug.traceback)
 
   if not ok then
-    -- display() may fail after creating a split but before returning its window.
-    local opened = displayed or vim.api.nvim_get_current_win()
-    if opened ~= origin and vim.api.nvim_win_is_valid(opened) then
-      pcall(vim.api.nvim_win_close, opened, true)
+    if displayed and displayed ~= origin
+      and vim.api.nvim_win_is_valid(displayed)
+    then
+      pcall(vim.api.nvim_win_close, displayed, true)
     end
     if created and vim.api.nvim_buf_is_valid(buffer) then
       pcall(vim.api.nvim_buf_delete, buffer, { force = true })
