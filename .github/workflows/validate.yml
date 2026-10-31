@@ -138,6 +138,11 @@ jobs:
           nvim --headless -u NONE -l tests/keymaps_buffers_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Buffer action tests failed' }
 
+      - name: Test terminal split and toggle callbacks
+        run: |
+          nvim --headless -u NONE -l tests/keymaps_terminal_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Terminal mapping tests failed' }
+
       - name: Test on-demand plugin loader
         run: |
           nvim --headless -u NONE -l tests/plugins_spec.lua
