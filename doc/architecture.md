@@ -25,7 +25,7 @@ An omitted option takes its declared default. An unknown option or invalid type 
 
 ## Future integration
 
-The Markdown owner contributes the legacy preview Lazy command and filetype entry points. Its build adapter verifies the platform executable version after installation. CI checks its process boundary without downloading upstream plugins. Browser rendering and Obsidian vault integration remain separate acceptance tasks.
+The Markdown owner contributes the legacy preview Lazy command and filetype entry points. Its build adapter verifies the platform executable version after installation. CI checks its process boundary without downloading upstream plugins. Browser rendering and real Obsidian vault workflows remain separate acceptance tasks. The opt-in Obsidian spec resolves a configured vault at Lazy activation and defers plugin imports until its config callback.
 
 The completion owner configures Blink, LuaSnip, autopairs and Lazydev only at Lazy callback boundaries. It keeps snippet filetype extensions and its own InsertLeave cleanup. Full custom snippets and live resizing remain separate parity checks.
 

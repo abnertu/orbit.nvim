@@ -49,6 +49,8 @@ Plugin specifications are not evaluated during normal startup when the Lazy owne
 
 The Markdown module contributes command- and filetype-lazy markdown-preview.nvim. Its build adapter checks the installed executable version before running the upstream platform installer. The preview toggle and installer timeout are restart-only LuaDoc settings. CI uses local process fixtures; upstream browser rendering is not yet verified.
 
+The Markdown module also supports an optional Obsidian vault. Set `modules.markdown.vault` to a directory to expose the filetype-lazy Obsidian spec. The vault path and enablement are restart-only. Frontmatter preserves legacy metadata and updates the modified timestamp. Custom Markdown highlight queries and real vault workflows still require upstream verification.
+
 ## Try the preview
 
 Run these commands from the extracted `orbit.nvim` directory:

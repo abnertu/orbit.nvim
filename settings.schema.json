@@ -946,6 +946,12 @@
               "type": "boolean",
               "x-orbit-restart": true
             },
+            "notes": {
+              "default": true,
+              "description": "Enable Obsidian vault integration.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
             "preview": {
               "default": true,
               "description": "Include Markdown preview plugin.",
@@ -956,6 +962,12 @@
               "default": "<leader>mp",
               "description": "Preview toggle mapping.",
               "minLength": 1,
+              "type": "string",
+              "x-orbit-restart": true
+            },
+            "vault": {
+              "default": "",
+              "description": "Optional Obsidian vault directory.",
               "type": "string",
               "x-orbit-restart": true
             }
