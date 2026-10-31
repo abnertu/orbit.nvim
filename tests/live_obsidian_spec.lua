@@ -151,6 +151,40 @@ local ok, err = xpcall(function()
   assert(table.concat(vim.fn.readfile(note_path), "\n") == rewritten,
     "new-note command modified the previously saved note")
   print("PASS real Obsidian new-note command, vault boundary and persisted content")
+
+  -- Exercise the actual range-aware upstream command in the new vault note.
+  -- The pinned upstream order cycles unchecked -> in progress -> important.
+  local task_row = vim.api.nvim_buf_line_count(0) + 1
+  vim.api.nvim_buf_set_lines(0, -1, -1, false, {
+    "- [ ] pending task",
+    "- [x] completed task",
+    "Unrelated Markdown prose.",
+  })
+  vim.cmd(("%d,%dObsidian toggle_checkbox"):format(task_row, task_row + 1))
+  local tasks = vim.api.nvim_buf_get_lines(0, task_row - 1, task_row + 2, false)
+  assert(vim.deep_equal(tasks, {
+    "- [~] pending task",
+    "- [ ] completed task",
+    "Unrelated Markdown prose.",
+  }), "real range checkbox command changed the wrong rows: " .. vim.inspect(tasks))
+
+  vim.api.nvim_win_set_cursor(0, { task_row, 0 })
+  vim.cmd("Obsidian toggle_checkbox")
+  tasks = vim.api.nvim_buf_get_lines(0, task_row - 1, task_row + 2, false)
+  assert(vim.deep_equal(tasks, {
+    "- [!] pending task",
+    "- [ ] completed task",
+    "Unrelated Markdown prose.",
+  }), "real current-line checkbox command did not advance its state: "
+    .. vim.inspect(tasks))
+
+  vim.cmd("write")
+  local persisted_tasks = vim.fn.readfile(new_path)
+  assert(vim.deep_equal(vim.list_slice(persisted_tasks, task_row, task_row + 2), tasks),
+    "checkbox changes were not persisted through the real vault buffer")
+  assert(table.concat(vim.fn.readfile(note_path), "\n") == rewritten,
+    "checkbox command changed the previously saved vault note")
+  print("PASS real Obsidian range/current-line checkbox commands and persistence")
 end, debug.traceback)
 
 vim.wo.conceallevel = initial_conceal
