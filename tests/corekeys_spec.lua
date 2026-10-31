@@ -52,7 +52,7 @@ check("common editing shortcuts use the legacy modes and actions", function()
     { "n", ">", ">>" },
     { "x", "<", "<gv" },
     { "x", ">", ">gv" },
-    { "x", "p", "p" },
+    { "x", "p", "P" },
     { "i", "jk", "<esc>" },
     { "n", "Q", "q" },
     { "n", "q", "<nop>" },
@@ -60,8 +60,13 @@ check("common editing shortcuts use the legacy modes and actions", function()
     { "t", "<C-x>", "<c-\\><c-n>" },
   }
   for _, item in ipairs(expected) do
-    local actual = mapping_rhs(item[1], item[2])
-    assert(actual:find(item[3], 1, true),
+    local actual = vim.fn.maparg(item[2], item[1])
+    -- Visual P must be case-sensitive: lowercase p changes registers.
+    local matches = item[1] == "x" and item[2] == "p"
+      and actual == item[3]
+      or (item[1] ~= "x" or item[2] ~= "p")
+        and actual:lower():find(item[3], 1, true) ~= nil
+    assert(matches,
       string.format("missing %s %s: %s", item[1], item[2], actual))
   end
 end)
