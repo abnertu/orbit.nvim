@@ -4,7 +4,7 @@ The public entry point is `require("orbit").setup(opts)`. It validates all decla
 
 ## Module contract
 
-A module lives in `lua/orbit/modules/<name>/`. Its `init.lua` exports `setup(opts)`. Its `schema.json` declares each option, type, bound, default and description.
+A module lives in `lua/orbit/modules/<name>/`. Its `init.lua` exports `setup(opts)` and documents the options with LuaDoc. The LuaDoc includes types, defaults, bounds and descriptions. The schema generator reads source comments without evaluating the module.
 
 The explicit `manifest.json` orders module activation. Both the runtime and the schema generator read this manifest. No second module inventory is maintained.
 
@@ -18,7 +18,7 @@ An omitted option takes its declared default. An unknown option or invalid type 
 | `lua/orbit/config.lua` | Option validation and defaults |
 | `lua/orbit/settings.lua` | JSON settings input and validation before explicit activation |
 | `lua/orbit/modules/manifest.json` | Module inventory and activation order |
-| `lua/orbit/modules/*/schema.json` | Per-module option contract |
+| `lua/orbit/modules/*/init.lua` LuaDoc | Per-module settings contract and type hints |
 | `lua/orbit/modules/*/init.lua` | Module activation and runtime owner |
 | `lua/orbit/tooling/schema.lua` and `scripts/generate_schema.lua` | Deterministic bundle generation |
 | `settings.schema.json` | Generated editor-facing schema, not an editable source |
@@ -37,4 +37,4 @@ Keep startup side effects outside module imports. Complete asynchronous work onl
 
 ## Tooling language
 
-Write executable tooling and tests in Lua. Use Neovim as the Lua host to reuse `vim.json`, filesystem APIs and process execution. Keep `schema.json`, `manifest.json` and GitHub Actions YAML as data formats. Add non-Lua code only when a specific requirement cannot be met reasonably with Lua, and document the exception.
+Write executable tooling and tests in Lua. Use Neovim as the Lua host to reuse `vim.json`, filesystem APIs and process execution. Keep only the generated `settings.schema.json`, the manifest and GitHub Actions YAML as data formats. Add non-Lua code only when a specific requirement cannot be met reasonably with Lua, and document the exception.
