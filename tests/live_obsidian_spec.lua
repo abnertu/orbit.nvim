@@ -143,12 +143,12 @@ local ok, err = xpcall(function()
   vim.api.nvim_buf_set_lines(0, -1, -1, false,
     { "Created through the real Obsidian command." })
   vim.cmd("write")
-  local created = table.concat(vim.fn.readfile(new_path), "\\n")
+  local created = table.concat(vim.fn.readfile(new_path), "\n")
   assert(created:find("Created through the real Obsidian command.", 1, true),
     "new-note write discarded Markdown content")
   assert(created:find("created:", 1, true) and created:find("modified:", 1, true),
     "new-note command did not persist Orbit frontmatter timestamps")
-  assert(table.concat(vim.fn.readfile(note_path), "\\n") == rewritten,
+  assert(table.concat(vim.fn.readfile(note_path), "\n") == rewritten,
     "new-note command modified the previously saved note")
   print("PASS real Obsidian new-note command, vault boundary and persisted content")
 end, debug.traceback)
