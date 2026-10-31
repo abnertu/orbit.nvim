@@ -13,7 +13,7 @@ This is a migration inventory and an implementation plan, not a claim of feature
 | `OrbitVim*` autocmd groups | `Orbit*` names with clear owners | Repeated setup and teardown |
 | `orbitvim-*` Tree-sitter predicates | `orbit-*` | Queries, predicate registration, parser tests |
 | NvChad and Base46 cache paths | Explicit theme adapter | `chadrc.lua`, theme runtime, caches |
-| `OrbitSettings` command | Migration decision required | User mappings, documentation, commands |
+| `OrbitSettings` command | Keep `:OrbitSettings`, allow a configured name | Command registration, leader shortcut, saved paths |
 
 A case-insensitive code search identified old identifiers across runtime files, fixtures, docs and CI. The source scanner also checks type annotations and files under test directories.
 
@@ -27,16 +27,30 @@ A case-insensitive code search identified old identifiers across runtime files, 
 - Windows shell, native builds, JSON URI handling and file paths stay covered.
 - SQL queries, snippets, Roslyn selection and buffer-lifetime behavior remain covered.
 
-## Migration order
+## Current migration state
 
-1. Freeze current behavior and identify external contracts.
-2. Introduce the `orbit` namespace and independent setup APIs.
-3. Define per-module schemas and generate the combined JSON Schema.
-4. Move editor, keymaps, settings commands and startup with contract tests. The manifest-backed Lazy spec registry currently includes only the mini.icons integration. Lazy on-demand initialization is opt-in and uses an existing installation. Plugin-independent save and window-navigation mappings now have a separate owner. Independent core events now have a separate module. Core scalar editor options and Compose/JSX detection now use module schemas.
-5. Move theme, UI and navigation without redundant providers.
-6. Move LSP, completion and language tooling with their existing tests.
-7. Move Hangar, DAP, SQL, Markdown and platform integrations.
-8. Rename public commands, persisted references and repository metadata.
-9. Run Linux CI, Windows validation and a final old-name audit.
+The module manifest orders runtime setup and Lazy specs. LuaDoc in each owning `init.lua` generates the settings schema. No feature module supplies a handwritten schema.
 
-Do not rename the GitHub repository until install instructions and external references have a migration plan. Do not replace the stable default branch before the new startup tests pass.
+- Core editor options, filetypes, independent events, settings commands, and transactional rollback now have Lua tests.
+- Core mappings cover file saving, window movement, visual line movement, buffer cycling, native comments, project roots, diagnostics, settings, and explicit encoding conversions.
+- Plugin features include Snacks, navigation, Harpoon, Markdown preview, Obsidian, Tree-sitter, LSP providers, completion, DAP, Mason, Conform, nvim-lint, and Hangar.
+- Linux and Windows CI validate contracts, but hermetic plugin mocks do not prove upstream runtime parity.
+
+## Outstanding legacy contracts
+
+- Restore smart Escape/menu/snippet cleanup, close-other-buffer and tabufline-close actions.
+- Migrate terminal splits and toggles with Windows shell handling and buffer ownership.
+- Restore theme controls, the UI reload event, and missing dashboard/highlight behavior.
+- Verify editorconfig replay, custom snippet collections, SQLFluff commands, and language-specific integrations.
+- Run actual Tree-sitter grammar injections and live Roslyn, TypeScript, DAP, and plugin sessions on both platforms.
+- Audit renamed commands, persisted state, public keys, README installation steps, performance, and release rules.
+
+## Completion order
+
+1. Finish core keymap, terminal and plugin-coupled event contracts with real Neovim tests.
+2. Verify remaining theme, navigation and UI behaviors against the legacy repository.
+3. Run upstream plugin, parser, formatter, LSP and debugger integrations without substituting source-only assertions.
+4. Complete naming and persisted-state audits, documentation and startup performance checks.
+5. Record Linux and Windows integration evidence, clean reviews and release readiness in [Roadmap #1](https://github.com/abnertu/orbit.nvim/issues/1).
+
+Do not rename the GitHub repository until installation instructions and external references have a migration plan. Keep the legacy configuration's default branch unchanged.
