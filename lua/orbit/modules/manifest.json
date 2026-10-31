@@ -9,6 +9,7 @@
     "icons",
     "git",
     "editor_plugins",
+    "diagnostics_plugins",
     "plugins"
   ]
 }
