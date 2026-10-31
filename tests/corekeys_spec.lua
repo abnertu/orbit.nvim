@@ -24,6 +24,10 @@ vim.keymap.set("n", ";", "<cmd>echo 'user-command'<cr>", { silent = true })
 vim.keymap.set("x", ">", "<cmd>echo 'user-visual'<cr>", { silent = true })
 vim.keymap.set("i", "jk", "<cmd>echo 'user-insert'<cr>", { silent = true })
 vim.keymap.set("t", "<C-x>", "<cmd>echo 'user-terminal'<cr>", { silent = true })
+vim.keymap.set("n", "<Tab>", "<cmd>echo 'user-next'<cr>", { silent = true })
+vim.keymap.set("n", "<S-Tab>", "<cmd>echo 'user-prev'<cr>", { silent = true })
+local previous_next = rhs("<Tab>")
+local previous_prev = rhs("<S-Tab>")
 local previous = {
   { "n", ";", vim.fn.maparg(";", "n") },
   { "x", ">", vim.fn.maparg(">", "x") },
@@ -69,6 +73,55 @@ check("common editing shortcuts use the legacy modes and actions", function()
     assert(matches,
       string.format("missing %s %s: %s", item[1], item[2], actual))
   end
+end)
+
+check("buffer cycling uses tab-local order and is lazy-loaded", function()
+  assert(package.loaded["orbit.modules.corekeys.buffers"] == nil)
+  local next_key = vim.fn.maparg("<Tab>", "n", false, true)
+  local prev_key = vim.fn.maparg("<S-Tab>", "n", false, true)
+  assert(type(next_key.callback) == "function")
+  assert(type(prev_key.callback) == "function")
+  local current, saved = vim.api.nvim_get_current_buf(), vim.t.bufs
+  local first = vim.api.nvim_create_buf(true, false)
+  local second = vim.api.nvim_create_buf(true, false)
+  local third = vim.api.nvim_create_buf(true, false)
+  vim.t.bufs = { first, second, third }
+  vim.api.nvim_set_current_buf(first)
+
+  next_key.callback()
+  assert(vim.api.nvim_get_current_buf() == second)
+  next_key.callback()
+  assert(vim.api.nvim_get_current_buf() == third)
+  next_key.callback()
+  assert(vim.api.nvim_get_current_buf() == first)
+  prev_key.callback()
+  assert(vim.api.nvim_get_current_buf() == third)
+
+  vim.api.nvim_set_current_buf(current)
+  vim.t.bufs = saved
+  for _, buffer in ipairs({ first, second, third }) do
+    vim.api.nvim_buf_delete(buffer, { force = true })
+  end
+end)
+
+check("buffer cycling skips stale tab entries", function()
+  local current, saved = vim.api.nvim_get_current_buf(), vim.t.bufs
+  local first = vim.api.nvim_create_buf(true, false)
+  local second = vim.api.nvim_create_buf(true, false)
+  local stale = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_delete(stale, { force = true })
+  vim.t.bufs = { first, stale, second }
+  vim.api.nvim_set_current_buf(first)
+
+  vim.fn.maparg("<Tab>", "n", false, true).callback()
+  assert(vim.api.nvim_get_current_buf() == second)
+  vim.fn.maparg("<Tab>", "n", false, true).callback()
+  assert(vim.api.nvim_get_current_buf() == first)
+
+  vim.api.nvim_set_current_buf(current)
+  vim.t.bufs = saved
+  vim.api.nvim_buf_delete(first, { force = true })
+  vim.api.nvim_buf_delete(second, { force = true })
 end)
 
 check("changing the save key restores the original user binding", function()
@@ -132,6 +185,11 @@ check("disabling restores user maps from every edited mode", function()
     assert(vim.fn.maparg(item[2], item[1]) == item[3],
       string.format("lost user %s %s mapping", item[1], item[2]))
   end
+end)
+
+check("disabling restores original buffer cycling keys", function()
+  assert(rhs("<Tab>") == previous_next)
+  assert(rhs("<S-Tab>") == previous_prev)
 end)
 
 check("reenabling does not stack mappings", function()
