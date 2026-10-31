@@ -39,6 +39,15 @@ local definitions = {
     desc = "Move selected lines down" },
   { lhs = "K", mode = "x", rhs = function() move_visual("up") end,
     desc = "Move selected lines up" },
+  { lhs = "<Esc>", mode = "n", rhs = function()
+    return require("orbit.modules.corekeys.escape").escape()
+  end, expr = true, desc = "Clear search and stop an active snippet" },
+  { lhs = "<Esc>", mode = "i", rhs = function()
+    return require("orbit.modules.corekeys.escape").escape()
+  end, expr = true, desc = "Leave insert and close active menus" },
+  { lhs = "<Esc>", mode = "s", rhs = function()
+    return require("orbit.modules.corekeys.escape").escape()
+  end, expr = true, desc = "Leave select and close active menus" },
   { lhs = "jk", mode = "i", rhs = "<Esc>", desc = "Leave insert mode" },
   { lhs = "Q", mode = "n", rhs = "q", desc = "Record a macro" },
   { lhs = "q", mode = "n", rhs = "<Nop>", desc = "Reserve lowercase q" },
@@ -94,6 +103,7 @@ local function targets(opts)
       lhs = lhs,
       key = key,
       rhs = definition.rhs,
+      expr = definition.expr,
       desc = definition.desc,
     }
   end
@@ -159,6 +169,7 @@ function M.setup(opts)
     vim.keymap.set(target.mode, target.lhs, target.rhs, {
       desc = target.desc,
       silent = true,
+      expr = target.expr == true,
     })
     next_owned[target.key] = {
       mode = target.mode,
