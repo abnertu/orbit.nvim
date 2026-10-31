@@ -76,6 +76,11 @@ jobs:
           nvim --headless -u NONE -l tests/live_keyguide_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Real which-key integration failed' }
 
+      - name: Run pinned real Obsidian vault integration
+        run: |
+          nvim --headless -u NONE -l tests/live_obsidian_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Real Obsidian vault integration failed' }
+
       - name: Run pinned real Noice message activation integration
         run: |
           nvim --headless -u NONE -l tests/live_noice_spec.lua
