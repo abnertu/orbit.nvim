@@ -60,3 +60,8 @@ jobs:
         run: |
           nvim --headless -u NONE -l tests/live_icons_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Real mini.icons integration failed' }
+
+      - name: Run pinned real gitsigns attach and hunk integration
+        run: |
+          nvim --headless -u NONE -l tests/live_gitsigns_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Real gitsigns integration failed' }
