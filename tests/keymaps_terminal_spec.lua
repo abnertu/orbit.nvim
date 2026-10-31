@@ -61,6 +61,28 @@ check("horizontal terminal creates a split with window-local options", function(
   vim.api.nvim_buf_delete(buffer, { force = true })
 end)
 
+check("terminal display failure restores the original window and buffer state", function()
+  local origin = vim.api.nvim_get_current_win()
+  local before_windows = #vim.api.nvim_tabpage_list_wins(0)
+  local before_spawns = spawns
+  local set_buf = vim.api.nvim_win_set_buf
+  local allocated
+  vim.api.nvim_win_set_buf = function(_, buffer)
+    allocated = buffer
+    error("injected terminal display failure")
+  end
+  local ok, err = pcall(function() map("n", " v").callback() end)
+  vim.api.nvim_win_set_buf = set_buf
+  assert(not ok and tostring(err):find("injected terminal display failure", 1, true))
+  assert(allocated and not vim.api.nvim_buf_is_valid(allocated),
+    "failed display must not leak its scratch buffer")
+  assert(vim.api.nvim_get_current_win() == origin,
+    "failed display must restore the original window")
+  assert(#vim.api.nvim_tabpage_list_wins(0) == before_windows,
+    "failed display must close its partial split")
+  assert(spawns == before_spawns, "failed display must not start a job")
+end)
+
 check("vertical toggle hides and reopens the same buffer, spawning once", function()
   local origin = vim.api.nvim_get_current_win()
   local before = spawns
