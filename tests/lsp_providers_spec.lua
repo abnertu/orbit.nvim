@@ -43,6 +43,18 @@ check("Roslyn selects one matching solution and rejects ambiguous targets", func
   assert(runtime.choose_target({}) == nil)
 end)
 
+check("Roslyn prefers the repository solution in a Git worktree", function()
+  local project = vim.fn.tempname()
+  vim.fn.mkdir(vim.fs.joinpath(project, "src"), "p")
+  vim.fn.writefile({ "gitdir: elsewhere" }, vim.fs.joinpath(project, ".git"))
+  local root_solution = vim.fs.joinpath(project, "Root.sln")
+  local nested_solution = vim.fs.joinpath(project, "src", "Nested.sln")
+  vim.fn.writefile({ "" }, root_solution)
+  vim.fn.writefile({ "" }, nested_solution)
+  assert(runtime.choose_target({ nested_solution, root_solution }) == root_solution)
+  vim.fn.delete(project, "rf")
+end)
+
 check("TypeScript options preserve server capabilities and parser preferences", function()
   local item = owner.spec()[2]
   local opts = item.opts()
@@ -52,6 +64,14 @@ check("TypeScript options preserve server capabilities and parser preferences", 
   assert(opts.settings.tsserver_file_preferences.includeCompletionsForModuleExports)
   assert(opts.settings.tsserver_file_preferences.includeInlayParameterNameHints ==
     "literals")
+  assert(opts.settings.tsserver_file_preferences
+    .includeInlayVariableTypeHintsWhenTypeMatchesName == true)
+  local disabled = runtime.typescript_options(vim.tbl_extend("force",
+    vim.deepcopy(orbit.get_config().modules.lsp_providers),
+    { ts_inlay_hints = false, tsserver_path = "custom/tsserver.js" }))
+  assert(disabled.settings.tsserver_path == "custom/tsserver.js")
+  assert(disabled.settings.tsserver_file_preferences
+    .includeInlayVariableTypeHintsWhenTypeMatchesName == false)
   assert(opts.settings.tsserver_path:find("tsserver.js", 1, true))
   assert(opts.handlers["textDocument/publishDiagnostics"] ==
     runtime.publish_typescript_diagnostics)
