@@ -19,4 +19,6 @@ Users can inspect effective options through `require("orbit").get_config()`.
 
 This is an explicit startup input, not automatic file watching.
 Module activation is transactional for the current editor and keymaps owners. A failed activation restores captured editor options and affected key bindings, without replacing the accepted configuration. A failed rollback reports its errors and requires a restart.
-Live reload, restart-only options and schema-linked editor commands require separate verified changes.
+An explicit `require("orbit").reload_from_file(path)` reads and validates the file again. Only changed module options are applied. When an editor module option changes, unrelated local option overrides remain untouched. Invalid input and failed activation preserve accepted options and their captured runtime values.
+
+Automatic file watching, restart-only options and schema-linked editor commands require separate verified changes.

@@ -45,7 +45,7 @@ require("orbit").setup({
 })
 ```
 
-Each module receives validated defaults for omitted options. Set `enabled = false` to skip a module during setup. Saved JSON overrides can be loaded explicitly with `setup_from_file(path)`. The current preview does not support live reload.
+Each module receives validated defaults for omitted options. Set `enabled = false` to skip a module during setup. Saved JSON overrides can be loaded with `setup_from_file(path)` and reapplied with `reload_from_file(path)`. Unchanged options preserve local editor overrides. Automatic file watching is not enabled.
 
 ## Saved settings
 
