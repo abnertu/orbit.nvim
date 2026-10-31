@@ -5,6 +5,7 @@
     "keymaps",
     "events",
     "corekeys",
-    "commands"
+    "commands",
+    "plugins"
   ]
 }

@@ -113,6 +113,11 @@ jobs:
           nvim --headless -u NONE -l tests/corekeys_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Core keymap tests failed' }
 
+      - name: Test on-demand plugin loader
+        run: |
+          nvim --headless -u NONE -l tests/plugins_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Plugin demand tests failed' }
+
       - name: Reject old runtime names
         run: |
           nvim --headless -u NONE -l scripts/check_legacy_names.lua
