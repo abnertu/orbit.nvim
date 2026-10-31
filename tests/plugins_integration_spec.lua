@@ -36,7 +36,7 @@ return {
     assert(specs[1].import == "plugins")
     assert(config.defaults.lazy == true)
     local items = require(specs[1].import)
-    assert(#items == 2)
+    assert(#items >= 2)
     assert(items[1][1] == "nvim-mini/mini.icons")
     assert(items[2][1] == "lewis6991/gitsigns.nvim")
     -- Emulate Lazy's feature configuration boundary without fetching plugins.

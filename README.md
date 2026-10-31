@@ -31,7 +31,7 @@ Set `bootstrap = true` to clone Lazy only when first demanded and not already in
 
 ## Declarative plugin features
 
-The `plugins` Lazy import delegates to `orbit.plugins`, which reads the same module manifest as the configuration system. Each feature can expose `spec()` and is independently configurable using LuaDoc. The first ported plugins are `mini.icons` and `gitsigns.nvim`. Gitsigns preserves legacy unstaged and staged glyphs, and loads on the one-shot `User FilePost` event. Both expose settings through LuaDoc.
+The `plugins` Lazy import delegates to `orbit.plugins`, which reads the same module manifest as the configuration system. Each feature can expose `spec()` and is independently configurable using LuaDoc. The ported plugin specs include `mini.icons`, `gitsigns.nvim`, `vim-matchup` and `indent-blankline.nvim`. Gitsigns preserves legacy unstaged and staged glyphs, and loads on the one-shot `User FilePost` event. Both expose settings through LuaDoc.
 
 ```lua
 require("orbit").setup({

@@ -46,6 +46,7 @@
 - Make one owner responsible for each shared task.
 - Collect Lazy specs from existing module entries. Do not maintain a second feature inventory.
 - Keep each plugin spec independent of external plugin imports until Lazy activates that feature.
+- Do not hardcode the total number of registered features in shared integration fixtures.
 - Declare module types, defaults, bounds and descriptions only in the owning `init.lua` LuaDoc.
 - Generate `settings.schema.json` from LuaDoc annotations. Do not author module `schema.json` files.
 - Use local LuaDoc classes for nested objects and typed arrays. Reject recursive class schemas.
