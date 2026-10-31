@@ -178,6 +178,11 @@ jobs:
           nvim --headless -u NONE -l tests/linter_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Linter runtime tests failed' }
 
+      - name: Test Oil and nvim-tree feature lifecycle
+        run: |
+          nvim --headless -u NONE -l tests/navigation_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Navigation module tests failed' }
+
       - name: Reject old runtime names
         run: |
           nvim --headless -u NONE -l scripts/check_legacy_names.lua

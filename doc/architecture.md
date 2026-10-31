@@ -25,7 +25,9 @@ An omitted option takes its declared default. An unknown option or invalid type 
 
 ## Future integration
 
-The `orbit.plugins` spec import scans the module manifest. Modules that implement `spec()` contribute Lazy declarations without a second feature inventory. `lua/plugins/init.lua` is only a compatibility import shim. The nvim-lint module debounces triggers per buffer, skips SQLFluff while editing, and cancels pending timers on buffer wipe. Windows command quoting, custom project tool resolution and Hangar ordering remain separate integration tasks.
+The `orbit.plugins` spec import scans the module manifest. Modules that implement `spec()` contribute Lazy declarations without a second feature inventory. `lua/plugins/init.lua` is only a compatibility import shim. The navigation module owns Oil and nvim-tree specs, Windows watcher settings and one FileCreated-to-CreateFile observer. Harpoon integration is a separate owner.
+
+The nvim-lint module debounces triggers per buffer, skips SQLFluff while editing, and cancels pending timers on buffer wipe. Windows command quoting, custom project tool resolution and Hangar ordering remain separate integration tasks.
 
 The Conform formatter module keeps async requests owned by one buffer and cleans up pending operations when a buffer is wiped. It retains language formatter defaults, but needs Hangar ordering and project-specific command adapters before full parity.
 
