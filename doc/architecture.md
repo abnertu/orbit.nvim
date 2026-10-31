@@ -25,7 +25,9 @@ An omitted option takes its declared default. An unknown option or invalid type 
 
 ## Future integration
 
-The `orbit.plugins` spec import scans the module manifest. Modules that implement `spec()` contribute Lazy declarations without a second feature inventory. `lua/plugins/init.lua` is only a compatibility import shim. The diagnostics_plugins owner contributes Trouble and todo-comments. Its LSP-reference handler and TODO-picker entry points are covered by Lua fixtures; Snacks integration is pending its own module.
+The `orbit.plugins` spec import scans the module manifest. Modules that implement `spec()` contribute Lazy declarations without a second feature inventory. `lua/plugins/init.lua` is only a compatibility import shim. The Snacks module owns the legacy picker shortcuts and the narrow invalid-window redraw guard. Theme, dashboard art and extended picker layout migration remain separate.
+
+The diagnostics_plugins owner contributes Trouble and todo-comments. Its LSP-reference handler and TODO-picker entry points are covered by Lua fixtures; Snacks integration is pending its own module.
 
 The independent editor_plugins owner contributes vim-matchup and indent-blankline. Its init callback owns the matchup globals, and its indent hook is registered only at Lazy config time. Existing theme highlights remain a separate migration requirement.
 
