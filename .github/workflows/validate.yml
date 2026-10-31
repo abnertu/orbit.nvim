@@ -193,6 +193,11 @@ jobs:
           nvim --headless -u NONE -l tests/lsp_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Native LSP runtime tests failed' }
 
+      - name: Test Hangar registry and startup owner
+        run: |
+          nvim --headless -u NONE -l tests/hangar_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Hangar registry tests failed' }
+
       - name: Reject old runtime names
         run: |
           nvim --headless -u NONE -l scripts/check_legacy_names.lua
