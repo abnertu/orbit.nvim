@@ -71,6 +71,11 @@ jobs:
           nvim --headless -u NONE -l tests/live_tsql_snippets_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Real LuaSnip T-SQL integration failed' }
 
+      - name: Run pinned real Noice message activation integration
+        run: |
+          nvim --headless -u NONE -l tests/live_noice_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Real Noice integration failed' }
+
       - name: Run pinned real Harpoon navigation integration
         run: |
           nvim --headless -u NONE -l tests/live_harpoon_spec.lua
