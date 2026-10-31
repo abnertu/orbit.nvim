@@ -64,7 +64,7 @@ local function resolve(value, node, path)
       error(path .. ": out of range", 0)
     end
   elseif kind == "string" then
-    if node.minLength and #value < node.minLength then
+    if node.minLength and vim.fn.strchars(value) < node.minLength then
       error(path .. ": must be at least " .. node.minLength .. " characters", 0)
     end
   end
