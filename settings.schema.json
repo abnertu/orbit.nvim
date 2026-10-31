@@ -546,6 +546,86 @@
             }
           },
           "type": "object"
+        },
+        "snacks": {
+          "additionalProperties": false,
+          "description": "Snacks UI and picker integration.",
+          "properties": {
+            "bigfile": {
+              "default": true,
+              "description": "Enable large-file handling.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "dashboard": {
+              "default": true,
+              "description": "Enable dashboard.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "enabled": {
+              "default": true,
+              "description": "Include Snacks in Lazy specs.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "input": {
+              "default": true,
+              "description": "Enable input prompts.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "notifier": {
+              "default": true,
+              "description": "Enable notifier.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "notify_timeout": {
+              "default": 3000,
+              "description": "Notification timeout in milliseconds.",
+              "minimum": 0,
+              "type": "integer",
+              "x-orbit-restart": true
+            },
+            "picker": {
+              "default": true,
+              "description": "Enable picker.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "quickfile": {
+              "default": true,
+              "description": "Enable quickfile.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "scope": {
+              "default": true,
+              "description": "Enable scope detection.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "scroll": {
+              "default": true,
+              "description": "Enable smooth scroll.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "statuscolumn": {
+              "default": true,
+              "description": "Enable status column.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "words": {
+              "default": true,
+              "description": "Enable word references.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            }
+          },
+          "type": "object"
         }
       },
       "type": "object"
