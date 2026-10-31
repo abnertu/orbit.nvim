@@ -928,6 +928,40 @@
           },
           "type": "object"
         },
+        "markdown": {
+          "additionalProperties": false,
+          "description": "Markdown preview integration.",
+          "properties": {
+            "build_timeout": {
+              "default": 120000,
+              "description": "Preview installer timeout in milliseconds.",
+              "maximum": 300000,
+              "minimum": 1000,
+              "type": "integer",
+              "x-orbit-restart": true
+            },
+            "enabled": {
+              "default": true,
+              "description": "Enable Markdown integration.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "preview": {
+              "default": true,
+              "description": "Include Markdown preview plugin.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "preview_key": {
+              "default": "<leader>mp",
+              "description": "Preview toggle mapping.",
+              "minLength": 1,
+              "type": "string",
+              "x-orbit-restart": true
+            }
+          },
+          "type": "object"
+        },
         "mason": {
           "additionalProperties": false,
           "description": "Lazy Mason package manager integration.",

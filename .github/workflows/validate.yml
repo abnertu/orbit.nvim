@@ -233,6 +233,11 @@ jobs:
           nvim --headless -u NONE -l tests/harpoon_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Harpoon navigation tests failed' }
 
+      - name: Test Markdown preview build and Lazy owner
+        run: |
+          nvim --headless -u NONE -l tests/markdown_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Markdown preview integration tests failed' }
+
       - name: Reject old runtime names
         run: |
           nvim --headless -u NONE -l scripts/check_legacy_names.lua
