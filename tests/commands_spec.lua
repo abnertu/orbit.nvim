@@ -38,6 +38,7 @@ end)
 check("reload activates validated JSON", function()
   vim.cmd("OrbitSettings reload")
   assert(orbit.get_config().modules.editor.shiftwidth == 4)
+  assert(orbit.get_config().modules.commands.path == vim.fs.normalize(path))
   assert(vim.api.nvim_get_option_value("shiftwidth", { scope = "global" }) == 4)
 end)
 
