@@ -25,7 +25,9 @@ An omitted option takes its declared default. An unknown option or invalid type 
 
 ## Future integration
 
-The `orbit.plugins` spec import scans the module manifest. Modules that implement `spec()` contribute Lazy declarations without a second feature inventory. `lua/plugins/init.lua` is only a compatibility import shim. The Conform formatter module keeps async requests owned by one buffer and cleans up pending operations when a buffer is wiped. It retains language formatter defaults, but needs Hangar ordering and project-specific command adapters before full parity.
+The `orbit.plugins` spec import scans the module manifest. Modules that implement `spec()` contribute Lazy declarations without a second feature inventory. `lua/plugins/init.lua` is only a compatibility import shim. The nvim-lint module debounces triggers per buffer, skips SQLFluff while editing, and cancels pending timers on buffer wipe. Windows command quoting, custom project tool resolution and Hangar ordering remain separate integration tasks.
+
+The Conform formatter module keeps async requests owned by one buffer and cleans up pending operations when a buffer is wiped. It retains language formatter defaults, but needs Hangar ordering and project-specific command adapters before full parity.
 
 The Tree-sitter module contributes parser, context and autotag specs. Parser activation is guarded by buffer/filetype validity and excludes bigfile buffers. SQL-specific injection predicates and legacy syntax fallback remain planned.
 

@@ -173,6 +173,11 @@ jobs:
           nvim --headless -u NONE -l tests/formatter_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Formatting feature tests failed' }
 
+      - name: Test nvim-lint scheduling lifecycle
+        run: |
+          nvim --headless -u NONE -l tests/linter_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Linter runtime tests failed' }
+
       - name: Reject old runtime names
         run: |
           nvim --headless -u NONE -l scripts/check_legacy_names.lua
