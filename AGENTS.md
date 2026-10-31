@@ -43,6 +43,7 @@
 - Make one owner responsible for each shared task.
 - Declare module types, defaults, bounds and descriptions only in the owning `init.lua` LuaDoc.
 - Generate `settings.schema.json` from LuaDoc annotations. Do not author module `schema.json` files.
+- Use local LuaDoc classes for nested objects and typed arrays. Reject recursive class schemas.
 - Preserve global, buffer-local and window-local option scope during migrations.
 - Preserve pre-existing Neovim filetype mappings when a feature disables or rolls back.
 - Do not introduce global variables for internal state.

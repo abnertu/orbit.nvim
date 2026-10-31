@@ -137,12 +137,86 @@ check("LuaDoc primitive metadata and literal unions become schema", function()
   end)
 end)
 
+check("nested LuaDoc classes and arrays compile without JSON sources", function()
+  local module = sample("sample", {
+    "---@field enabled boolean @default(true) # Enable.",
+    "---@field panel Orbit.PanelOptions @default({}) # Panel settings.",
+    "---@field entries Orbit.PanelOptions[] @default([]) # Open panels.",
+    "---@field labels string[] @default([]) # Labels.",
+  }) .. "\n" .. table.concat({
+    "---@class Orbit.PanelOptions # A panel's settings.",
+    "---@field width integer @default(2) @minimum(1) @maximum(9) # Width.",
+    "---@field title string @default(\"panel\") @minLength(1) # Title.",
+  }, "\n")
+
+  fixture({ order = { "sample" } }, { sample = module }, function(temp)
+    local schema_node = schema.build(temp)
+    local fields = schema_node.properties.modules.properties.sample.properties
+    assert(fields.panel.type == "object")
+    assert(fields.panel.properties.width.default == 2)
+    assert(fields.entries.type == "array" and fields.entries.items.type == "object")
+    assert(fields.labels.items.type == "string")
+
+    local config = require("orbit.config")
+    local defaults = config.resolve_against({}, schema_node)
+    assert(defaults.modules.sample.panel.width == 2)
+    assert(defaults.modules.sample.panel.title == "panel")
+    assert(vim.islist(defaults.modules.sample.entries))
+    assert(vim.islist(defaults.modules.sample.labels))
+
+    local configured = config.resolve_against({
+      modules = { sample = {
+        panel = { width = 4 },
+        entries = { { width = 5, title = "first" } },
+        labels = { "one", "two" },
+      } },
+    }, schema_node)
+    assert(configured.modules.sample.panel.width == 4)
+    assert(configured.modules.sample.entries[1].title == "first")
+    assert(configured.modules.sample.labels[2] == "two")
+
+    expect_error(function()
+      config.resolve_against({ modules = {
+        sample = { entries = { { width = 20 } } },
+      } }, schema_node)
+    end, "orbit.modules.sample.entries[1].width")
+
+    expect_error(function()
+      config.resolve_against({ modules = {
+        sample = { panel = { unknown = "x" } },
+      } }, schema_node)
+    end, "unknown setting")
+
+    expect_error(function()
+      config.resolve_against({ modules = {
+        sample = { labels = { "good", false } },
+      } }, schema_node)
+    end, "orbit.modules.sample.labels[2]")
+  end)
+end)
+
+check("recursive LuaDoc classes cannot produce infinitely nested schema", function()
+  local module = sample("sample", {
+    "---@field enabled boolean @default(true) # Enabled.",
+    "---@field child Orbit.PanelOptions @default({}) # Child.",
+  }) .. "\n" .. table.concat({
+    "---@class Orbit.PanelOptions # Panel.",
+    "---@field next Orbit.PanelOptions @default({}) # Next.",
+  }, "\n")
+
+  fixture({ order = { "sample" } }, { sample = module }, function(temp)
+    expect_error(function()
+      schema.build(temp)
+    end, "recursive LuaDoc class")
+  end)
+end)
+
 check("invalid defaults and unsupported types fail immediately", function()
   for _, field in ipairs({
     "---@field width integer @default(2.5) # Width.",
     "---@field width integer @default(11) @maximum(10) # Width.",
     "---@field mode 'a'|'b' @default(\"c\") # Mode.",
-    "---@field options table @default({}) # Unsupported nested type.",
+    "---@field options unknown @default({}) # Unsupported nested type.",
   }) do
     fixture({ order = { "broken" } }, {
       broken = sample("broken", {

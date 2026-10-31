@@ -76,6 +76,21 @@ Each module declares its settings entirely in LuaDoc annotations inside `init.lu
 ---@field style 'compact'|'wide' @default("compact") # Display style.
 ```
 
+Nested LuaDoc classes and arrays are also supported:
+
+```lua
+---@class Orbit.PanelOptions # Panel display settings.
+---@field width integer @default(2) @minimum(1) @maximum(12) # Panel width.
+
+---@class Orbit.ExampleOptions # Example module settings.
+---@field enabled boolean @default(true) # Enable this module.
+---@field panel Orbit.PanelOptions @default({}) # Individual panel.
+---@field panels Orbit.PanelOptions[] @default([]) # Active panels.
+---@field labels string[] @default([]) # Panel labels.
+```
+
+Nested objects inherit their member defaults. Arrays are validated by element type and replace previous arrays. The generator rejects recursive class references and unknown types. For composite types, use empty `@default({})` and `@default([])`.
+
 Primitive field types and LuaLS literal unions are supported. The metadata provides defaults and bounds. The text following `#` is the schema description. Unsupported types or missing defaults fail schema generation.
 
 ```sh
