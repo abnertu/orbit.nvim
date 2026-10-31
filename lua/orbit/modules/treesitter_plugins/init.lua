@@ -12,6 +12,9 @@ local accepted
 ---@field autotag_close_slash boolean @default(false) @restart(true) # Close tags after slash.
 ---@field install_dir string @default("") @restart(true) # Optional parser installation directory.
 ---@field sql_injections Orbit.TreesitterSqlInjections @default({}) @restart(true) # SQL injection controls.
+---@field sql_dialect string @default("tsql") @minLength(1) @restart(true) # Default SQL dialect for fallback syntax.
+---@field sql_syntax_fallback boolean @default(true) @restart(true) # Apply T-SQL syntax after Tree-sitter starts.
+---@field sql_markdown_fenced_fallback boolean @default(true) @restart(true) # Highlight SQL inside Markdown code fences.
 
 ---@class Orbit.TreesitterSqlInjections # C# SQL injection selection.
 ---@field comment boolean @default(true) # Parse SQL after language=sql comments.

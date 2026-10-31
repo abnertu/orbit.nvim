@@ -1215,6 +1215,13 @@
               "type": "string",
               "x-orbit-restart": true
             },
+            "sql_dialect": {
+              "default": "tsql",
+              "description": "Default SQL dialect for fallback syntax.",
+              "minLength": 1,
+              "type": "string",
+              "x-orbit-restart": true
+            },
             "sql_injections": {
               "additionalProperties": false,
               "default": {},
@@ -1232,6 +1239,18 @@
                 }
               },
               "type": "object",
+              "x-orbit-restart": true
+            },
+            "sql_markdown_fenced_fallback": {
+              "default": true,
+              "description": "Highlight SQL inside Markdown code fences.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "sql_syntax_fallback": {
+              "default": true,
+              "description": "Apply T-SQL syntax after Tree-sitter starts.",
+              "type": "boolean",
               "x-orbit-restart": true
             }
           },
