@@ -282,6 +282,32 @@
             }
           },
           "type": "object"
+        },
+        "plugins": {
+          "additionalProperties": false,
+          "description": "On-demand Lazy plugin initialization.",
+          "properties": {
+            "enabled": {
+              "default": false,
+              "description": "Enable plugin initialization for this session.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "import": {
+              "default": "plugins",
+              "description": "Lazy plugin spec import module.",
+              "minLength": 1,
+              "type": "string",
+              "x-orbit-restart": true
+            },
+            "path": {
+              "default": "",
+              "description": "Optional existing lazy.nvim installation directory.",
+              "type": "string",
+              "x-orbit-restart": true
+            }
+          },
+          "type": "object"
         }
       },
       "type": "object"

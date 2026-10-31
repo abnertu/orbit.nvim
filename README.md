@@ -11,7 +11,21 @@ A modular Neovim configuration with independently configurable features and gene
 - Neovim 0.12 or newer.
 - Git for the tracked-source identifier check.
 
-No external plugin is needed for the current preview modules.
+No plugin is downloaded by startup or CI. Lazy integration is opt-in, requiring an existing installation.
+
+```lua
+require("orbit").setup({
+  modules = {
+    plugins = {
+      enabled = true,
+      path = vim.fn.stdpath("data") .. "/lazy/lazy.nvim",
+      import = "plugins",
+    },
+  },
+})
+```
+
+When enabled at first setup, Lazy initializes on the first demand event or missing-module lookup. Plugin options are restart-only. This module does not clone or update Lazy.
 
 ## Try the preview
 
