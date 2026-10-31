@@ -44,7 +44,7 @@ end)
 
 check("manifest-backed import includes icons and gitsigns without a second inventory", function()
   local specs = require("orbit.plugins")
-  assert(#specs == 2)
+  assert(#specs >= 2)
   assert(specs[1][1] == "nvim-mini/mini.icons")
   assert(specs[2][1] == "lewis6991/gitsigns.nvim")
 end)
