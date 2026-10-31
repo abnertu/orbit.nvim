@@ -10,6 +10,7 @@
     "git",
     "editor_plugins",
     "diagnostics_plugins",
+    "messages",
     "snacks",
     "mason",
     "treesitter_plugins",
