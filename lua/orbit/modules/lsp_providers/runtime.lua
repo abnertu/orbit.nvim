@@ -71,7 +71,6 @@ function M.typescript_options(opts)
         quotePreference = "auto",
         includeInlayParameterNameHintsWhenArgumentMatchesName = hints,
         includeInlayFunctionParameterTypeHints = hints,
-        includeInlayVariableTypeHintsWhenTypeMatchesName = hints,
         includeInlayPropertyDeclarationTypeHints = hints,
         includeInlayEnumMemberValueHints = hints,
         includeInlayParameterNameHints = hints and "literals" or "none",
