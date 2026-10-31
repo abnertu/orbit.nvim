@@ -293,6 +293,11 @@ jobs:
           nvim --headless -u NONE --cmd "set rtp^=." -l tests/smoke.lua
           if ($LASTEXITCODE -ne 0) { throw 'Neovim smoke test failed' }
 
+      - name: Profile native startup and repeated setup
+        run: |
+          nvim --headless -u NONE -l tests/startup_performance_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Startup profile and idempotence tests failed' }
+
       - name: Check tracked source is unchanged
         run: |
           git diff --exit-code
