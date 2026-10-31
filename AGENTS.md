@@ -8,8 +8,13 @@
 - Mark breaking changes with `!` and a `BREAKING CHANGE:` footer.
 - Author commits as the user alone. Do not add agent trailers or session links.
 - Commit as the approved plan progresses.
-- Squash related commits before a push.
-- Push only after the user approves the push.
+- Keep each scoped change reviewable in its own branch and pull request.
+- Push approved development work without requesting repeated user approval.
+- Run the required Linux and Windows CI checks before merging each pull request.
+- Use GitHub's `rebase` merge method when the reviewed change passes all required checks.
+- Delete merged topic branches after verifying the target contains their changes.
+- Report a blocked branch deletion; never report deletion without confirmation.
+- Do not force-push or merge failed, incomplete, or unreviewed changes.
 - Keep `.plans/`, logs, throwaway tests and personal settings outside tracked files.
 - Do not modify the legacy configuration's default branch as part of a migration experiment.
 
