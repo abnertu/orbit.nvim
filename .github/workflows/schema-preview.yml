@@ -1,0 +1,56 @@
+name: Preview generated LuaDoc settings schema
+
+on:
+  pull_request:
+    paths:
+      - 'lua/orbit/modules/**/init.lua'
+      - 'lua/orbit/modules/manifest.json'
+      - 'lua/orbit/tooling/schema.lua'
+      - 'scripts/schema_preview.lua'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preview:
+    name: LuaDoc schema preview on Ubuntu
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install Neovim
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $base = 'https://github.com/neovim/neovim/releases/download/v0.12.5'
+          if ($IsWindows) {
+            $archive = Join-Path $env:RUNNER_TEMP 'nvim-win64.zip'
+            Invoke-WebRequest "$base/nvim-win64.zip" -OutFile $archive
+            $expected = 'de8625ba8cf65ebf40eb80a388ba1ec8e9c15b30218821e2c639119b05920de1'
+            if ((Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant() -ne $expected) { throw 'Neovim archive checksum mismatch' }
+            Expand-Archive -LiteralPath $archive -DestinationPath $env:RUNNER_TEMP
+            $binaryDirectory = Join-Path $env:RUNNER_TEMP 'nvim-win64/bin'
+          } else {
+            $archive = Join-Path $env:RUNNER_TEMP 'nvim-linux-x86_64.tar.gz'
+            Invoke-WebRequest "$base/nvim-linux-x86_64.tar.gz" -OutFile $archive
+            $expected = 'bce0f56eda1f1b1db6eee8f4133d7a38813ea07933837dd1777411ca384c6875'
+            if ((Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant() -ne $expected) { throw 'Neovim archive checksum mismatch' }
+            tar -xzf $archive -C $env:RUNNER_TEMP
+            if ($LASTEXITCODE -ne 0) { throw 'Neovim extraction failed' }
+            $binaryDirectory = Join-Path $env:RUNNER_TEMP 'nvim-linux-x86_64/bin'
+          }
+          $binaryDirectory | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+
+      - name: Verify Neovim installation
+        run: |
+          nvim --version
+          if ($LASTEXITCODE -ne 0) { throw 'Neovim installation failed' }
+
+      - name: Print deterministic LuaDoc-derived schema
+        run: |
+          nvim --headless -u NONE -l scripts/schema_preview.lua
+          if ($LASTEXITCODE -ne 0) { throw 'LuaDoc schema preview failed' }
