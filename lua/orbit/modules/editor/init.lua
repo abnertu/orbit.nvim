@@ -7,8 +7,40 @@ local M = {}
 ---@field expandtab boolean
 ---@field shiftwidth integer
 ---@field tabstop integer
+---@field autoread boolean
+---@field clipboard string
+---@field cursorlineopt string
+---@field fileformats string
+---@field laststatus integer
+---@field mouse string
+---@field numberwidth integer
+---@field ruler boolean
+---@field showmode boolean
+---@field signcolumn string
+---@field smartindent boolean
+---@field splitkeep string
+---@field undofile boolean
 
-local options = { "number", "relativenumber", "expandtab", "shiftwidth", "tabstop" }
+local options = {
+  "number",
+  "relativenumber",
+  "expandtab",
+  "shiftwidth",
+  "tabstop",
+  "autoread",
+  "clipboard",
+  "cursorlineopt",
+  "fileformats",
+  "laststatus",
+  "mouse",
+  "numberwidth",
+  "ruler",
+  "showmode",
+  "signcolumn",
+  "smartindent",
+  "splitkeep",
+  "undofile",
+}
 
 local function normal_buffer(buffer)
   return vim.api.nvim_buf_is_valid(buffer)
