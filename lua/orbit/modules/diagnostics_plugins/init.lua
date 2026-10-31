@@ -6,8 +6,8 @@ local accepted
 ---@field trouble boolean @default(true) @restart(true) # Enable Trouble diagnostics views.
 ---@field todo boolean @default(true) @restart(true) # Enable todo-comments integration.
 ---@field preview_border 'rounded'|'single'|'double'|'solid'|'shadow'|'none' @default("rounded") @restart(true) # Diagnostic preview border.
----@field preview_width number @default(0.3) @restart(true) # Diagnostic preview width fraction.
----@field preview_height number @default(0.3) @restart(true) # Diagnostic preview height fraction.
+---@field preview_width_percent integer @default(30) @minimum(1) @maximum(100) @restart(true) # Diagnostic preview width percentage.
+---@field preview_height_percent integer @default(30) @minimum(1) @maximum(100) @restart(true) # Diagnostic preview height percentage.
 ---@field todo_icon string @default(" ") @minLength(1) @restart(true) # WORKAROUND marker icon.
 
 function M.capture()
@@ -21,10 +21,6 @@ end
 ---@param opts? Orbit.DiagnosticsPluginsOptions
 function M.setup(opts)
   opts = require("orbit.config").resolve_module("diagnostics_plugins", opts)
-  for _, name in ipairs({ "preview_width", "preview_height" }) do
-    assert(opts[name] > 0 and opts[name] <= 1,
-      "orbit.modules.diagnostics_plugins." .. name .. ": expected a fraction in (0, 1]")
-  end
   accepted = vim.deepcopy(opts)
 end
 
@@ -67,7 +63,7 @@ function M.spec()
               type = "float", relative = "editor",
               border = c.preview_border, title = " Preview ",
               title_pos = "center", position = { 0, -2 },
-              size = { width = c.preview_width, height = c.preview_height },
+              size = { width = c.preview_width_percent / 100, height = c.preview_height_percent / 100 },
               zindex = 200,
             },
           },
