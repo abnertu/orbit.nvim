@@ -283,6 +283,11 @@ jobs:
           nvim --headless -u NONE -l tests/completion_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Completion feature tests failed' }
 
+      - name: Test real Neovim TypeScript LSP protocol and diagnostics
+        run: |
+          nvim --headless -u NONE -l tests/live_typescript_lsp_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Native TypeScript LSP protocol integration failed' }
+
       - name: Test Roslyn and TypeScript provider ownership
         run: |
           nvim --headless -u NONE -l tests/lsp_providers_spec.lua
