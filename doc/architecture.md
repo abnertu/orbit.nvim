@@ -61,7 +61,7 @@ The editor module owns core statusline, clipboard, mouse, indentation and signco
 
 The corekeys module owns configurable save/window keys and fixed plugin-independent editing shortcuts. It restores overwritten user mappings during reconfiguration, disable and rollback. Buffer-local LSP mappings can override its global `K` reservation.
 
-The keymaps module owns leader-based save, new-buffer, project-root, diagnostic, settings and native comment actions. It stores mode-qualified physical mappings across leader changes and restores user bindings during rollback. Project roots prefer the current buffer's LSP before the legacy repository and language markers. Settings shortcuts resolve the configured command at invocation.
+The keymaps module owns leader-based save, new-buffer, project-root, diagnostic, settings and native comment actions. It stores mode-qualified physical mappings across leader changes and restores user bindings during rollback. Project roots prefer the current buffer's LSP before the legacy repository and language markers. Settings shortcuts resolve the configured command at invocation. DOS-to-Unix and Big5-to-UTF-8 conversion keys reload and write only when invoked; their Lua helper refuses unnamed buffers.
 
 The events module owns core Neovim events and the legacy one-shot `User FilePost` signal. It emits FilePost once after UI entry and a named normal buffer are ready. It resends FileType only to that buffer to attach newly available filetype observers.
 
