@@ -123,6 +123,9 @@ check("floating toggle preserves window layout and blocks foreign floats", funct
     width = 20, height = 3,
   })
   assert(not term.can_toggle())
+  -- A foreign float can impersonate the terminal filetype without owning a session.
+  vim.bo[scratch].filetype = "Term_float"
+  assert(not term.can_toggle(), "foreign terminal-like floats must stay blocked")
   local count = #vim.api.nvim_list_wins()
   assert(term.toggle("float", "floatTerm") == false)
   assert(#vim.api.nvim_list_wins() == count)
