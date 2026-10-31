@@ -36,12 +36,12 @@ return {
     assert(specs[1].import == "plugins")
     assert(config.defaults.lazy == true)
     local items = require(specs[1].import)
-    local icons, gitsigns
+    local icons, gitsigns_spec
     for _, entry in ipairs(items) do
       if entry[1] == "nvim-mini/mini.icons" then icons = entry end
-      if entry[1] == "lewis6991/gitsigns.nvim" then gitsigns = entry end
+      if entry[1] == "lewis6991/gitsigns.nvim" then gitsigns_spec = entry end
     end
-    assert(icons and gitsigns)
+    assert(icons and gitsigns_spec)
     -- Emulate Lazy's feature configuration boundary without fetching plugins.
     package.preload["mini.icons"] = function()
       return {
@@ -65,7 +65,7 @@ return {
         vim.fn.writefile({"gitsigns.setup"}, %q, "a")
       end,
     }
-    gitsigns.setup(gitsigns.opts)
+    gitsigns.setup(gitsigns_spec.opts)
     vim.fn.writefile({%q}, %q)
     vim.api.nvim_create_autocmd("BufReadPre", {
       group = vim.api.nvim_create_augroup("OrbitIntegrationLazyRead", {clear = true}),
