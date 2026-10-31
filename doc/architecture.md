@@ -76,3 +76,5 @@ Keep startup side effects outside module imports. Complete asynchronous work onl
 Write executable tooling and tests in Lua. Use Neovim as the Lua host to reuse `vim.json`, filesystem APIs and process execution. Keep only the generated `settings.schema.json`, the manifest and GitHub Actions YAML as data formats. Add non-Lua code only when a specific requirement cannot be met reasonably with Lua, and document the exception.
 
 C# SQL injection queries use the `after/queries/c_sharp/injections.scm` extension. The Lua predicates exclude undecodable escape sequences and allow independently configured comment and SQL-name detection. Actual parser compatibility remains an upstream integration gate.
+
+SQL Server highlighting also uses `after/queries/sql/highlights.scm` and the focused `syntax/tsql.vim` fallback. Explicit buffer and global dialect preferences take precedence. Markdown SQL fences retain user mappings.
