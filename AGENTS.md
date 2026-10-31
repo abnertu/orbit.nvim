@@ -75,6 +75,8 @@
 - Protect release tags with a tag ruleset.
 - Restrict release credentials to protected release tags.
 - Keep CI changes on the default branch before creating a release tag.
+- Delete topic branches only after their pull request has merged successfully.
+- Run branch cleanup with a same-repository merged-PR guard and no untrusted code checkout.
 - Propagate tool failures, including missing prerequisites.
 - Test real entry points or isolated fixtures rather than file existence.
 
