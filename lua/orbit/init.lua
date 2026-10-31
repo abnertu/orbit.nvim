@@ -96,6 +96,18 @@ function M.reload_from_file(path)
   return M.setup_from_file(path)
 end
 
+---Start observing only the selected settings file on buffer writes.
+---@param path? string
+---@return string
+function M.watch_settings(path)
+  return require("orbit.settings").watch(path)
+end
+
+---Remove the settings observer without modifying saved settings.
+function M.unwatch_settings()
+  require("orbit.settings").unwatch()
+end
+
 ---@return Orbit.Config?
 function M.get_config()
   return configured and vim.deepcopy(configured) or nil

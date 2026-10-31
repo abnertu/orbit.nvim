@@ -49,4 +49,42 @@ function M.read(path)
   return values, nil, raw
 end
 
+local watch_group = "OrbitSettingsWatch"
+
+---Watch the selected file only. Repeated calls replace the old observer.
+---@param path? string
+---@return string
+function M.watch(path)
+  local expected = M.path(path)
+  local group = vim.api.nvim_create_augroup(watch_group, { clear = true })
+
+  vim.api.nvim_create_autocmd("BufWritePost", {
+    group = group,
+    desc = "Reload the selected orbit.nvim settings file",
+    callback = function(event)
+      local actual = M.path(event.file)
+      local target = expected
+      if vim.fn.has("win32") == 1 then
+        actual = actual:lower()
+        target = target:lower()
+      end
+      if actual ~= target then
+        return
+      end
+
+      local ok, err = require("orbit").reload_from_file(expected)
+      if not ok then
+        vim.notify(tostring(err), vim.log.levels.WARN, { title = "orbit.nvim settings" })
+      end
+    end,
+  })
+
+  return expected
+end
+
+---Stop watching. A later call to watch() can register the observer again.
+function M.unwatch()
+  pcall(vim.api.nvim_del_augroup_by_name, watch_group)
+end
+
 return M

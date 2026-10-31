@@ -59,6 +59,7 @@
 - Run `nvim --headless -u NONE -l scripts/check_legacy_names.lua` after staging source changes.
 - Validate saved settings before applying them. Preserve accepted settings when file reading or validation fails.
 - On explicit reload, apply only changed option fields so unchanged buffer/window overrides survive.
+- Observe only the configured settings path and replace the watcher on repeated setup.
 - Run `nvim --headless -u NONE -l tests/settings_spec.lua` after settings changes.
 - Run Neovim startup and behavior checks before claiming runtime compatibility.
 - Fail required integration checks when dependencies are unavailable.
