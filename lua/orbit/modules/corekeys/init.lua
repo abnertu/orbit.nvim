@@ -139,7 +139,20 @@ function M.restore(snapshot)
   for _, previous in pairs(owned) do
     pcall(vim.keymap.del, previous.mode, previous.lhs)
   end
+  -- Restore in a stable order. Insert-mode Escape is an expression map
+  -- and jk expands to Escape: restoring either in random hash order can
+  -- leave jk missing after a downstream setup failure.
+  local entries = {}
   for _, entry in pairs(snapshot.affected) do
+    entries[#entries + 1] = entry
+  end
+  table.sort(entries, function(left, right)
+    if left.mode == right.mode then
+      return left.lhs < right.lhs
+    end
+    return left.mode < right.mode
+  end)
+  for _, entry in ipairs(entries) do
     restore_mapping(entry.mode, entry.lhs, entry.current)
   end
   owned = vim.deepcopy(snapshot.owned)
