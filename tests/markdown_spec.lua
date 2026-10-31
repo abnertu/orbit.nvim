@@ -86,7 +86,7 @@ check("unlaunchable preview binaries are rebuilt before verification", function(
     if argv[1] == binary then
       checks = checks + 1
       if checks == 1 then error("fixture spawn failure") end
-      return { wait = function() return { code = 0, stdout = "1.2.3\\n" } end }
+      return { wait = function() return { code = 0, stdout = "1.2.3\n" } end }
     end
     installs = installs + 1
     return { wait = function() return { code = 0 } end }
