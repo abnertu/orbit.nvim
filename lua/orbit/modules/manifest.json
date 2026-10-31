@@ -16,6 +16,7 @@
     "formatter",
     "linter",
     "navigation",
+    "lsp",
     "plugins"
   ]
 }

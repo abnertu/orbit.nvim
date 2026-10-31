@@ -43,6 +43,7 @@
 - Use hermetic Lua and local Git fixtures for Lazy startup tests. Do not download plugins during CI.
 - Clone Lazy only on explicit opt-in demand. Respect locked revisions and never replace existing checkouts.
 - Treat activated plugin managers as restart-only; do not claim rollback of external plugin state.
+- Native LSP must not duplicate Roslyn or TypeScript-tools registration.
 - Make one owner responsible for each shared task.
 - Collect Lazy specs from existing module entries. Do not maintain a second feature inventory.
 - Keep each plugin spec independent of external plugin imports until Lazy activates that feature.
