@@ -29,6 +29,12 @@ end
 local ok, err = xpcall(function()
   assert(vim.fn.executable("git") == 1, "Git is required")
   assert(vim.fn.mkdir(workspace, "p") == 1)
+  -- Lazy bootstrap normally creates the Neovim data root before plugins run.
+  -- The standalone live fixture must establish the same prerequisite.
+  local data_root = vim.fn.stdpath("data")
+  vim.fn.mkdir(data_root, "p")
+  assert(vim.fn.isdirectory(data_root) == 1,
+    "Neovim data directory is required by upstream Harpoon")
   for _, dependency in ipairs(dependencies) do
     local directory = vim.fs.joinpath(workspace, dependency.name)
     assert(vim.fn.mkdir(directory, "p") == 1)
