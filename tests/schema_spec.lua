@@ -137,6 +137,40 @@ check("LuaDoc primitive metadata and literal unions become schema", function()
   end)
 end)
 
+check("minLength counts Unicode code points in defaults and overrides", function()
+  fixture({ order = { "sample" } }, {
+    sample = sample("sample", {
+      "---@field enabled boolean @default(true) # Enabled.",
+      '---@field label string @default("界x") @minLength(2) # Label.',
+    }),
+  }, function(temp)
+    local built = schema.build(temp)
+    local node = built.properties.modules.properties.sample.properties.label
+    assert(node.minLength == 2)
+    local config = require("orbit.config")
+    local configured = config.resolve_against({
+      modules = { sample = { label = "界x" } },
+    }, built)
+    assert(configured.modules.sample.label == "界x")
+    expect_error(function()
+      config.resolve_against({ modules = {
+        sample = { label = "界" },
+      } }, built)
+    end, "at least 2 characters")
+  end)
+
+  fixture({ order = { "sample" } }, {
+    sample = sample("sample", {
+      "---@field enabled boolean @default(true) # Enabled.",
+      '---@field label string @default("界") @minLength(2) # Label.',
+    }),
+  }, function(temp)
+    expect_error(function()
+      schema.build(temp)
+    end, "default is too short")
+  end)
+end)
+
 check("restart-only metadata defers nested fields and array changes", function()
   local module = sample("sample", {
     "---@field enabled boolean @default(true) # Enable.",
