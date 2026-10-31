@@ -193,6 +193,11 @@ jobs:
           nvim --headless -u NONE -l tests/diagnostics_plugins_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Diagnostics plugin tests failed' }
 
+      - name: Test Noice message routes and Lazy owner
+        run: |
+          nvim --headless -u NONE -l tests/messages_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Noice messages tests failed' }
+
       - name: Test Snacks callbacks and redraw guard
         run: |
           nvim --headless -u NONE -l tests/snacks_spec.lua
