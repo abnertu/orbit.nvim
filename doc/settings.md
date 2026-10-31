@@ -28,3 +28,5 @@ Call `require("orbit").watch_settings(path)` to watch a specific settings JSON f
 Repeated calls replace the observer rather than stacking callbacks. Call `require("orbit").unwatch_settings()` to remove it. Invalid saves produce a warning and leave accepted values active; the input file is never rewritten.
 
 File watching is opt-in. Restart-only options and schema-linked editor commands remain separate work.
+
+When loading from an explicit path, the settings command retains that path across reloads. An explicit `modules.commands.path` value in the JSON file takes precedence.

@@ -73,9 +73,17 @@ end
 ---@param path? string
 ---@return boolean, string?
 function M.setup_from_file(path)
-  local options, err = require("orbit.settings").read(path)
+  local settings = require("orbit.settings")
+  local options, err, source = settings.read(path)
   if not options then
     return false, err
+  end
+
+  -- Keep the selected file as the command target across reloads. A path
+  -- explicitly declared inside that file has higher precedence.
+  local command_values = source.modules and source.modules.commands
+  if not command_values or command_values.path == nil then
+    options.modules.commands.path = settings.path(path)
   end
 
   local ok, failure = xpcall(function()
