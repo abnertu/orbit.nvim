@@ -150,7 +150,8 @@ compile_field = function(type_name, metadata, description, location, classes, st
     assert(node.default <= node.maximum, location .. ": default exceeds maximum")
   end
   if node.minLength then
-    assert(#node.default >= node.minLength, location .. ": default is too short")
+    assert(vim.fn.strchars(node.default) >= node.minLength,
+      location .. ": default is too short")
   end
   if node.enum then
     assert(vim.tbl_contains(node.enum, node.default),
