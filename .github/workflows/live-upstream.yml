@@ -65,3 +65,8 @@ jobs:
         run: |
           nvim --headless -u NONE -l tests/live_gitsigns_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Real gitsigns integration failed' }
+
+      - name: Run pinned real Harpoon navigation integration
+        run: |
+          nvim --headless -u NONE -l tests/live_harpoon_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Real Harpoon integration failed' }
