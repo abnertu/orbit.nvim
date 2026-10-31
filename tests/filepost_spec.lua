@@ -39,6 +39,25 @@ check("UIEnter with an unnamed buffer does not emit FilePost", function()
   assert(filepost == 0)
 end)
 
+check("named special buffers do not consume the one-shot FilePost", function()
+  for _, buftype in ipairs({ "nofile", "prompt", "acwrite" }) do
+    local buffer = vim.api.nvim_create_buf(true, false)
+    vim.api.nvim_buf_set_name(buffer, vim.fn.tempname() .. ".lua")
+    vim.bo[buffer].buftype = buftype
+    vim.api.nvim_exec_autocmds("BufReadPost", {
+      buffer = buffer, modeline = false,
+    })
+    vim.api.nvim_exec_autocmds("BufNewFile", {
+      buffer = buffer, modeline = false,
+    })
+    assert(filepost == 0, buftype .. " consumed FilePost")
+    vim.api.nvim_buf_delete(buffer, { force = true })
+  end
+  assert(#vim.api.nvim_get_autocmds({
+    group = "OrbitCoreEvents", event = "BufReadPost",
+  }) == 1, "special buffers removed the one-shot observer")
+end)
+
 check("a real file after UIEnter fires FilePost once", function()
   local buffer = vim.api.nvim_create_buf(true, false)
   local name = vim.fn.tempname() .. ".lua"
