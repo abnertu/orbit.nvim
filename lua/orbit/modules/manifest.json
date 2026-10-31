@@ -13,6 +13,7 @@
     "snacks",
     "mason",
     "treesitter_plugins",
+    "formatter",
     "plugins"
   ]
 }
