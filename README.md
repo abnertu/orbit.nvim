@@ -4,14 +4,14 @@ A modular Neovim configuration with independently configurable features and gene
 
 [![Neovim](https://img.shields.io/badge/Neovim-0.12%2B-57A143?logo=neovim&logoColor=white)](https://neovim.io/)
 
-> Development preview: this package implements editor, filetype, keymaps and settings-command modules. It does not replace the existing configuration yet.
+> Development preview: this package now contains modular editor, navigation, language tooling, and plugin integrations. It is not yet a drop-in replacement for the legacy configuration.
 
 ## Requirements
 
 - Neovim 0.12 or newer.
 - Git for the tracked-source identifier check.
 
-No plugin is downloaded by startup or CI. Lazy integration is opt-in, requiring an existing installation.
+No plugin is downloaded during default startup or CI. Lazy integration is opt-in; an existing checkout or explicit first-demand bootstrap is required.
 
 ```lua
 require("orbit").setup({
@@ -85,7 +85,9 @@ require("orbit").setup({
 
 The editor module exposes configurable statusline, clipboard, mouse, signcolumn, undo and file-format defaults.
 
-The corekeys module owns `<C-s>` for save, `<C-h/j/k/l>` for window navigation, and the legacy visual `J/K` line-move callbacks. Configurable keys and fixed editing mappings restore previous user bindings when disabled.
+The corekeys module owns `<C-s>` for save, `<C-h/j/k/l>` for window navigation, tab-local `<Tab>` / `<S-Tab>` buffer cycling, and the legacy visual `J/K` line-move callbacks. Its fixed editing mappings restore previous user bindings when disabled.
+
+The keymaps module owns `<leader>bn` for a new buffer, `<leader>fd` for project-root navigation, `<leader>tf` for diagnostics, `<leader>uc` for the current settings command, and `<leader>/` for native Normal/Visual comments. `<leader>fu` converts DOS line endings to Unix, and `<leader>fi` reloads Big5 content and writes UTF-8. Conversion shortcuts modify files only when invoked. Leader changes and disabled modules restore user-owned physical mappings.
 
 The events module owns diagnostic redraw, startup buffers, directory arguments and an optional one-shot `User FilePost` event. FilePost fires only when a named normal file is ready after UI entry, then replays FileType to attach delayed plugin observers. Each behavior can be disabled independently.
 
@@ -106,7 +108,7 @@ end
 
 Reading never creates or rewrites the file. See [saved settings](doc/settings.md) for precedence and current limitations.
 
-Startup-only fields use `@restart(true)` in their owning module's `init.lua` LuaDoc. On later setup or reload, changes to those fields are deferred while safe fields apply immediately. `require("orbit").get_pending_restart()` returns the requested values by field path. Restart Neovim to activate them. The current preview marks the two startup event options as restart-only.
+Startup-only fields use `@restart(true)` in their owning module's `init.lua` LuaDoc. On later setup or reload, changes to those fields are deferred while safe fields apply immediately. `require("orbit").get_pending_restart()` returns the requested values by field path. Restart Neovim to activate them. Startup-only fields include event, plugin, Markdown and other integration options; inspect the generated schema for the active list.
 
 ## Settings command
 
@@ -163,6 +165,6 @@ The current prototype is not production-ready. The complete plugin, language too
 
 `.github/workflows/validate.yml` runs schema checks, Lua tests, identifier checks and a headless Neovim smoke test. It runs on Linux and Windows for pushes and pull requests. It also runs daily on the default branch and supports manual dispatch.
 
-A scheduled GitHub Actions run is not real-time monitoring. GitHub may delay scheduled jobs. The workflow becomes active after you publish this repository.
+A scheduled GitHub Actions run is not real-time monitoring. GitHub may delay scheduled jobs. GitHub Actions records the required Linux and Windows checks for each pushed development branch and pull request.
 
 Source repository: [abnertu/orbit.nvim](https://github.com/abnertu/orbit.nvim).
