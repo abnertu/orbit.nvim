@@ -4,6 +4,9 @@ local M = {}
 ---@field enabled boolean @default(false) @restart(true) # Enable plugin initialization for this session.
 ---@field path string @default("") @restart(true) # Optional existing lazy.nvim installation directory.
 ---@field import string @default("plugins") @minLength(1) @restart(true) # Lazy plugin spec import module.
+---@field bootstrap boolean @default(false) @restart(true) # Clone Lazy on first demand when missing.
+---@field source string @default("https://github.com/folke/lazy.nvim.git") @minLength(1) @restart(true) # Git source for Lazy bootstrap.
+---@field lockfile string @default("") @restart(true) # Optional locked revision file.
 
 local group
 local searcher
@@ -68,10 +71,8 @@ function M.activate(event)
   clear_group()
   local ok, err = xpcall(function()
     if options.path ~= "" then
-      local stat = vim.uv.fs_stat(options.path)
-      assert(stat and stat.type == "directory",
-        "lazy.nvim installation does not exist: " .. options.path)
-      vim.opt.rtp:prepend(options.path)
+      local path = require("orbit.lazy_bootstrap").ensure(options)
+      vim.opt.rtp:prepend(path)
     end
     vim.go.loadplugins = true
     require("lazy").setup({ { import = options.import } }, {
@@ -171,6 +172,9 @@ function M.setup(opts)
     assert(vim.deep_equal(options, opts),
       "plugin startup options require restarting Neovim")
     return
+  end
+  if opts.enabled and opts.bootstrap then
+    assert(opts.path ~= "", "bootstrap requires a nonempty installation path")
   end
   options = vim.deepcopy(opts)
   if not opts.enabled then
