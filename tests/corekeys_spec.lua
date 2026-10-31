@@ -156,6 +156,53 @@ check("buffer cycling skips stale tab entries", function()
   vim.api.nvim_buf_delete(second, { force = true })
 end)
 
+check("tab-local cycling skips unloaded buffers", function()
+  local current, saved = vim.api.nvim_get_current_buf(), vim.t.bufs
+  local first = vim.api.nvim_create_buf(true, false)
+  local unloaded = vim.api.nvim_create_buf(true, false)
+  local second = vim.api.nvim_create_buf(true, false)
+  vim.api.nvim_buf_delete(unloaded, { unload = true })
+  assert(vim.api.nvim_buf_is_valid(unloaded))
+  assert(not vim.api.nvim_buf_is_loaded(unloaded))
+  vim.t.bufs = { first, unloaded, second }
+  vim.api.nvim_set_current_buf(first)
+
+  vim.fn.maparg("<Tab>", "n", false, true).callback()
+  assert(vim.api.nvim_get_current_buf() == second,
+    "next must skip an unloaded tab-local buffer")
+  vim.fn.maparg("<S-Tab>", "n", false, true).callback()
+  assert(vim.api.nvim_get_current_buf() == first)
+
+  vim.api.nvim_set_current_buf(current)
+  vim.t.bufs = saved
+  for _, buffer in ipairs({ first, unloaded, second }) do
+    vim.api.nvim_buf_delete(buffer, { force = true })
+  end
+end)
+
+check("tab-local cycling skips unlisted buffers", function()
+  local current, saved = vim.api.nvim_get_current_buf(), vim.t.bufs
+  local first = vim.api.nvim_create_buf(true, false)
+  local unlisted = vim.api.nvim_create_buf(false, true)
+  local second = vim.api.nvim_create_buf(true, false)
+  assert(vim.api.nvim_buf_is_loaded(unlisted))
+  assert(not vim.bo[unlisted].buflisted)
+  vim.t.bufs = { first, unlisted, second }
+  vim.api.nvim_set_current_buf(first)
+
+  vim.fn.maparg("<Tab>", "n", false, true).callback()
+  assert(vim.api.nvim_get_current_buf() == second,
+    "next must skip an unlisted tab-local buffer")
+  vim.fn.maparg("<S-Tab>", "n", false, true).callback()
+  assert(vim.api.nvim_get_current_buf() == first)
+
+  vim.api.nvim_set_current_buf(current)
+  vim.t.bufs = saved
+  for _, buffer in ipairs({ first, unlisted, second }) do
+    vim.api.nvim_buf_delete(buffer, { force = true })
+  end
+end)
+
 check("buffer cycling falls back to loaded listed buffers", function()
   local current, saved = vim.api.nvim_get_current_buf(), vim.t.bufs
   local first = vim.api.nvim_create_buf(true, false)
