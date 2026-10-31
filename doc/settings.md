@@ -18,5 +18,5 @@ Users can inspect effective options through `require("orbit").get_config()`.
 ## Scope
 
 This is an explicit startup input, not automatic file watching.
-Live reload, restart-only options, transactional runtime rollback and schema-linked editor commands require separate verified changes.
-An activation error is reported, but this preview does not promise rollback of side effects from a partially completed activation.
+Module activation is transactional for the current editor and keymaps owners. A failed activation restores captured editor options and affected key bindings, without replacing the accepted configuration. A failed rollback reports its errors and requires a restart.
+Live reload, restart-only options and schema-linked editor commands require separate verified changes.

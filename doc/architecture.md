@@ -29,7 +29,7 @@ Keep plugin loading with Lazy until a separate benchmark and compatibility plan 
 
 Port each feature behind the public module contract. Preserve previous behavior until the feature's targeted checks pass. Avoid persistent compatibility aliases that hide old names in new code.
 
-Keep startup side effects outside module imports. Complete asynchronous work only while its buffer or owner remains valid. Repeated setup must replace owned mappings and subscriptions instead of duplicating them.
+Keep startup side effects outside module imports. Complete asynchronous work only while its buffer or owner remains valid. Every module must implement `capture(opts)` and `restore(snapshot)` beside `setup(opts)`. The root captures all modules before activation and restores activated modules in reverse order on failure. Repeated setup must replace owned mappings and subscriptions instead of duplicating them.
 
 ## Tooling language
 

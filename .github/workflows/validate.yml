@@ -73,6 +73,11 @@ jobs:
           nvim --headless -u NONE -l tests/settings_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Lua saved settings tests failed' }
 
+      - name: Test transactional module setup
+        run: |
+          nvim --headless -u NONE -l tests/lifecycle_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Module lifecycle tests failed' }
+
       - name: Reject old runtime names
         run: |
           nvim --headless -u NONE -l scripts/check_legacy_names.lua

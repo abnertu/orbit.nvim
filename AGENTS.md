@@ -36,7 +36,7 @@
 - Prefer Neovim built-in Lua APIs over Python packages or external runtime dependencies.
 - Use another language only for a concrete limitation. Document the reason at its source.
 - Keep JSON Schema and GitHub Actions YAML as declarative formats, not executable scripts.
-- Give every module a `setup(opts)` entry point.
+- Give every module a `setup(opts)` entry point and matching `capture(opts)` / `restore(snapshot)` lifecycle hooks.
 - Use explicit option types and validate settings before module activation.
 - Keep declarations separate from runtime side effects.
 - Keep cross-module dependencies explicit.
