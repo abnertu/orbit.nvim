@@ -79,9 +79,9 @@ end)
 check("invalid size is rejected without replacing configuration", function()
   local previous = orbit.get_config()
   local ok, err = pcall(orbit.setup, { modules = {
-    diagnostics_plugins = { preview_width = 2 },
+    diagnostics_plugins = { preview_width_percent = 200 },
   } })
-  assert(not ok and tostring(err):find("preview_width", 1, true))
+  assert(not ok and tostring(err):find("preview_width_percent", 1, true))
   assert(vim.deep_equal(previous, orbit.get_config()))
 end)
 

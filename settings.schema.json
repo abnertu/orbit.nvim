@@ -98,16 +98,20 @@
               "type": "string",
               "x-orbit-restart": true
             },
-            "preview_height": {
-              "default": 0.3,
-              "description": "Diagnostic preview height fraction.",
-              "type": "number",
+            "preview_height_percent": {
+              "default": 30,
+              "description": "Diagnostic preview height percentage.",
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
               "x-orbit-restart": true
             },
-            "preview_width": {
-              "default": 0.3,
-              "description": "Diagnostic preview width fraction.",
-              "type": "number",
+            "preview_width_percent": {
+              "default": 30,
+              "description": "Diagnostic preview width percentage.",
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
               "x-orbit-restart": true
             },
             "todo": {
