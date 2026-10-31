@@ -50,6 +50,38 @@ check("parser owner subscribes only once and skips bigfiles", function()
   vim.treesitter.start = start
 end)
 
+check("missing parser retries on BufEnter and stops after success", function()
+  local runtime = require("orbit.modules.treesitter_plugins.runtime")
+  runtime.setup()
+  runtime.setup()
+  assert(#vim.api.nvim_get_autocmds({
+    group = "OrbitTreesitterStart", event = "BufEnter",
+  }) == 1)
+  assert(#vim.api.nvim_get_autocmds({
+    group = "OrbitTreesitterStart", event = "BufWipeout",
+  }) == 1)
+
+  local original = vim.treesitter.start
+  local buffer = vim.api.nvim_create_buf(true, false)
+  local attempts = 0
+  local installed = false
+  vim.treesitter.start = function(target)
+    assert(target == buffer)
+    attempts = attempts + 1
+    if not installed then error("parser unavailable") end
+  end
+  vim.bo[buffer].filetype = "c_sharp"
+  assert(attempts == 1)
+  vim.api.nvim_exec_autocmds("BufEnter", { buffer = buffer })
+  assert(attempts == 2)
+  installed = true
+  vim.api.nvim_exec_autocmds("BufEnter", { buffer = buffer })
+  assert(attempts == 3)
+  vim.api.nvim_exec_autocmds("BufEnter", { buffer = buffer })
+  assert(attempts == 3)
+  vim.treesitter.start = original
+end)
+
 check("autotag setup callback invokes plugin with accepted options", function()
   local called = 0
   package.preload["nvim-ts-autotag"] = function()
