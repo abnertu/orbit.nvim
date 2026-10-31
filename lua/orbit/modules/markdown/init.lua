@@ -29,7 +29,6 @@ function M.spec()
   local specs = {}
   if c.preview then
     specs[#specs + 1] = {
-    {
       "iamcco/markdown-preview.nvim",
       cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
       ft = { "markdown" },
