@@ -48,7 +48,10 @@ local ok, err = xpcall(function()
   assert(vim.api.nvim_get_commands({}).Obsidian ~= nil,
     "real upstream :Obsidian command was not registered")
   local opts = specs[1].opts()
-  assert(opts.workspaces[1].path == vault and opts.legacy_commands == false)
+  assert(vim.fs.normalize(opts.workspaces[1].path) == vim.fs.normalize(vault),
+    "Obsidian vault path was not normalized consistently: "
+      .. vim.inspect({ opts.workspaces[1].path, vault }))
+  assert(opts.legacy_commands == false)
   specs[1].config(specs[1], opts)
   local obsidian = require("obsidian")
   assert(obsidian.get_client() ~= nil, "upstream Obsidian setup did not finish")
