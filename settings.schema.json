@@ -32,6 +32,62 @@
           },
           "type": "object"
         },
+        "completion": {
+          "additionalProperties": false,
+          "description": "Blink, LuaSnip, autopairs and Lua developer completion.",
+          "properties": {
+            "cmdline": {
+              "default": true,
+              "description": "Complete command line input.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "documentation_auto_show": {
+              "default": true,
+              "description": "Automatically display completion documentation.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "documentation_delay": {
+              "default": 200,
+              "description": "Documentation delay in milliseconds.",
+              "maximum": 5000,
+              "minimum": 0,
+              "type": "integer",
+              "x-orbit-restart": true
+            },
+            "enabled": {
+              "default": true,
+              "description": "Enable completion plugins.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "ghost_text": {
+              "default": false,
+              "description": "Display in-buffer completion ghost text.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "preset": {
+              "default": "enter",
+              "description": "Blink keymap preset.",
+              "enum": [
+                "enter",
+                "default",
+                "super-tab"
+              ],
+              "type": "string",
+              "x-orbit-restart": true
+            },
+            "snippet_history": {
+              "default": true,
+              "description": "Keep LuaSnip jump history.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            }
+          },
+          "type": "object"
+        },
         "corekeys": {
           "additionalProperties": false,
           "description": "Core file and window navigation mappings.",

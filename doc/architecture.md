@@ -25,6 +25,8 @@ An omitted option takes its declared default. An unknown option or invalid type 
 
 ## Future integration
 
+The completion owner configures Blink, LuaSnip, autopairs and Lazydev only at Lazy callback boundaries. It keeps snippet filetype extensions and its own InsertLeave cleanup. Full custom snippets and live resizing remain separate parity checks.
+
 The `orbit.plugins` spec import scans the module manifest. Modules that implement `spec()` contribute Lazy declarations without a second feature inventory. `lua/plugins/init.lua` is only a compatibility import shim. The navigation module owns Oil and nvim-tree specs, Windows watcher settings and one FileCreated-to-CreateFile observer. Harpoon integration is a separate owner.
 
 The nvim-lint module debounces triggers per buffer, skips SQLFluff while editing, and cancels pending timers on buffer wipe. Windows command quoting, custom project tool resolution and Hangar ordering remain separate integration tasks.

@@ -19,6 +19,7 @@
     "lsp",
     "dap",
     "hangar",
+    "completion",
     "plugins"
   ]
 }
