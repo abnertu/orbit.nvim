@@ -43,7 +43,7 @@ require("orbit").setup({
 })
 ```
 
-Completion has an independent Blink/LuaSnip/autopairs/Lazydev owner, with LuaDoc-configured documentation, command-line and snippet history. JSX and SQL snippet filetype extensions are preserved. Full custom snippets, dynamic popup sizing and real upstream completion tests remain pending.
+Completion has an independent Blink/LuaSnip/autopairs/Lazydev owner, with LuaDoc-configured documentation, command-line and snippet history. JSX and SQL snippet filetype extensions are preserved. The legacy 105-template T-SQL LuaSnip collection is now namespaced under `orbit` and loads through `luasnippets/tsql.lua`; real parser expansion runs in dedicated upstream CI. Other custom snippets, dynamic popup sizing and full real upstream completion tests remain pending.
 
 The `messages` module contributes a VeryLazy Noice spec for commandline, notification, popupmenu, and LSP message presentation. Its LuaDoc options control those features and popup size limits. Noice is not imported during normal setup; its runtime configuration runs only when Lazy activates the spec. Real upstream Noice rendering remains unverified.
 

@@ -66,6 +66,11 @@ jobs:
           nvim --headless -u NONE -l tests/live_gitsigns_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Real gitsigns integration failed' }
 
+      - name: Run pinned real LuaSnip T-SQL expansion integration
+        run: |
+          nvim --headless -u NONE -l tests/live_tsql_snippets_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Real LuaSnip T-SQL integration failed' }
+
       - name: Run pinned real Harpoon navigation integration
         run: |
           nvim --headless -u NONE -l tests/live_harpoon_spec.lua
