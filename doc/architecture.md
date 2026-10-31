@@ -35,7 +35,7 @@ The Conform formatter module keeps async requests owned by one buffer and cleans
 
 The Tree-sitter module contributes parser, context and autotag specs. Parser activation is guarded by buffer/filetype validity and excludes bigfile buffers. SQL-specific injection predicates and legacy syntax fallback remain planned.
 
-The native LSP module uses LuaDoc-owned server flags and a single registration boundary. It preserves shared diagnostics and language defaults. Roslyn and TypeScript tools remain separate owners; Hangar gating is pending.
+The native LSP module uses LuaDoc-owned server flags and a single registration boundary. It preserves shared diagnostics and language defaults. Roslyn and TypeScript tools remain separate owners; Hangar activation gating is pending. The Hangar registry is the canonical source for Mason packages, parsers and tool metadata. Its owner sets state paths and adapters before event-loaded consumers read tool settings.
 
 The Mason module owns only the command-lazy package manager declaration and its settings. It does not register or enable LSP servers, which require a separate runtime lifecycle.
 
