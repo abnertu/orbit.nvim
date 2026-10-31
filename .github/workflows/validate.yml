@@ -123,6 +123,11 @@ jobs:
           nvim --headless -u NONE -l tests/keymaps_comments_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Leader comment tests failed' }
 
+      - name: Test legacy file conversion shortcuts
+        run: |
+          nvim --headless -u NONE -l tests/keymaps_conversions_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'File conversion tests failed' }
+
       - name: Test on-demand plugin loader
         run: |
           nvim --headless -u NONE -l tests/plugins_spec.lua
