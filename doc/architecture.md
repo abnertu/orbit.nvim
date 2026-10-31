@@ -35,6 +35,8 @@ The Conform formatter module keeps async requests owned by one buffer and cleans
 
 The Tree-sitter module contributes parser, context and autotag specs. Parser activation is guarded by buffer/filetype validity and excludes bigfile buffers. SQL-specific injection predicates and legacy syntax fallback remain planned.
 
+The native LSP module uses LuaDoc-owned server flags and a single registration boundary. It preserves shared diagnostics and language defaults. Roslyn and TypeScript tools remain separate owners; Hangar gating is pending.
+
 The Mason module owns only the command-lazy package manager declaration and its settings. It does not register or enable LSP servers, which require a separate runtime lifecycle.
 
 The Snacks module owns the legacy picker shortcuts and the narrow invalid-window redraw guard. Theme, dashboard art and extended picker layout migration remain separate.

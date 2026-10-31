@@ -188,6 +188,11 @@ jobs:
           nvim --headless -u NONE -l tests/navigation_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Navigation module tests failed' }
 
+      - name: Test native LSP registration and diagnostics
+        run: |
+          nvim --headless -u NONE -l tests/lsp_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Native LSP runtime tests failed' }
+
       - name: Reject old runtime names
         run: |
           nvim --headless -u NONE -l scripts/check_legacy_names.lua

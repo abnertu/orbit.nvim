@@ -57,7 +57,7 @@ function M.spec()
       event = "VeryLazy",
       opts = vim.deepcopy(accepted),
       config = function(_, opts)
-        require("orbit.modules.lsp.runtime").setup(opts)
+        return require("orbit.modules.lsp.runtime").setup(opts)
       end,
     },
   }

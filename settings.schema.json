@@ -581,6 +581,161 @@
           },
           "type": "object"
         },
+        "lsp": {
+          "additionalProperties": false,
+          "description": "Native LSP server activation and diagnostics.",
+          "properties": {
+            "diagnostics": {
+              "additionalProperties": false,
+              "default": {},
+              "description": "Shared diagnostics presentation.",
+              "properties": {
+                "float_border": {
+                  "default": "rounded",
+                  "description": "Floating diagnostic border.",
+                  "enum": [
+                    "rounded",
+                    "single",
+                    "double",
+                    "solid",
+                    "shadow",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "severity_sort": {
+                  "default": true,
+                  "description": "Sort diagnostics by severity.",
+                  "type": "boolean"
+                },
+                "underline": {
+                  "default": true,
+                  "description": "Underline diagnostics.",
+                  "type": "boolean"
+                },
+                "update_in_insert": {
+                  "default": false,
+                  "description": "Refresh diagnostics while editing.",
+                  "type": "boolean"
+                },
+                "virtual_text": {
+                  "default": true,
+                  "description": "Show severity-filtered inline diagnostics.",
+                  "type": "boolean"
+                }
+              },
+              "type": "object",
+              "x-orbit-restart": true
+            },
+            "enabled": {
+              "default": true,
+              "description": "Enable the LSP owner.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "semantic_tokens": {
+              "default": false,
+              "description": "Keep server semantic tokens instead of Tree-sitter.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "servers": {
+              "additionalProperties": false,
+              "default": {},
+              "description": "Standard server activation flags.",
+              "properties": {
+                "bashls": {
+                  "default": true,
+                  "description": "Enable Bash language server.",
+                  "type": "boolean"
+                },
+                "clangd": {
+                  "default": true,
+                  "description": "Enable C and C++ language server.",
+                  "type": "boolean"
+                },
+                "cssls": {
+                  "default": true,
+                  "description": "Enable CSS language server.",
+                  "type": "boolean"
+                },
+                "docker_compose_language_service": {
+                  "default": true,
+                  "description": "Enable Compose YAML language server.",
+                  "type": "boolean"
+                },
+                "dockerls": {
+                  "default": true,
+                  "description": "Enable Dockerfile language server.",
+                  "type": "boolean"
+                },
+                "gopls": {
+                  "default": true,
+                  "description": "Enable Go language server.",
+                  "type": "boolean"
+                },
+                "html": {
+                  "default": true,
+                  "description": "Enable HTML language server.",
+                  "type": "boolean"
+                },
+                "jsonls": {
+                  "default": true,
+                  "description": "Enable JSON language server.",
+                  "type": "boolean"
+                },
+                "lemminx": {
+                  "default": true,
+                  "description": "Enable XML language server.",
+                  "type": "boolean"
+                },
+                "lua_ls": {
+                  "default": true,
+                  "description": "Enable Lua language server.",
+                  "type": "boolean"
+                },
+                "marksman": {
+                  "default": true,
+                  "description": "Enable Markdown language server.",
+                  "type": "boolean"
+                },
+                "powershell_es": {
+                  "default": true,
+                  "description": "Enable PowerShell language server.",
+                  "type": "boolean"
+                },
+                "prismals": {
+                  "default": true,
+                  "description": "Enable Prisma language server.",
+                  "type": "boolean"
+                },
+                "pyright": {
+                  "default": true,
+                  "description": "Enable Pyright Python language server.",
+                  "type": "boolean"
+                },
+                "ruff": {
+                  "default": true,
+                  "description": "Enable Ruff Python language server.",
+                  "type": "boolean"
+                },
+                "tombi": {
+                  "default": true,
+                  "description": "Enable TOML language server.",
+                  "type": "boolean"
+                },
+                "yamlls": {
+                  "default": true,
+                  "description": "Enable YAML language server.",
+                  "type": "boolean"
+                }
+              },
+              "type": "object",
+              "x-orbit-restart": true
+            }
+          },
+          "type": "object"
+        },
         "mason": {
           "additionalProperties": false,
           "description": "Lazy Mason package manager integration.",
