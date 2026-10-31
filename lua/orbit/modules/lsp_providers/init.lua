@@ -33,6 +33,9 @@ function M.spec()
       event = { "BufReadPre *.cs", "BufNewFile *.cs" },
       ft = { "cs" },
       cond = function()
+        if not require("orbit.hangar_bridge").is_enabled("lsp", "roslyn") then
+          return false
+        end
         local exe = vim.fn.has("win32") == 1
           and "roslyn-language-server.cmd" or "roslyn-language-server"
         return vim.fn.executable("dotnet") == 1

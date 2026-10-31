@@ -29,6 +29,44 @@ check("provider import is inert and is independent of generic LSP", function()
   assert(package.loaded["typescript-tools"] == nil)
 end)
 
+check("Roslyn condition honors Hangar state and executable gating", function()
+  local item = owner.spec()[1]
+  local original_executable = vim.fn.executable
+  local original_hangar = package.loaded.hangar
+  local original_state = package.loaded["hangar.state"]
+  local enabled = false
+  local queries = 0
+  vim.fn.executable = function(name)
+    if name == "dotnet" or name == "roslyn-language-server"
+      or name == "roslyn-language-server.cmd"
+    then
+      return 1
+    end
+    return original_executable(name)
+  end
+  local ok, err = xpcall(function()
+    package.loaded.hangar = nil
+    assert(item.cond(), "Hangar must not be imported just to check a provider")
+    assert(package.loaded.hangar == nil)
+    package.loaded.hangar = {}
+    package.loaded["hangar.state"] = {
+      is_enabled = function(category, name)
+        assert(category == "lsp" and name == "roslyn")
+        queries = queries + 1
+        return enabled
+      end,
+    }
+    assert(not item.cond(), "disabled Roslyn must not activate")
+    enabled = true
+    assert(item.cond(), "enabled Roslyn with executables must activate")
+    assert(queries == 2)
+  end, debug.traceback)
+  vim.fn.executable = original_executable
+  package.loaded.hangar = original_hangar
+  package.loaded["hangar.state"] = original_state
+  assert(ok, tostring(err))
+end)
+
 check("Roslyn selects one matching solution and rejects ambiguous targets", function()
   local project = vim.fn.tempname()
   vim.fn.mkdir(vim.fs.joinpath(project, ".git"), "p")
