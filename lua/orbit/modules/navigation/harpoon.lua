@@ -17,6 +17,7 @@ function M.pretty_path(path, length, root)
     end
   end
   local parts = vim.split(normalized, "[\\/]", { plain = false })
+  if length == 1 then return parts[#parts] end
   if #parts <= length then return table.concat(parts, "/") end
   local trimmed = { parts[1], "…" }
   vim.list_extend(trimmed,
