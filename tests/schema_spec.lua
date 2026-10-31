@@ -137,6 +137,71 @@ check("LuaDoc primitive metadata and literal unions become schema", function()
   end)
 end)
 
+check("restart-only metadata defers nested fields and array changes", function()
+  local module = sample("sample", {
+    "---@field enabled boolean @default(true) # Enable.",
+    "---@field live integer @default(1) # Live value.",
+    "---@field delayed string @default(\"one\") @restart(true) # Deferred value.",
+    "---@field panel Orbit.PanelOptions @default({}) # Nested settings.",
+    "---@field panels Orbit.PanelOptions[] @default([]) # Panel list.",
+  }) .. "\n" .. table.concat({
+    "---@class Orbit.PanelOptions # Panel settings.",
+    "---@field size integer @default(2) @restart(true) # Restart-only size.",
+    "---@field title string @default(\"base\") # Live title.",
+  }, "\n")
+
+  fixture({ order = { "sample" } }, { sample = module }, function(temp)
+    local built = schema.build(temp)
+    local fields = built.properties.modules.properties.sample.properties
+    assert(fields.delayed["x-orbit-restart"] == true)
+    assert(fields.panel.properties.size["x-orbit-restart"] == true)
+    assert(fields.live["x-orbit-restart"] == nil)
+
+    local config = require("orbit.config")
+    local previous = config.resolve_against({ modules = { sample = {
+      panels = { { size = 2, title = "first" } },
+    } } }, built)
+    local requested = config.resolve_against({ modules = { sample = {
+      live = 3,
+      delayed = "two",
+      panel = { size = 9, title = "updated" },
+      panels = { { size = 4, title = "second" } },
+    } } }, built)
+    local effective, pending = config.defer_restart(previous, requested, built)
+    assert(effective.modules.sample.live == 3)
+    assert(effective.modules.sample.delayed == "one")
+    assert(effective.modules.sample.panel.size == 2)
+    assert(effective.modules.sample.panel.title == "updated")
+    assert(vim.deep_equal(effective.modules.sample.panels,
+      previous.modules.sample.panels))
+    assert(pending["orbit.modules.sample.delayed"] == "two")
+    assert(pending["orbit.modules.sample.panel.size"] == 9)
+    assert(vim.deep_equal(pending["orbit.modules.sample.panels"],
+      requested.modules.sample.panels))
+    assert(vim.tbl_count(pending) == 3)
+
+    local first, no_pending = config.defer_restart(nil, requested, built)
+    assert(vim.deep_equal(first, requested))
+    assert(vim.tbl_isempty(no_pending))
+  end)
+end)
+
+check("restart-only annotation must be explicitly true", function()
+  for _, value in ipairs({ "false", "1", "\"yes\"", "{}" }) do
+    fixture({ order = { "broken" } }, {
+      broken = sample("broken", {
+        "---@field enabled boolean @default(true) # Enabled.",
+        "---@field delayed boolean @default(true) @restart(" .. value ..
+          ") # Deferred.",
+      }),
+    }, function(temp)
+      expect_error(function()
+        schema.build(temp)
+      end, "@restart(true) is required")
+    end)
+  end
+end)
+
 check("nested LuaDoc classes and arrays compile without JSON sources", function()
   local module = sample("sample", {
     "---@field enabled boolean @default(true) # Enable.",

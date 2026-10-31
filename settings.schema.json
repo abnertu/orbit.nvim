@@ -218,7 +218,8 @@
             "directory_argument": {
               "default": true,
               "description": "Change directory for a directory startup argument.",
-              "type": "boolean"
+              "type": "boolean",
+              "x-orbit-restart": true
             },
             "enabled": {
               "default": true,
@@ -228,7 +229,8 @@
             "startup_buffer": {
               "default": true,
               "description": "Keep a listed unnamed buffer behind startup interfaces.",
-              "type": "boolean"
+              "type": "boolean",
+              "x-orbit-restart": true
             }
           },
           "type": "object"
