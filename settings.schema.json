@@ -1,83 +1,83 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "orbit.nvim settings",
-  "description": "Configuration for orbit.nvim modules.",
-  "type": "object",
   "additionalProperties": false,
+  "description": "Configuration for orbit.nvim modules.",
   "properties": {
     "$schema": {
       "type": "string"
     },
     "modules": {
-      "type": "object",
       "additionalProperties": false,
       "properties": {
         "editor": {
-          "type": "object",
-          "description": "Core editor options applied on startup.",
           "additionalProperties": false,
+          "description": "Core editor options applied on startup.",
           "properties": {
             "enabled": {
-              "type": "boolean",
               "default": true,
-              "description": "Apply configured editor options."
-            },
-            "number": {
-              "type": "boolean",
-              "default": true,
-              "description": "Show absolute line numbers."
-            },
-            "relativenumber": {
-              "type": "boolean",
-              "default": true,
-              "description": "Show relative line numbers."
+              "description": "Apply configured editor options.",
+              "type": "boolean"
             },
             "expandtab": {
-              "type": "boolean",
               "default": true,
-              "description": "Insert spaces instead of tab characters."
+              "description": "Insert spaces instead of tab characters.",
+              "type": "boolean"
+            },
+            "number": {
+              "default": true,
+              "description": "Show absolute line numbers.",
+              "type": "boolean"
+            },
+            "relativenumber": {
+              "default": true,
+              "description": "Show relative line numbers.",
+              "type": "boolean"
             },
             "shiftwidth": {
-              "type": "integer",
               "default": 2,
-              "minimum": 0,
+              "description": "Number of spaces used for indentation.",
               "maximum": 16,
-              "description": "Number of spaces used for indentation."
+              "minimum": 0,
+              "type": "integer"
             },
             "tabstop": {
-              "type": "integer",
               "default": 2,
-              "minimum": 1,
+              "description": "Display width of a tab character.",
               "maximum": 16,
-              "description": "Display width of a tab character."
+              "minimum": 1,
+              "type": "integer"
             }
-          }
+          },
+          "type": "object"
         },
         "keymaps": {
-          "type": "object",
-          "description": "Minimal key mappings owned by orbit.nvim.",
           "additionalProperties": false,
+          "description": "Minimal key mappings owned by orbit.nvim.",
           "properties": {
             "enabled": {
-              "type": "boolean",
               "default": true,
-              "description": "Register the module mappings."
+              "description": "Register the module mappings.",
+              "type": "boolean"
             },
             "leader": {
-              "type": "string",
               "default": " ",
+              "description": "Leader key set before module mappings.",
               "minLength": 1,
-              "description": "Leader key set before module mappings."
+              "type": "string"
             },
             "save": {
-              "type": "string",
               "default": "<leader>w",
+              "description": "Normal-mode mapping that writes the current buffer.",
               "minLength": 1,
-              "description": "Normal-mode mapping that writes the current buffer."
+              "type": "string"
             }
-          }
+          },
+          "type": "object"
         }
-      }
+      },
+      "type": "object"
     }
-  }
+  },
+  "title": "orbit.nvim settings",
+  "type": "object"
 }

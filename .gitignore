@@ -1,4 +1,4 @@
-__pycache__/
-*.pyc
-*.pyo
+# Local editor and OS artifacts
 .DS_Store
+*.swp
+*.swo
