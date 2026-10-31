@@ -81,6 +81,36 @@ jobs:
           nvim --headless -u NONE -l tests/live_noice_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Real Noice integration failed' }
 
+      - name: Install verified Tree-sitter CLI for grammar compilation
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $version = 'v0.27.1'
+          $base = "https://github.com/tree-sitter/tree-sitter/releases/download/$version"
+          if ($IsWindows) {
+            $archiveName = 'tree-sitter-cli-windows-x64.zip'
+            $expected = 'de043e4c289efcef7981df99988300f23763befdeb36abf7c1898f080c478424'
+            $binaryName = 'tree-sitter.exe'
+          } else {
+            $archiveName = 'tree-sitter-cli-linux-x64.zip'
+            $expected = 'c7e686aec16ba17053c2e6fd87600ccb10cf8ba3d055756b17e756d538e11114'
+            $binaryName = 'tree-sitter'
+          }
+          $archive = Join-Path $env:RUNNER_TEMP $archiveName
+          Invoke-WebRequest "$base/$archiveName" -OutFile $archive
+          if ((Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant() -ne $expected) {
+            throw 'Tree-sitter CLI archive checksum mismatch'
+          }
+          $extract = Join-Path $env:RUNNER_TEMP 'pinned-tree-sitter-cli'
+          Expand-Archive -LiteralPath $archive -DestinationPath $extract
+          $binary = Get-ChildItem -Path $extract -Recurse -File |
+            Where-Object { $_.Name -eq $binaryName } |
+            Select-Object -First 1
+          if (-not $binary) { throw 'Tree-sitter CLI binary missing from verified release' }
+          if (-not $IsWindows) { chmod +x $binary.FullName }
+          & $binary.FullName --version
+          if ($LASTEXITCODE -ne 0) { throw 'Tree-sitter CLI preflight failed' }
+          $binary.DirectoryName | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+
       - name: Run pinned C-sharp and SQL Tree-sitter parser integration
         run: |
           nvim --headless -u NONE -l tests/live_treesitter_sql_spec.lua
