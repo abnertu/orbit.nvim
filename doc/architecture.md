@@ -53,6 +53,8 @@ The icons and git owners produce Lazy declarations without loading external code
 
 The first-demand integration test combines a local locked Git checkout, the module manifest spec import and file observer replay in a single Neovim process. It does not require external plugins or network access.
 
+The independent `live-upstream.yml` workflow exercises a pinned real mini.icons checkout on Linux and Windows through its actual Lazy config callback and devicons compatibility API. This intentionally uses GitHub network access, unlike hermetic unit suites. It verifies one upstream dependency, not all plugin entry points, parser installations, LSP servers or terminal sessions.
+
 The opt-in plugin module owns one package searcher and one demand-event group. It initializes an existing Lazy installation on first use. Newly registered file observers receive only the missed event. Setup does not clone plugins or require the network. First demand may clone the stable Lazy source when explicitly authorized by `bootstrap = true`. The optional lockfile pins the checkout. Existing installations are never replaced by bootstrap. All plugin options are restart-only because loaded plugins cannot be rolled back.
 
 Keep plugin loading with Lazy until a separate benchmark and compatibility plan approves another owner. Keep tool state and operations with hangar.nvim. Keep the configuration registry and runtime adapters within orbit.nvim.
