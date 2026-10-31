@@ -884,6 +884,50 @@
           },
           "type": "object"
         },
+        "lsp_providers": {
+          "additionalProperties": false,
+          "description": "Specialist Roslyn and TypeScript LSP providers.",
+          "properties": {
+            "enabled": {
+              "default": true,
+              "description": "Contribute specialist LSP providers.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "roslyn": {
+              "default": true,
+              "description": "Enable the .NET Roslyn provider.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "roslyn_filewatching": {
+              "default": "roslyn",
+              "description": "Roslyn file-watching policy.",
+              "minLength": 1,
+              "type": "string",
+              "x-orbit-restart": true
+            },
+            "ts_inlay_hints": {
+              "default": true,
+              "description": "Enable safe TypeScript inlay hints.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "tsserver_path": {
+              "default": "",
+              "description": "Optional explicit tsserver.js path.",
+              "type": "string",
+              "x-orbit-restart": true
+            },
+            "typescript_tools": {
+              "default": true,
+              "description": "Enable TypeScript tools provider.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            }
+          },
+          "type": "object"
+        },
         "mason": {
           "additionalProperties": false,
           "description": "Lazy Mason package manager integration.",

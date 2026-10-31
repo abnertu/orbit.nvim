@@ -20,6 +20,7 @@
     "dap",
     "hangar",
     "completion",
+    "lsp_providers",
     "plugins"
   ]
 }
