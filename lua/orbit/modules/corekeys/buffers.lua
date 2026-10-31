@@ -2,22 +2,21 @@
 -- No plugin or global variable is required to load this module.
 local M = {}
 
+local function eligible(buffer)
+  return type(buffer) == "number"
+    and vim.api.nvim_buf_is_valid(buffer)
+    and vim.api.nvim_buf_is_loaded(buffer)
+    and vim.api.nvim_get_option_value("buflisted", { buf = buffer })
+end
+
 local function listed_buffers()
   local tab_buffers = vim.t.bufs
   if type(tab_buffers) == "table" and #tab_buffers > 0 then
-    local valid = {}
-    for _, buffer in ipairs(tab_buffers) do
-      if type(buffer) == "number" and vim.api.nvim_buf_is_valid(buffer) then
-        valid[#valid + 1] = buffer
-      end
-    end
+    local valid = vim.tbl_filter(eligible, tab_buffers)
     if #valid > 0 then return valid end
   end
 
-  return vim.tbl_filter(function(buffer)
-    return vim.api.nvim_buf_is_loaded(buffer)
-      and vim.api.nvim_get_option_value("buflisted", { buf = buffer })
-  end, vim.api.nvim_list_bufs())
+  return vim.tbl_filter(eligible, vim.api.nvim_list_bufs())
 end
 
 local function current_index(buffers)
