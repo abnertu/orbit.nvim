@@ -2,6 +2,7 @@
   "order": [
     "editor",
     "filetypes",
-    "keymaps"
+    "keymaps",
+    "commands"
   ]
 }

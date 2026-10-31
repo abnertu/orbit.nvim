@@ -48,6 +48,7 @@
 - Preserve pre-existing Neovim filetype mappings when a feature disables or rolls back.
 - Do not introduce global variables for internal state.
 - Preserve commands, mappings and persistent data unless the approved plan changes them.
+- Never overwrite a user-owned command. Create settings files only on explicit open.
 - Keep Linux and Windows as equal targets for migrated features.
 
 ## Tests
