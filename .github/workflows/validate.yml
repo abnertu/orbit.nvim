@@ -118,6 +118,11 @@ jobs:
           nvim --headless -u NONE -l tests/keymaps_actions_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Leader action tests failed' }
 
+      - name: Test leader comment and settings shortcuts
+        run: |
+          nvim --headless -u NONE -l tests/keymaps_comments_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Leader comment tests failed' }
+
       - name: Test on-demand plugin loader
         run: |
           nvim --headless -u NONE -l tests/plugins_spec.lua
