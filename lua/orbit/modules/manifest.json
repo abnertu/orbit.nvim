@@ -14,6 +14,7 @@
     "mason",
     "treesitter_plugins",
     "formatter",
+    "linter",
     "plugins"
   ]
 }

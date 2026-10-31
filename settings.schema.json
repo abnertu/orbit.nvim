@@ -548,6 +548,39 @@
           },
           "type": "object"
         },
+        "linter": {
+          "additionalProperties": false,
+          "description": "nvim-lint configuration and event scheduling.",
+          "properties": {
+            "debounce_ms": {
+              "default": 200,
+              "description": "Delay before lint execution.",
+              "maximum": 5000,
+              "minimum": 0,
+              "type": "integer",
+              "x-orbit-restart": true
+            },
+            "enabled": {
+              "default": true,
+              "description": "Enable lint integration.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "lint_on_change": {
+              "default": true,
+              "description": "Trigger lint on TextChanged.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "skip_sql_on_change": {
+              "default": true,
+              "description": "Avoid SQLFluff while typing.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            }
+          },
+          "type": "object"
+        },
         "mason": {
           "additionalProperties": false,
           "description": "Lazy Mason package manager integration.",
