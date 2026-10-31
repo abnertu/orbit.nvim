@@ -62,9 +62,15 @@ local ok, err = xpcall(function()
     end
     return false
   end, 50), "real Trouble did not consume a Neovim diagnostic")
+  -- Trouble counts an opening view as open until its first update settles.
+  -- Close after the asynchronous initial view lifecycle has completed.
+  assert(vim.wait(10000, function()
+    return view:is_open() and not view.first_update:is_pending()
+  end, 50), "Trouble initial view update did not finish")
   trouble.close("diagnostics")
-  assert(not trouble.is_open("diagnostics"),
-    "Trouble diagnostics view stayed open after close")
+  assert(vim.wait(10000, function()
+    return not trouble.is_open("diagnostics")
+  end, 50), "Trouble diagnostics view stayed open after close")
   vim.diagnostic.reset(ns, buffer)
   print("PASS real Trouble diagnostic source, view and close lifecycle")
 end, debug.traceback)
