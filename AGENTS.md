@@ -46,6 +46,7 @@
 - Use local LuaDoc classes for nested objects and typed arrays. Reject recursive class schemas.
 - Preserve global, buffer-local and window-local option scope during migrations.
 - Preserve pre-existing Neovim filetype mappings when a feature disables or rolls back.
+- Restore prior user key mappings when disabling or rolling back a mapping owner.
 - Do not introduce global variables for internal state.
 - Preserve commands, mappings and persistent data unless the approved plan changes them.
 - Never overwrite a user-owned command. Create settings files only on explicit open.

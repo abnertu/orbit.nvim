@@ -47,6 +47,8 @@ require("orbit").setup({
 
 The editor module exposes configurable statusline, clipboard, mouse, signcolumn, undo and file-format defaults.
 
+The corekeys module owns `<C-s>` for save and `<C-h/j/k/l>` for window navigation. Each key is independently configurable and restores the previous mapping when disabled.
+
 The events module owns diagnostic statusline redraw, unnamed startup buffers and directory startup arguments. Each behavior can be disabled independently.
 
 The filetypes module registers Compose YAML and JSX detection with optional custom type names. Disabling it restores the prior matching rules.

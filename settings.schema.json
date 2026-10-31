@@ -32,6 +32,48 @@
           },
           "type": "object"
         },
+        "corekeys": {
+          "additionalProperties": false,
+          "description": "Core file and window navigation mappings.",
+          "properties": {
+            "enabled": {
+              "default": true,
+              "description": "Register the core mappings.",
+              "type": "boolean"
+            },
+            "save": {
+              "default": "<C-s>",
+              "description": "Save the current buffer.",
+              "minLength": 1,
+              "type": "string"
+            },
+            "window_down": {
+              "default": "<C-j>",
+              "description": "Focus the lower window.",
+              "minLength": 1,
+              "type": "string"
+            },
+            "window_left": {
+              "default": "<C-h>",
+              "description": "Focus the left window.",
+              "minLength": 1,
+              "type": "string"
+            },
+            "window_right": {
+              "default": "<C-l>",
+              "description": "Focus the right window.",
+              "minLength": 1,
+              "type": "string"
+            },
+            "window_up": {
+              "default": "<C-k>",
+              "description": "Focus the upper window.",
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
         "editor": {
           "additionalProperties": false,
           "description": "Core editor options applied on startup.",
