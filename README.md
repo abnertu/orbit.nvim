@@ -163,7 +163,7 @@ The current prototype is not production-ready. The complete plugin, language too
 
 ## Continuous validation
 
-`.github/workflows/validate.yml` runs schema checks, Lua tests, identifier checks and a headless Neovim smoke test. It runs on Linux and Windows for pushes and pull requests. It also runs daily on the default branch and supports manual dispatch.
+`.github/workflows/validate.yml` runs schema checks, Lua tests, identifier checks and a headless Neovim smoke test. It also measures a bounded process-level startup baseline and repeated setup latency; see [performance](doc/performance.md). It runs on Linux and Windows for pushes and pull requests. It also runs daily on the default branch and supports manual dispatch.
 
 A scheduled GitHub Actions run is not real-time monitoring. GitHub may delay scheduled jobs. GitHub Actions records the required Linux and Windows checks for each pushed development branch and pull request.
 
