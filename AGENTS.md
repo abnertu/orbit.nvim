@@ -52,6 +52,8 @@
 - Run `nvim --headless -u NONE -l tests/schema_spec.lua` for schema changes.
 - Run `nvim --headless -u NONE -l scripts/generate_schema.lua --check` for schema changes.
 - Run `nvim --headless -u NONE -l scripts/check_legacy_names.lua` after staging source changes.
+- Validate saved settings before applying them. Preserve accepted settings when file reading or validation fails.
+- Run `nvim --headless -u NONE -l tests/settings_spec.lua` after settings changes.
 - Run Neovim startup and behavior checks before claiming runtime compatibility.
 - Fail required integration checks when dependencies are unavailable.
 - Report missing prerequisites and tests that could not execute.
@@ -86,3 +88,4 @@
 - Keep user installation and configuration instructions in `README.md`.
 - Read [architecture](doc/architecture.md) before changing module boundaries.
 - Read [migration](doc/migration.md) before renaming interfaces or moving persistent state.
+- Read [settings](doc/settings.md) before changing saved settings or validation behavior.

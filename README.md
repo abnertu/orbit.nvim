@@ -45,7 +45,20 @@ require("orbit").setup({
 })
 ```
 
-Each module receives validated defaults for omitted options. Set `enabled = false` to skip a module during setup. The current preview does not support live reload or persisted JSON settings.
+Each module receives validated defaults for omitted options. Set `enabled = false` to skip a module during setup. Saved JSON overrides can be loaded explicitly with `setup_from_file(path)`. The current preview does not support live reload.
+
+## Saved settings
+
+`require("orbit").setup_from_file(path)` loads JSON overrides and validates them before activation. If `path` is omitted, it reads `stdpath("data") .. "/settings.json"`. Missing files use defaults. Invalid input leaves the accepted configuration unchanged.
+
+```lua
+local ok, err = require("orbit").setup_from_file()
+if not ok then
+  vim.notify(err, vim.log.levels.ERROR)
+end
+```
+
+Reading never creates or rewrites the file. See [saved settings](doc/settings.md) for precedence and current limitations.
 
 ## Generate the JSON Schema
 
@@ -55,6 +68,7 @@ Each module owns a `schema.json` beside its Lua entry point. `lua/orbit/modules/
 nvim --headless -u NONE -l scripts/generate_schema.lua
 nvim --headless -u NONE -l scripts/generate_schema.lua --check
 nvim --headless -u NONE -l tests/schema_spec.lua
+nvim --headless -u NONE -l tests/settings_spec.lua
 nvim --headless -u NONE -l scripts/check_legacy_names.lua
 ```
 
