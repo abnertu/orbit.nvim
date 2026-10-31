@@ -81,6 +81,11 @@ jobs:
           nvim --headless -u NONE -l tests/live_noice_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Real Noice integration failed' }
 
+      - name: Run pinned real nvim-dap TCP protocol integration
+        run: |
+          nvim --headless -u NONE -l tests/live_dap_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Real nvim-dap integration failed' }
+
       - name: Run pinned real nvim-lint diagnostic integration
         run: |
           nvim --headless -u NONE -l tests/live_lint_spec.lua
