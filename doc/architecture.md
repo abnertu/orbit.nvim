@@ -65,7 +65,7 @@ The keymaps module owns leader-based save, new-buffer, project-root, diagnostic,
 
 The keymaps terminal helper restores `<leader>h/v` split terminals plus Normal/Terminal `<M-h/v/i>` toggles. It owns reusable buffer IDs in Lua, starts processes using argv vectors (including PowerShell `-NoLogo` on Windows), avoids operating on unrelated floating windows and leaves running user terminals intact when keymaps are disabled. The current window proportions remain fixed to the original 30%/20% splits and approximately 80% floating region; tunable terminal settings and real long-running Windows shell sessions remain separate integration work.
 
-The events module owns core Neovim events and the legacy one-shot `User FilePost` signal. It emits FilePost once after UI entry and a named normal buffer are ready. It resends FileType only to that buffer to attach newly available filetype observers.
+The events module owns core Neovim events and the legacy one-shot `User FilePost` signal. It emits FilePost once after UI entry and a named normal buffer are ready. It resends FileType only to that buffer to attach newly available filetype observers. When `vim.g.editorconfig` is enabled, it then applies the configured EditorConfig module to that same still-loaded buffer; optional imports are deferred and external configuration errors are reported without breaking the callback.
 
 The events module owns only standalone core events. It registers callbacks once and disables them through state instead of destroying an event group needed for rollback.
 
