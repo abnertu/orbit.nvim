@@ -30,6 +30,25 @@ local function has_listed_unnamed_buffer()
   return false
 end
 
+-- The legacy on-demand startup re-applies EditorConfig after FileType.
+-- Do not import it on startup when the existing flag is unset.
+local function replay_editorconfig(buffer)
+  if not vim.g.editorconfig
+    or not vim.api.nvim_buf_is_valid(buffer)
+    or not vim.api.nvim_buf_is_loaded(buffer)
+  then
+    return
+  end
+  local ok, editorconfig = pcall(require, "editorconfig")
+  if not ok or type(editorconfig.config) ~= "function" then
+    return
+  end
+  local applied, err = pcall(editorconfig.config, buffer)
+  if not applied then
+    vim.notify("[editorconfig] " .. tostring(err), vim.log.levels.WARN)
+  end
+end
+
 local function register()
   -- Never silently replace unrelated autocommands with the same group name.
   local found, previous = pcall(vim.api.nvim_get_autocmds, { group = "OrbitCoreEvents" })
@@ -79,6 +98,7 @@ local function register()
             buffer = buffer,
             modeline = false,
           })
+          replay_editorconfig(buffer)
         end
       end)
     end,
