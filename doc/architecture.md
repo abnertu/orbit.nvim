@@ -57,7 +57,7 @@ Keep plugin loading with Lazy until a separate benchmark and compatibility plan 
 
 The editor module owns core statusline, clipboard, mouse, indentation and signcolumn defaults. Its schema declares every migrated scalar option.
 
-The corekeys module owns the original bindings for its five key slots and restores them during reconfiguration, disable and rollback. It does not depend on plugins or the leader key.
+The corekeys module owns configurable save/window keys and fixed plugin-independent editing shortcuts. It restores overwritten user mappings during reconfiguration, disable and rollback. Buffer-local LSP mappings can override its global `K` reservation.
 
 The events module owns core Neovim events and the legacy one-shot `User FilePost` signal. It emits FilePost once after UI entry and a named normal buffer are ready. It resends FileType only to that buffer to attach newly available filetype observers.
 
