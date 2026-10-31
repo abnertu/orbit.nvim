@@ -4,6 +4,7 @@
     "filetypes",
     "keymaps",
     "events",
+    "corekeys",
     "commands"
   ]
 }
