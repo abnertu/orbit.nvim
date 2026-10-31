@@ -60,7 +60,15 @@ end
 ---@return string
 function M.cwd(filename)
   local start = directory(filename)
-  return vim.fs.root(start, project_markers) or start
+  -- Keep the legacy marker priority: a repository root wins over a
+  -- closer package manifest when both are present.
+  for _, marker in ipairs(project_markers) do
+    local found = vim.fs.find(marker, {
+      path = start, upward = true, limit = 1,
+    })
+    if found[1] then return vim.fs.dirname(found[1]) end
+  end
+  return start
 end
 
 local function args(operation, filename)

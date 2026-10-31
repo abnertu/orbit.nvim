@@ -54,6 +54,8 @@ check("unrelated config sections are ignored and valid ancestor config wins", fu
   assert(vim.fs.normalize(sqlfluff.find_config(source)) == vim.fs.normalize(config))
   assert(not contains(sqlfluff.format_args(source), "--config"))
   assert(not contains(sqlfluff.lint_args(source), "--config"))
+  assert(vim.fs.normalize(sqlfluff.cwd(source)) == vim.fs.normalize(project),
+    "repository marker must outrank nested package markers")
 end)
 
 check("TOML and INI SQLFluff sections are recognized", function()
