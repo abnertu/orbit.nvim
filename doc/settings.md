@@ -9,6 +9,8 @@ Missing input uses module defaults. Reading does not create or rewrite any file.
 
 `settings.schema.json` is generated from LuaDoc in each module's `init.lua`.
 No per-module `schema.json` files are authored.
+
+Run `nvim --headless -u NONE -l scripts/generate_schema.lua` after changing owning-module LuaDoc. The read-only `schema-preview.yml` workflow also prints numbered JSON fragments, an exact byte count and a SHA256 checksum on schema-related pull requests. This preview uses the same Lua generator. It never writes the tracked schema; developers must regenerate and commit the deterministic bundle before validation will pass.
 Objects merge by field, and explicit `false` values are preserved.
 Unknown keys, invalid types, out-of-range values, and JSON null are rejected before activation.
 
