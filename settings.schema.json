@@ -206,6 +206,52 @@
           },
           "type": "object"
         },
+        "editor_plugins": {
+          "additionalProperties": false,
+          "description": "Optional editor visual integrations.",
+          "properties": {
+            "enabled": {
+              "default": true,
+              "description": "Contribute editor plugin specifications.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "indent_char": {
+              "default": "│",
+              "description": "Indentation marker.",
+              "minLength": 1,
+              "type": "string",
+              "x-orbit-restart": true
+            },
+            "indent_guides": {
+              "default": true,
+              "description": "Enable indent-blankline.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "matchup": {
+              "default": true,
+              "description": "Enable vim-matchup.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "matchup_stopline": {
+              "default": 500,
+              "description": "Matchup syntax scan limit.",
+              "minimum": 0,
+              "type": "integer",
+              "x-orbit-restart": true
+            },
+            "scope_char": {
+              "default": "│",
+              "description": "Scope marker.",
+              "minLength": 1,
+              "type": "string",
+              "x-orbit-restart": true
+            }
+          },
+          "type": "object"
+        },
         "events": {
           "additionalProperties": false,
           "description": "Standalone core Neovim events.",

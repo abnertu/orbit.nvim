@@ -25,7 +25,9 @@ An omitted option takes its declared default. An unknown option or invalid type 
 
 ## Future integration
 
-The `orbit.plugins` spec import scans the module manifest. Modules that implement `spec()` contribute Lazy declarations without a second feature inventory. `lua/plugins/init.lua` is only a compatibility import shim. The icons and git owners produce Lazy declarations without loading external code. The git owner preserves the original staged and unstaged glyph defaults and uses the one-shot FilePost event.
+The `orbit.plugins` spec import scans the module manifest. Modules that implement `spec()` contribute Lazy declarations without a second feature inventory. `lua/plugins/init.lua` is only a compatibility import shim. The independent editor_plugins owner contributes vim-matchup and indent-blankline. Its init callback owns the matchup globals, and its indent hook is registered only at Lazy config time. Existing theme highlights remain a separate migration requirement.
+
+The icons and git owners produce Lazy declarations without loading external code. The git owner preserves the original staged and unstaged glyph defaults and uses the one-shot FilePost event.
 
 The first-demand integration test combines a local locked Git checkout, the module manifest spec import and file observer replay in a single Neovim process. It does not require external plugins or network access.
 

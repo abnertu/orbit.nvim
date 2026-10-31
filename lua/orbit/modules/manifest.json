@@ -8,6 +8,7 @@
     "commands",
     "icons",
     "git",
+    "editor_plugins",
     "plugins"
   ]
 }
