@@ -60,7 +60,7 @@ local ok, err = xpcall(function()
     == require("orbit.modules.markdown.notes").frontmatter)
   local function canonical(path)
     local resolved = vim.uv.fs_realpath(path) or path
-    local normalized = vim.fs.normalize(resolved):gsub("\\\\", "/")
+    local normalized = vim.fs.normalize(resolved):gsub("\\", "/")
     return vim.fn.has("win32") == 1 and normalized:lower() or normalized
   end
   assert(canonical(tostring(Obsidian.workspace.path)) == canonical(vault),
