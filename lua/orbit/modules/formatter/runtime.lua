@@ -34,8 +34,8 @@ function M.format(buf)
     pcall(vim.api.nvim_del_autocmd, autocmd)
   end
 
-  local ok, err = pcall(function()
-    require("conform").format({
+  local ok, started = pcall(function()
+    return require("conform").format({
       async = true, bufnr = buf, quiet = true,
     }, function(failure)
       if pending[buf] ~= autocmd then return end
@@ -47,9 +47,16 @@ function M.format(buf)
   end)
   if not ok then
     cleanup()
-    vim.notify("Formatting failed: " .. tostring(err), vim.log.levels.ERROR)
+    vim.notify("Formatting failed: " .. tostring(started), vim.log.levels.ERROR)
+    return false
   end
-  return ok
+  -- Conform returns false (and may call back synchronously) when no formatter
+  -- is available. Do not report that a formatting request was accepted.
+  if started == false then
+    cleanup()
+    return false
+  end
+  return true
 end
 
 return M

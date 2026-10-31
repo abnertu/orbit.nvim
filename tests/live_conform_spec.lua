@@ -102,6 +102,16 @@ local ok, err = xpcall(function()
   assert(vim.wait(1000, function()
     return not runtime.is_formatting(wiped)
   end, 20))
+  local missing = vim.api.nvim_create_buf(true, false)
+  vim.api.nvim_buf_set_name(missing, vim.fn.tempname() .. ".orbitmissing")
+  vim.api.nvim_set_option_value("filetype", "orbit_missing", { buf = missing })
+  assert(not runtime.format(missing),
+    "Orbit falsely accepted an unavailable real upstream formatter")
+  assert(not runtime.is_formatting(missing),
+    "rejected real Conform requests leaked buffer ownership")
+  vim.api.nvim_buf_delete(missing, { force = true })
+  print("PASS real Conform unavailable formatter is reported as not started")
+
   vim.api.nvim_buf_delete(first, { force = true })
   vim.api.nvim_buf_delete(delayed, { force = true })
   print("PASS buffer wipe releases Orbit formatter ownership")

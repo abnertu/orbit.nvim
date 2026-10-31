@@ -75,6 +75,33 @@ check("wiping a buffer cancels its pending completion", function()
   package.loaded.conform, package.preload.conform = nil, nil
 end)
 
+check("Conform returning false releases ownership and reports no start", function()
+  local seen
+  package.preload.conform = function()
+    return { format = function(opts, callback)
+      assert(opts.async and opts.quiet)
+      callback("No formatters available for buffer")
+      return false
+    end }
+  end
+  local original_notify = vim.notify
+  vim.notify = function(msg)
+    seen = msg
+  end
+  local buf = vim.api.nvim_create_buf(true, false)
+  local ok, err = xpcall(function()
+    assert(not runtime.format(buf),
+      "Orbit must preserve Conform's unavailable-formatter result")
+    assert(not runtime.is_formatting(buf))
+    assert(seen and seen:find("No formatters available", 1, true))
+    assert(not runtime.format(-1), "invalid buffers cannot start formatting")
+  end, debug.traceback)
+  vim.notify = original_notify
+  vim.api.nvim_buf_delete(buf, { force = true })
+  package.loaded.conform, package.preload.conform = nil, nil
+  assert(ok, err)
+end)
+
 check("formatter exceptions clear pending state", function()
   package.preload.conform = function()
     return { format = function()
