@@ -74,6 +74,8 @@ check("list items retain path, cursor and shortened display context", function()
   assert(item.context.short_path:find("sample.lua", 1, true))
   assert(config.default.display(item):find("sample.lua", 1, true))
   assert(runtime.pretty_path("a/b/c/d.lua", 2) == "a/…/d.lua")
+  assert(runtime.pretty_path("a/b/c/d.lua", 1) == "d.lua",
+    "a single segment must keep the filename")
   assert(runtime.pretty_path("", 8) == "")
 end)
 
