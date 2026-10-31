@@ -15,6 +15,7 @@
     "treesitter_plugins",
     "formatter",
     "linter",
+    "markdown",
     "navigation",
     "lsp",
     "dap",
