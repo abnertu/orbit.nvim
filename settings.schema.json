@@ -1244,6 +1244,23 @@
           },
           "type": "object"
         },
+        "python_tools": {
+          "additionalProperties": false,
+          "description": "Python project maintenance commands.",
+          "properties": {
+            "enabled": {
+              "default": true,
+              "description": "Enable Python project maintenance commands.",
+              "type": "boolean"
+            },
+            "recreate_stub": {
+              "default": true,
+              "description": "Register the guarded Pyright stub regeneration command.",
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
         "snacks": {
           "additionalProperties": false,
           "description": "Snacks UI and picker integration.",
