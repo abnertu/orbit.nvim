@@ -238,6 +238,11 @@ jobs:
           nvim --headless -u NONE -l tests/markdown_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Markdown preview integration tests failed' }
 
+      - name: Test Obsidian vault Lazy ownership
+        run: |
+          nvim --headless -u NONE -l tests/markdown_notes_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Obsidian vault integration tests failed' }
+
       - name: Reject old runtime names
         run: |
           nvim --headless -u NONE -l scripts/check_legacy_names.lua
