@@ -31,7 +31,7 @@ The completion owner configures Blink, LuaSnip, autopairs and Lazydev only at La
 
 The `orbit.plugins` spec import scans the module manifest. Modules that implement `spec()` contribute Lazy declarations without a second feature inventory. `lua/plugins/init.lua` is only a compatibility import shim. The navigation module owns Oil and nvim-tree specs, Windows watcher settings and one FileCreated-to-CreateFile observer. Harpoon integration is a separate owner.
 
-The nvim-lint module debounces triggers per buffer, skips SQLFluff while editing, and cancels pending timers on buffer wipe. Windows command quoting, custom project tool resolution and Hangar ordering remain separate integration tasks.
+The nvim-lint module debounces triggers per buffer, skips SQLFluff while editing, and cancels pending timers on buffer wipe. Pinned upstream Linux/Windows tests verify actual process output, diagnostic publication, edit-event suppression and buffer cancellation. Production SQLFluff binaries, Windows tool arguments and Hangar ordering remain separate integration tasks.
 
 The shared SQLFluff adapter resolves project configuration, process roots and stdin arguments for Conform and nvim-lint. It uses a bundled T-SQL fallback only when no project SQLFluff section exists.
 
