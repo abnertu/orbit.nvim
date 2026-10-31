@@ -29,6 +29,8 @@ Keep plugin loading with Lazy until a separate benchmark and compatibility plan 
 
 The editor module owns core statusline, clipboard, mouse, indentation and signcolumn defaults. Its schema declares every migrated scalar option.
 
+The events module owns only standalone core events. It registers callbacks once and disables them through state instead of destroying an event group needed for rollback.
+
 The commands module owns the settings command and restores its registration after failed activation. It does not replace other commands.
 
 The filetypes module owns only Compose YAML and JSX detection. It captures the existing Neovim registry entries before registration and restores them on rollback or disable.

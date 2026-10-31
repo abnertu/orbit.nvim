@@ -164,6 +164,33 @@
           },
           "type": "object"
         },
+        "events": {
+          "additionalProperties": false,
+          "description": "Standalone core Neovim events.",
+          "properties": {
+            "diagnostics_redraw": {
+              "default": true,
+              "description": "Redraw the statusline when diagnostics change.",
+              "type": "boolean"
+            },
+            "directory_argument": {
+              "default": true,
+              "description": "Change directory for a directory startup argument.",
+              "type": "boolean"
+            },
+            "enabled": {
+              "default": true,
+              "description": "Enable core event behavior.",
+              "type": "boolean"
+            },
+            "startup_buffer": {
+              "default": true,
+              "description": "Keep a listed unnamed buffer behind startup interfaces.",
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
         "filetypes": {
           "additionalProperties": false,
           "description": "Filename and extension detection rules.",
