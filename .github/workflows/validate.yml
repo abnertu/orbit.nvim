@@ -143,6 +143,11 @@ jobs:
           nvim --headless -u NONE -l tests/keymaps_terminal_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Terminal mapping tests failed' }
 
+      - name: Test native theme picker and reload keys
+        run: |
+          nvim --headless -u NONE -l tests/keymaps_theme_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Theme mapping tests failed' }
+
       - name: Test on-demand plugin loader
         run: |
           nvim --headless -u NONE -l tests/plugins_spec.lua
