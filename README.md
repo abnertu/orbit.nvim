@@ -45,6 +45,8 @@ require("orbit").setup({
 
 Completion has an independent Blink/LuaSnip/autopairs/Lazydev owner, with LuaDoc-configured documentation, command-line and snippet history. JSX and SQL snippet filetype extensions are preserved. Full custom snippets, dynamic popup sizing and real upstream completion tests remain pending.
 
+The `messages` module contributes a VeryLazy Noice spec for commandline, notification, popupmenu, and LSP message presentation. Its LuaDoc options control those features and popup size limits. Noice is not imported during normal setup; its runtime configuration runs only when Lazy activates the spec. Real upstream Noice rendering remains unverified.
+
 Plugin specifications are not evaluated during normal startup when the Lazy owner is disabled. More legacy features still require migration.
 
 The Markdown module contributes command- and filetype-lazy markdown-preview.nvim. Its build adapter checks the installed executable version before running the upstream platform installer. The preview toggle and installer timeout are restart-only LuaDoc settings. CI uses local process fixtures; upstream browser rendering is not yet verified.
