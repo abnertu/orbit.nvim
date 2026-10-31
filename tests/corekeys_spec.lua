@@ -124,6 +124,37 @@ check("buffer cycling skips stale tab entries", function()
   vim.api.nvim_buf_delete(second, { force = true })
 end)
 
+check("buffer cycling falls back to loaded listed buffers", function()
+  local current, saved = vim.api.nvim_get_current_buf(), vim.t.bufs
+  local first = vim.api.nvim_create_buf(true, false)
+  local second = vim.api.nvim_create_buf(true, false)
+  vim.api.nvim_set_current_buf(second)
+  vim.api.nvim_set_current_buf(first)
+  local listed = {}
+  for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
+    if buffer ~= first and buffer ~= second then
+      listed[buffer] = vim.bo[buffer].buflisted
+      vim.bo[buffer].buflisted = false
+    end
+  end
+  vim.t.bufs = nil
+
+  vim.fn.maparg("<Tab>", "n", false, true).callback()
+  assert(vim.api.nvim_get_current_buf() == second)
+  vim.fn.maparg("<S-Tab>", "n", false, true).callback()
+  assert(vim.api.nvim_get_current_buf() == first)
+
+  vim.api.nvim_set_current_buf(current)
+  vim.t.bufs = saved
+  for buffer, was_listed in pairs(listed) do
+    if vim.api.nvim_buf_is_valid(buffer) then
+      vim.bo[buffer].buflisted = was_listed
+    end
+  end
+  vim.api.nvim_buf_delete(first, { force = true })
+  vim.api.nvim_buf_delete(second, { force = true })
+end)
+
 check("changing the save key restores the original user binding", function()
   orbit.setup({ modules = { corekeys = { save = "<F12>" } } })
   assert(rhs("<C-s>") == original_save)
