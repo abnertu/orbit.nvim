@@ -25,6 +25,12 @@ local definitions = {
   { lhs = "<leader>tf", mode = "n", rhs = function()
     vim.diagnostic.open_float()
   end, desc = "Show diagnostics in a floating window" },
+  { lhs = "<leader>fu", mode = "n", rhs = function()
+    require("orbit.modules.keymaps.conversion").dos_to_unix()
+  end, desc = "Convert DOS line endings to Unix" },
+  { lhs = "<leader>fi", mode = "n", rhs = function()
+    require("orbit.modules.keymaps.conversion").big5_to_utf8()
+  end, desc = "Convert Big5 file encoding to UTF-8" },
   { lhs = "<leader>uc", mode = "n", rhs = function()
     local config = require("orbit").get_config()
     local commands = config and config.modules.commands
