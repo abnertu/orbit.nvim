@@ -9,7 +9,7 @@ A modular Neovim configuration with independently configurable features and gene
 ## Requirements
 
 - Neovim 0.12 or newer.
-- Python 3.12+ and the `jsonschema` package to run schema validation during development.
+- Git for the tracked-source identifier check.
 
 No external plugin is needed for the current preview modules.
 
@@ -22,6 +22,8 @@ nvim --clean --cmd "set rtp^=." -c "lua require('orbit').setup()"
 ```
 
 The command loads the public API without replacing your personal configuration.
+
+Automation scripts and tests run through Neovim Lua with no Python dependency.
 
 ## Configure modules
 
@@ -50,10 +52,10 @@ Each module receives validated defaults for omitted options. Set `enabled = fals
 Each module owns a `schema.json` beside its Lua entry point. `lua/orbit/modules/manifest.json` defines the activation order. The generator combines these files into `settings.schema.json`.
 
 ```sh
-python3 -m pip install jsonschema==4.25.1
-python3 scripts/generate_schema.py
-python3 scripts/generate_schema.py --check
-python3 -m unittest discover -s tests -v
+nvim --headless -u NONE -l scripts/generate_schema.lua
+nvim --headless -u NONE -l scripts/generate_schema.lua --check
+nvim --headless -u NONE -l tests/schema_spec.lua
+nvim --headless -u NONE -l scripts/check_legacy_names.lua
 ```
 
 Do not edit `settings.schema.json` manually.
@@ -66,18 +68,8 @@ The current prototype is not production-ready. The complete plugin, language too
 
 ## Continuous validation
 
-`.github/workflows/validate.yml` runs schema checks, Python tests, identifier checks and a headless Neovim smoke test. It runs on Linux and Windows for pushes and pull requests. It also runs daily on the default branch and supports manual dispatch.
+`.github/workflows/validate.yml` runs schema checks, Lua tests, identifier checks and a headless Neovim smoke test. It runs on Linux and Windows for pushes and pull requests. It also runs daily on the default branch and supports manual dispatch.
 
 A scheduled GitHub Actions run is not real-time monitoring. GitHub may delay scheduled jobs. The workflow becomes active after you publish this repository.
 
-To publish a new personal repository, create an empty `abnertu/orbit.nvim` repository on GitHub, then run these commands in the source directory:
-
-```sh
-git init -b main
-git add .
-git commit -m "feat(orbit): initialize modular configuration and CI"
-git remote add origin git@github.com:abnertu/orbit.nvim.git
-git push -u origin main
-```
-
-Configure your Git author identity and GitHub SSH access before running these commands.
+Source repository: [abnertu/orbit.nvim](https://github.com/abnertu/orbit.nvim).

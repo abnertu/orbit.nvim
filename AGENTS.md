@@ -27,6 +27,10 @@
 ## Code
 
 - Keep one public namespace under `orbit`.
+- Write runtime code, tooling, generators and tests in Lua by default.
+- Prefer Neovim built-in Lua APIs over Python packages or external runtime dependencies.
+- Use another language only for a concrete limitation. Document the reason at its source.
+- Keep JSON Schema and GitHub Actions YAML as declarative formats, not executable scripts.
 - Give every module a `setup(opts)` entry point.
 - Use explicit option types and validate settings before module activation.
 - Keep declarations separate from runtime side effects.
@@ -45,9 +49,9 @@
 - Run throwaway checks freely without committing them.
 - Test persisted settings, failure recovery and plugin boundaries through real entry points.
 - Reject tests that only compare copied source text or duplicate configuration inventories.
-- Run `python3 -m unittest discover -s tests -v` for schema changes.
-- Run `python3 scripts/generate_schema.py --check` for schema changes.
-- Run `python3 scripts/check_legacy_names.py` after staging source changes.
+- Run `nvim --headless -u NONE -l tests/schema_spec.lua` for schema changes.
+- Run `nvim --headless -u NONE -l scripts/generate_schema.lua --check` for schema changes.
+- Run `nvim --headless -u NONE -l scripts/check_legacy_names.lua` after staging source changes.
 - Run Neovim startup and behavior checks before claiming runtime compatibility.
 - Fail required integration checks when dependencies are unavailable.
 - Report missing prerequisites and tests that could not execute.

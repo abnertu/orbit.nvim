@@ -5,7 +5,12 @@ dofile("init.lua")
 local orbit = require("orbit")
 
 orbit.setup({ modules = { editor = { shiftwidth = 4 } } })
-assert(vim.o.shiftwidth == 4, "editor options did not apply")
+assert(vim.o.shiftwidth == 4, "editor options did not apply to the current buffer")
+assert(vim.api.nvim_get_option_value("shiftwidth", { scope = "global" }) == 4, "editor default did not update")
+local next_buffer = vim.api.nvim_create_buf(true, false)
+vim.api.nvim_set_current_buf(next_buffer)
+assert(vim.bo[next_buffer].shiftwidth == 4, "new buffers did not inherit editor defaults")
+vim.api.nvim_buf_delete(next_buffer, { force = true })
 assert(orbit.get_config().modules.editor.shiftwidth == 4)
 assert(orbit.get_config().modules.keymaps.enabled == true)
 

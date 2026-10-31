@@ -19,7 +19,7 @@ An omitted option takes its declared default. An unknown option or invalid type 
 | `lua/orbit/modules/manifest.json` | Module inventory and activation order |
 | `lua/orbit/modules/*/schema.json` | Per-module option contract |
 | `lua/orbit/modules/*/init.lua` | Module activation and runtime owner |
-| `scripts/generate_schema.py` | Deterministic bundle generation |
+| `lua/orbit/tooling/schema.lua` and `scripts/generate_schema.lua` | Deterministic bundle generation |
 | `settings.schema.json` | Generated editor-facing schema, not an editable source |
 
 ## Future integration
@@ -29,3 +29,7 @@ Keep plugin loading with Lazy until a separate benchmark and compatibility plan 
 Port each feature behind the public module contract. Preserve previous behavior until the feature's targeted checks pass. Avoid persistent compatibility aliases that hide old names in new code.
 
 Keep startup side effects outside module imports. Complete asynchronous work only while its buffer or owner remains valid. Repeated setup must replace owned mappings and subscriptions instead of duplicating them.
+
+## Tooling language
+
+Write executable tooling and tests in Lua. Use Neovim as the Lua host to reuse `vim.json`, filesystem APIs and process execution. Keep `schema.json`, `manifest.json` and GitHub Actions YAML as data formats. Add non-Lua code only when a specific requirement cannot be met reasonably with Lua, and document the exception.

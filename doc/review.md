@@ -41,3 +41,7 @@ The reference is architectural, not a proposal to replace the existing Lazy or H
 ## Next scoped migration
 
 Port the existing settings loader in the next plan. Preserve object merge, array replacement, invalid-input rejection, live-update rollback and saved Hangar precedence. Its tests must run under Neovim before the public interface is replaced.
+
+## First published CI regression
+
+The first CI run (41152935074) failed on both platforms in `tests/smoke.lua:8`. The editor module set global option defaults but did not update buffer-local `shiftwidth` in the existing buffer. The Lua-tooling migration also updates this behavior and adds a new-buffer assertion. The new CI run must confirm the fix.
