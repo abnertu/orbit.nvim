@@ -18,16 +18,19 @@ local function get_schema()
 end
 
 local function default_for(node)
-  if node.default ~= nil then
-    return vim.deepcopy(node.default)
-  end
-
+  -- Nested object defaults come from their fields, not an empty table literal.
   if node.type == "object" then
     local result = {}
     for name, child in pairs(node.properties or {}) do
       result[name] = default_for(child)
     end
     return result
+  end
+  if node.default ~= nil then
+    return vim.deepcopy(node.default)
+  end
+  if node.type == "array" then
+    return {}
   end
 end
 
@@ -42,6 +45,10 @@ local function resolve(value, node, path)
     matches = type(value) == "table"
       and (not vim.islist(value) or next(value) == nil)
       and value ~= vim.NIL
+  elseif kind == "array" then
+    matches = type(value) == "table"
+      and vim.islist(value)
+      and value ~= vim.NIL
   elseif kind == "integer" then
     matches = type(value) == "number" and value == math.floor(value)
   end
@@ -50,13 +57,15 @@ local function resolve(value, node, path)
     error(path .. ": expected " .. kind, 0)
   end
 
-  if kind == "integer" then
-    if value < node.minimum or value > node.maximum then
+  if kind == "integer" or kind == "number" then
+    if (node.minimum and value < node.minimum) or
+      (node.maximum and value > node.maximum)
+    then
       error(path .. ": out of range", 0)
     end
   elseif kind == "string" then
     if node.minLength and #value < node.minLength then
-      error(path .. ": must not be empty", 0)
+      error(path .. ": must be at least " .. node.minLength .. " characters", 0)
     end
   end
 
@@ -74,9 +83,25 @@ local function resolve(value, node, path)
       result[name] = resolve(child_value, child, path .. "." .. name)
     end
     return result
+  elseif kind == "array" then
+    local result = {}
+    for index, item in ipairs(value) do
+      result[index] = resolve(item, assert(node.items, "array schema needs items"),
+        path .. "[" .. index .. "]")
+    end
+    return result
   end
 
   return value
+end
+
+---Resolve a supplied schema without activating any modules.
+---Used to validate generated schema fixtures before publishing them.
+---@param opts table?
+---@param supplied_schema table
+---@return table
+function M.resolve_against(opts, supplied_schema)
+  return resolve(vim.deepcopy(opts or {}), supplied_schema, "orbit")
 end
 
 ---Validate a module when users call its setup function directly.
@@ -93,7 +118,7 @@ end
 ---@param opts? Orbit.Config
 ---@return Orbit.Config
 function M.resolve(opts)
-  return resolve(vim.deepcopy(opts or {}), get_schema(), "orbit")
+  return M.resolve_against(opts, get_schema())
 end
 
 return M

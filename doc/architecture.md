@@ -8,7 +8,7 @@ A module lives in `lua/orbit/modules/<name>/`. Its `init.lua` exports `setup(opt
 
 The explicit `manifest.json` orders module activation. Both the runtime and the schema generator read this manifest. No second module inventory is maintained.
 
-An omitted option takes its declared default. An unknown option or invalid type fails before any module activates. An explicit `false` is retained. Arrays will replace previous arrays when the persistent settings layer is introduced.
+An omitted option takes its declared default. An unknown option or invalid type fails before any module activates. An explicit `false` is retained. Arrays replace earlier arrays when overrides are applied. Nested LuaDoc classes produce closed objects with derived defaults.
 
 ## Ownership
 

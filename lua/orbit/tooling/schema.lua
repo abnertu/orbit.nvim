@@ -1,5 +1,4 @@
--- Generate JSON Schema from the same LuaDoc that drives Lua type completion.
--- No module schema.json files or third-party parsers are required.
+-- Compile LuaDoc settings into JSON Schema without evaluating module code.
 local M = {}
 
 local function module_root(root)
@@ -23,30 +22,6 @@ local function class_name(name)
   return "Orbit." .. pascal .. "Options"
 end
 
-local function field_type(source, location)
-  local primitives = {
-    boolean = true,
-    string = true,
-    number = true,
-    integer = true,
-  }
-  if primitives[source] then
-    return { type = source }
-  end
-
-  -- LuaLS string literal unions double as enum declarations.
-  local entries, normalized, seen = {}, {}, {}
-  for value in source:gmatch("'([^']*)'") do
-    assert(not seen[value], location .. ": duplicate literal: " .. value)
-    seen[value] = true
-    entries[#entries + 1] = value
-    normalized[#normalized + 1] = "'" .. value .. "'"
-  end
-  assert(#entries > 0 and table.concat(normalized, "|") == source,
-    location .. ": unsupported LuaDoc type " .. source)
-  return { type = "string", enum = entries }
-end
-
 local function attributes(source, location)
   local result = {}
   local allowed = {
@@ -64,7 +39,7 @@ local function attributes(source, location)
 
     local valid, value = pcall(vim.json.decode, raw:sub(2, -2))
     assert(valid and value ~= vim.NIL,
-      location .. ": metadata " .. name .. " needs a JSON scalar")
+      location .. ": metadata " .. name .. " needs a JSON value")
 
     result[name] = value
     source = remainder
@@ -74,17 +49,72 @@ local function attributes(source, location)
   return result
 end
 
-local function compile_field(annotation, type_name, metadata, description, location)
-  assert(description and description ~= "", location .. ": missing description")
-  local node = field_type(type_name, location)
-  local attr = attributes(metadata, location)
+local compile_field
 
+-- Expand LuaLS field types, arrays, string literal unions and local classes.
+local function field_type(source, location, classes, stack)
+  local base = source:match("^(.-)%[%]$")
+  if base then
+    assert(base ~= "", location .. ": empty array element type")
+    return { type = "array", items = field_type(base, location, classes, stack) }
+  end
+
+  if source == "boolean" or source == "string" or
+    source == "number" or source == "integer"
+  then
+    return { type = source }
+  end
+
+  local definition = classes[source]
+  if definition then
+    assert(not stack[source], location .. ": recursive LuaDoc class " .. source)
+    stack[source] = true
+    local result = {
+      type = "object",
+      additionalProperties = false,
+      description = definition.description,
+      properties = {},
+    }
+    for _, field in ipairs(definition.fields) do
+      result.properties[field.name] = compile_field(
+        field.type_name, field.metadata, field.description,
+        field.location, classes, stack
+      )
+    end
+    stack[source] = nil
+    return result
+  end
+
+  -- LuaLS string-literal unions become stable enum lists.
+  local values, exact, seen = {}, {}, {}
+  for value in source:gmatch("'([^']*)'") do
+    assert(not seen[value], location .. ": duplicate literal " .. value)
+    seen[value] = true
+    values[#values + 1] = value
+    exact[#exact + 1] = "'" .. value .. "'"
+  end
+  assert(#values > 0 and table.concat(exact, "|") == source,
+    location .. ": unsupported LuaDoc type " .. source)
+  return { type = "string", enum = values }
+end
+
+compile_field = function(type_name, metadata, description, location, classes, stack)
+  assert(description and description ~= "", location .. ": missing description")
+  local node = field_type(type_name, location, classes, stack)
+  local attr = attributes(metadata, location)
   node.description = description
   node.default = attr.default
 
   if node.type == "integer" then
     assert(type(node.default) == "number" and node.default == math.floor(node.default),
       location .. ": default must be an integer")
+  elseif node.type == "object" then
+    -- Empty defaults mean "derive nested field defaults", not "drop fields".
+    assert(type(node.default) == "table" and next(node.default) == nil,
+      location .. ": object default must be {}")
+  elseif node.type == "array" then
+    assert(type(node.default) == "table" and next(node.default) == nil,
+      location .. ": array default must be []")
   else
     assert(type(node.default) == node.type, location .. ": invalid default type")
   end
@@ -106,7 +136,6 @@ local function compile_field(annotation, type_name, metadata, description, locat
 
   assert(not node.minimum or not node.maximum or node.minimum <= node.maximum,
     location .. ": minimum exceeds maximum")
-
   if node.minimum then
     assert(node.default >= node.minimum, location .. ": default is below minimum")
   end
@@ -124,7 +153,8 @@ local function compile_field(annotation, type_name, metadata, description, locat
   return node
 end
 
----Parse a module's LuaDoc without evaluating the module or applying side effects.
+---Parse all LuaDoc classes local to a module, then expand the root options.
+---Do not require() the source; imports could have runtime side effects.
 ---@param path string
 ---@param name string
 ---@return table
@@ -132,24 +162,17 @@ function M.parse_module(path, name)
   local ok, lines = pcall(vim.fn.readfile, path)
   assert(ok, "cannot read " .. path .. ": " .. tostring(lines))
 
-  local target = class_name(name)
-  local found, active = false, false
-  local node = {
-    type = "object",
-    additionalProperties = false,
-    properties = {},
-  }
-
+  local classes, active = {}, nil
   for number, line in ipairs(lines) do
     local annotated_class, trailing = line:match("^%s*%-%-%-@class%s+(%S+)%s*(.*)$")
     if annotated_class then
-      active = annotated_class == target
-      if active then
-        assert(not found, path .. ":" .. number .. ": duplicate class " .. target)
-        found = true
-        node.description = trailing:match("^#%s*(.-)%s*$")
-        assert(node.description and node.description ~= "",
-          path .. ":" .. number .. ": class description is required")
+      active = nil
+      if annotated_class:match("^Orbit%.") then
+        assert(not classes[annotated_class],
+          path .. ":" .. number .. ": duplicate class " .. annotated_class)
+        local description = trailing:match("^#%s*(.-)%s*$")
+        classes[annotated_class] = { description = description, fields = {}, names = {} }
+        active = classes[annotated_class]
       end
     elseif active and line:match("^%s*%-%-%-@field") then
       local field, type_name, rest =
@@ -157,22 +180,34 @@ function M.parse_module(path, name)
       local location = path .. ":" .. number
       assert(field and field:match("^[a-z][a-z0-9_]*$"),
         location .. ": malformed LuaDoc field")
-      assert(node.properties[field] == nil, location .. ": duplicate field " .. field)
+      assert(not active.names[field], location .. ": duplicate field " .. field)
 
       local metadata, description = rest:match("^(.-)%s*#%s+(.+)$")
       assert(metadata and description, location .. ": missing metadata or description")
-      node.properties[field] = compile_field(field, type_name, metadata, description, location)
+      active.names[field] = true
+      active.fields[#active.fields + 1] = {
+        name = field,
+        type_name = type_name,
+        metadata = metadata,
+        description = description,
+        location = location,
+      }
     end
   end
 
-  assert(found, path .. ": required LuaDoc class " .. target .. " is missing")
-  assert(node.properties.enabled and node.properties.enabled.type == "boolean",
-    path .. ": module needs a boolean enabled field")
+  local target = class_name(name)
+  local root = classes[target]
+  assert(root, path .. ": required LuaDoc class " .. target .. " is missing")
+  assert(root.description and root.description ~= "",
+    path .. ": class description is required")
 
-  return node
+  local result = field_type(target, path, classes, {})
+  assert(result.properties.enabled and result.properties.enabled.type == "boolean",
+    path .. ": module needs a boolean enabled field")
+  return result
 end
 
----Build the combined schema using only the manifest and module LuaDoc.
+---Combine module LuaDoc using the ordered manifest as the sole inventory.
 ---@param root string
 ---@return table
 function M.build(root)
@@ -187,7 +222,6 @@ function M.build(root)
     assert(is_module_name(name), "invalid module name: " .. tostring(name))
     assert(not seen[name], "module order must contain unique module names: " .. name)
     seen[name] = true
-
     local entry = vim.fs.joinpath(modules, name, "init.lua")
     assert(vim.fn.filereadable(entry) == 1, "missing module entry: " .. entry)
     properties[name] = M.parse_module(entry, name)
@@ -210,17 +244,14 @@ function M.build(root)
   }
 end
 
--- Sort object keys and retain list order across Linux and Windows.
+-- Sort keys and preserve list order for reproducible generated output.
 local function encode_pretty(value, depth)
-  local kind = type(value)
-  if kind ~= "table" then
+  if type(value) ~= "table" then
     return vim.json.encode(value)
   end
 
-  local entries = {}
-  local indent = string.rep("  ", depth)
+  local entries, indent = {}, string.rep("  ", depth)
   local next_indent = string.rep("  ", depth + 1)
-
   if vim.islist(value) then
     for _, item in ipairs(value) do
       entries[#entries + 1] = next_indent .. encode_pretty(item, depth + 1)
@@ -235,9 +266,7 @@ local function encode_pretty(value, depth)
   table.sort(keys)
   for _, key in ipairs(keys) do
     entries[#entries + 1] = next_indent
-      .. vim.json.encode(key)
-      .. ": "
-      .. encode_pretty(value[key], depth + 1)
+      .. vim.json.encode(key) .. ": " .. encode_pretty(value[key], depth + 1)
   end
   if #entries == 0 then
     return "{}"
