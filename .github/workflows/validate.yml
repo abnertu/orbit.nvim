@@ -163,6 +163,11 @@ jobs:
           nvim --headless -u NONE -l tests/filepost_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'FilePost event tests failed' }
 
+      - name: Test FilePost EditorConfig replay
+        run: |
+          nvim --headless -u NONE -l tests/filepost_editorconfig_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'EditorConfig replay tests failed' }
+
       - name: Test gitsigns feature specs
         run: |
           nvim --headless -u NONE -l tests/git_spec.lua
