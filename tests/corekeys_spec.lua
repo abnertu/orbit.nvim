@@ -261,4 +261,30 @@ check("reenabling does not stack mappings", function()
   assert(rhs("<C-h>"):lower() == "<c-w>h")
 end)
 
+check("repeated rollback keeps jk and smart Escape mappings intact", function()
+  local prior = commands.setup
+  for index = 1, 30 do
+    local accepted = orbit.get_config()
+    local escape = vim.fn.maparg("jk", "i")
+    assert(escape:lower() == "<esc>", "initial jk mapping missing")
+    commands.setup = function() error("injected repeated rollback") end
+    local ok, err = pcall(orbit.setup, { modules = {
+      corekeys = { save = "<F11>" },
+      commands = { enabled = false },
+    } })
+    commands.setup = prior
+    assert(not ok and tostring(err):find("injected repeated rollback", 1, true))
+    assert(not tostring(err):find("rollback failed", 1, true), tostring(err))
+    assert(vim.deep_equal(orbit.get_config(), accepted))
+    assert(vim.fn.maparg("jk", "i") == escape,
+      "jk mapping disappeared at iteration " .. index ..
+      ": " .. vim.inspect(vim.fn.maparg("jk", "i", false, true)))
+    for _, mode in ipairs({ "n", "i", "s" }) do
+      local current = vim.fn.maparg("<Esc>", mode, false, true)
+      assert(type(current.callback) == "function" and current.expr == 1,
+        "Escape mapping lost in mode " .. mode .. " at iteration " .. index)
+    end
+  end
+end)
+
 print(string.format("%d core keymap tests passed.", passed))
