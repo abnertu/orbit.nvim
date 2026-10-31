@@ -25,7 +25,14 @@ end)
 
 check("open creates schema-linked settings without overwriting existing data", function()
   vim.cmd("OrbitSettings open")
-  assert(vim.api.nvim_buf_get_name(0) == vim.fs.normalize(path))
+  assert(vim.fn.filereadable(path) == 1, "settings file was not created")
+  local actual = vim.fs.normalize(vim.api.nvim_buf_get_name(0))
+  local expected = vim.fs.normalize(path)
+  if vim.fn.has("win32") == 1 then
+    actual, expected = actual:lower(), expected:lower()
+  end
+  assert(actual == expected,
+    "wrong settings buffer: " .. actual .. " instead of " .. expected)
   local saved = vim.json.decode(table.concat(vim.fn.readfile(path), "\n"))
   local schema = assert(vim.api.nvim_get_runtime_file("settings.schema.json", false)[1])
   assert(saved["$schema"] == vim.uri_from_fname(schema))
