@@ -127,6 +127,30 @@ local ok, err = xpcall(function()
   end
   assert(delimiters == 2, "rewriting a note duplicated YAML frontmatter")
   print("PASS real Obsidian preserves metadata and one frontmatter on rewrite")
+
+  -- Exercise the real modern command, not only direct note-buffer writes.
+  -- Upstream may generate an ID, so assert the vault boundary, not a filename.
+  vim.cmd("Obsidian new orbit-created-note")
+  local new_path = canonical(vim.api.nvim_buf_get_name(0))
+  assert(vim.startswith(new_path, canonical(vault) .. "/"),
+    "new note opened outside the configured vault: " .. new_path)
+  assert(new_path ~= canonical(note_path),
+    "new-note command reused the original note")
+  assert(vim.fn.filereadable(new_path) == 1,
+    "new-note command did not persist the new file")
+  assert(vim.bo.filetype == "markdown" and vim.b.obsidian_buffer == true,
+    "new note did not attach to the real Obsidian buffer lifecycle")
+  vim.api.nvim_buf_set_lines(0, -1, -1, false,
+    { "Created through the real Obsidian command." })
+  vim.cmd("write")
+  local created = table.concat(vim.fn.readfile(new_path), "\\n")
+  assert(created:find("Created through the real Obsidian command.", 1, true),
+    "new-note write discarded Markdown content")
+  assert(created:find("created:", 1, true) and created:find("modified:", 1, true),
+    "new-note command did not persist Orbit frontmatter timestamps")
+  assert(table.concat(vim.fn.readfile(note_path), "\\n") == rewritten,
+    "new-note command modified the previously saved note")
+  print("PASS real Obsidian new-note command, vault boundary and persisted content")
 end, debug.traceback)
 
 vim.wo.conceallevel = initial_conceal
