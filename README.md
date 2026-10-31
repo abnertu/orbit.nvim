@@ -43,6 +43,8 @@ require("orbit").setup({
 })
 ```
 
+Completion has an independent Blink/LuaSnip/autopairs/Lazydev owner, with LuaDoc-configured documentation, command-line and snippet history. JSX and SQL snippet filetype extensions are preserved. Full custom snippets, dynamic popup sizing and real upstream completion tests remain pending.
+
 Plugin specifications are not evaluated during normal startup when the Lazy owner is disabled. More legacy features still require migration.
 
 ## Try the preview

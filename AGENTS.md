@@ -50,6 +50,7 @@
 - Use orbit.hangar_bridge for tool activation; do not read or rewrite Hangar state files from consumers.
 - Keep Python debug adapter paths platform-aware and delegate CoreCLR registration to its dotnet-cli owner.
 - Keep each plugin spec independent of external plugin imports until Lazy activates that feature.
+- Treat completion and snippet callback setup as restart-only; preserve SQL and JSX snippets without eager imports.
 - Do not hardcode the total number of registered features in shared integration fixtures.
 - Declare module types, defaults, bounds and descriptions only in the owning `init.lua` LuaDoc.
 - Generate `settings.schema.json` from LuaDoc annotations. Do not author module `schema.json` files.

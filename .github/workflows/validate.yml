@@ -208,6 +208,11 @@ jobs:
           nvim --headless -u NONE -l tests/dap_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'DAP runtime tests failed' }
 
+      - name: Test Blink, LuaSnip and completion callbacks
+        run: |
+          nvim --headless -u NONE -l tests/completion_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Completion feature tests failed' }
+
       - name: Reject old runtime names
         run: |
           nvim --headless -u NONE -l scripts/check_legacy_names.lua
