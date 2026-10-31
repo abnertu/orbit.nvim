@@ -90,24 +90,27 @@ check("filesystem roots shorten absolute paths without losing the first segment"
     runtime.pretty_path(path, 8), "unrelated root must not strip a prefix")
 end)
 
-check("UI_CREATE highlights current buffer row and advances menu cursor", function()
+check("UI_CREATE highlights only the exact current-file display row", function()
+  -- Harpoon UI_CREATE.contents comes from HarpoonList:display(), including
+  -- the same icon and padding as the popup buffer.
+  local shorter = runtime.format_display("src/other.lua")
+  local current = runtime.format_display("src/other.lua.bak")
   local buf = vim.api.nvim_create_buf(true, false)
-  vim.api.nvim_buf_set_lines(buf, 0, -1, false, {
-    "  buffer-one.lua", "  src/other.lua",
-  })
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, { shorter, current })
   local win = vim.api.nvim_get_current_win()
   local previous = vim.api.nvim_get_current_buf()
   vim.api.nvim_win_set_buf(win, buf)
   extension.UI_CREATE({
-    current_file = "src/other.lua",
-    contents = { "nothing", "src/other.lua" },
+    current_file = "src/other.lua.bak",
+    contents = { shorter, current },
     bufnr = buf, win_id = win,
   })
   local marks = vim.api.nvim_buf_get_extmarks(
     buf, vim.api.nvim_get_namespaces()["orbit.harpoon"], 0, -1, {
       details = true,
     })
-  assert(#marks == 1 and marks[1][2] == 1)
+  assert(#marks == 1 and marks[1][2] == 1,
+    "a shorter filename prefix must not also be highlighted")
   assert(marks[1][4].hl_group == "active_context")
   assert(vim.api.nvim_win_get_cursor(win)[1] == 2)
   vim.api.nvim_win_set_buf(win, previous)
