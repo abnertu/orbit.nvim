@@ -1214,6 +1214,25 @@
               "description": "Optional parser installation directory.",
               "type": "string",
               "x-orbit-restart": true
+            },
+            "sql_injections": {
+              "additionalProperties": false,
+              "default": {},
+              "description": "SQL injection controls.",
+              "properties": {
+                "auto": {
+                  "default": true,
+                  "description": "Parse SQL assigned to sql-prefixed variables.",
+                  "type": "boolean"
+                },
+                "comment": {
+                  "default": true,
+                  "description": "Parse SQL after language=sql comments.",
+                  "type": "boolean"
+                }
+              },
+              "type": "object",
+              "x-orbit-restart": true
             }
           },
           "type": "object"

@@ -23,6 +23,10 @@ function M.setup()
   if group then
     return
   end
+  local options = require("orbit.modules.treesitter_plugins").current_options()
+  if options then
+    require("orbit.modules.treesitter_plugins.predicates").setup(options)
+  end
   group = vim.api.nvim_create_augroup("OrbitTreesitterStart", { clear = true })
   vim.api.nvim_create_autocmd("FileType", {
     group = group,

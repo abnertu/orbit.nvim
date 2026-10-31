@@ -11,6 +11,11 @@ local accepted
 ---@field autotag_rename boolean @default(true) @restart(true) # Rename matching tags.
 ---@field autotag_close_slash boolean @default(false) @restart(true) # Close tags after slash.
 ---@field install_dir string @default("") @restart(true) # Optional parser installation directory.
+---@field sql_injections Orbit.TreesitterSqlInjections @default({}) @restart(true) # SQL injection controls.
+
+---@class Orbit.TreesitterSqlInjections # C# SQL injection selection.
+---@field comment boolean @default(true) # Parse SQL after language=sql comments.
+---@field auto boolean @default(true) # Parse SQL assigned to sql-prefixed variables.
 
 function M.capture()
   return accepted and vim.deepcopy(accepted) or nil
@@ -23,6 +28,11 @@ end
 ---@param opts? Orbit.TreesitterPluginsOptions
 function M.setup(opts)
   accepted = require("orbit.config").resolve_module("treesitter_plugins", opts)
+end
+
+---@return Orbit.TreesitterPluginsOptions?
+function M.current_options()
+  return accepted and vim.deepcopy(accepted) or nil
 end
 
 ---@return table[]
