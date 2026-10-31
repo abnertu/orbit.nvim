@@ -44,9 +44,13 @@ end)
 
 check("manifest-backed import includes icons and gitsigns without a second inventory", function()
   local specs = require("orbit.plugins")
-  assert(#specs >= 2)
-  assert(specs[1][1] == "nvim-mini/mini.icons")
-  assert(specs[2][1] == "lewis6991/gitsigns.nvim")
+  local named = {}
+  for _, spec in ipairs(specs) do
+    named[spec[1]] = (named[spec[1]] or 0) + 1
+  end
+  assert(named["nvim-mini/mini.icons"] == 1)
+  assert(named["lewis6991/gitsigns.nvim"] == 1)
+  assert(named["folke/which-key.nvim"] == 1)
 end)
 
 check("disabling direct module setup removes its feature spec", function()
