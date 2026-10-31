@@ -76,7 +76,7 @@ local function register()
       end
       local name = vim.api.nvim_buf_get_name(buffer)
       local buftype = vim.api.nvim_get_option_value("buftype", { buf = buffer })
-      if name == "" or buftype == "nofile" then
+      if name == "" or buftype ~= "" then
         return
       end
 
