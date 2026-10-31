@@ -58,8 +58,14 @@ local ok, err = xpcall(function()
   assert(Obsidian.opts.legacy_commands == false)
   assert(Obsidian.opts.frontmatter.func
     == require("orbit.modules.markdown.notes").frontmatter)
-  assert(vim.fs.normalize(tostring(Obsidian.workspace.path))
-    == vim.fs.normalize(vault), "upstream workspace selected a different vault")
+  local function canonical(path)
+    local resolved = vim.uv.fs_realpath(path) or path
+    local normalized = vim.fs.normalize(resolved):gsub("\\\\", "/")
+    return vim.fn.has("win32") == 1 and normalized:lower() or normalized
+  end
+  assert(canonical(tostring(Obsidian.workspace.path)) == canonical(vault),
+    "upstream workspace selected a different vault: "
+      .. vim.inspect({ tostring(Obsidian.workspace.path), vault }))
   assert(vim.wo.conceallevel == 2, "Orbit did not preserve Markdown conceal")
   assert(vim.api.nvim_get_commands({}).ObsidianNew == nil,
     "disabled legacy Obsidian command was unexpectedly installed")
