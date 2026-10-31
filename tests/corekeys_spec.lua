@@ -26,6 +26,10 @@ vim.keymap.set("x", "J", "<cmd>echo 'user-move-down'<cr>", { silent = true })
 vim.keymap.set("x", "K", "<cmd>echo 'user-move-up'<cr>", { silent = true })
 vim.keymap.set("i", "jk", "<cmd>echo 'user-insert'<cr>", { silent = true })
 vim.keymap.set("t", "<C-x>", "<cmd>echo 'user-terminal'<cr>", { silent = true })
+vim.keymap.set("n", "<Tab>", "<cmd>echo 'user-next'<cr>", { silent = true })
+vim.keymap.set("n", "<S-Tab>", "<cmd>echo 'user-prev'<cr>", { silent = true })
+local previous_next = rhs("<Tab>")
+local previous_prev = rhs("<S-Tab>")
 local previous = {
   { "n", ";", vim.fn.maparg(";", "n") },
   { "x", ">", vim.fn.maparg(">", "x") },
@@ -103,6 +107,86 @@ check("visual J/K callbacks preserve selection and move in opposite directions",
   }))
 end)
 
+check("buffer cycling uses tab-local order and is lazy-loaded", function()
+  assert(package.loaded["orbit.modules.corekeys.buffers"] == nil)
+  local next_key = vim.fn.maparg("<Tab>", "n", false, true)
+  local prev_key = vim.fn.maparg("<S-Tab>", "n", false, true)
+  assert(type(next_key.callback) == "function")
+  assert(type(prev_key.callback) == "function")
+  local current, saved = vim.api.nvim_get_current_buf(), vim.t.bufs
+  local first = vim.api.nvim_create_buf(true, false)
+  local second = vim.api.nvim_create_buf(true, false)
+  local third = vim.api.nvim_create_buf(true, false)
+  vim.t.bufs = { first, second, third }
+  vim.api.nvim_set_current_buf(first)
+
+  next_key.callback()
+  assert(vim.api.nvim_get_current_buf() == second)
+  next_key.callback()
+  assert(vim.api.nvim_get_current_buf() == third)
+  next_key.callback()
+  assert(vim.api.nvim_get_current_buf() == first)
+  prev_key.callback()
+  assert(vim.api.nvim_get_current_buf() == third)
+
+  vim.api.nvim_set_current_buf(current)
+  vim.t.bufs = saved
+  for _, buffer in ipairs({ first, second, third }) do
+    vim.api.nvim_buf_delete(buffer, { force = true })
+  end
+end)
+
+check("buffer cycling skips stale tab entries", function()
+  local current, saved = vim.api.nvim_get_current_buf(), vim.t.bufs
+  local first = vim.api.nvim_create_buf(true, false)
+  local second = vim.api.nvim_create_buf(true, false)
+  local stale = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_delete(stale, { force = true })
+  vim.t.bufs = { first, stale, second }
+  vim.api.nvim_set_current_buf(first)
+
+  vim.fn.maparg("<Tab>", "n", false, true).callback()
+  assert(vim.api.nvim_get_current_buf() == second)
+  vim.fn.maparg("<Tab>", "n", false, true).callback()
+  assert(vim.api.nvim_get_current_buf() == first)
+
+  vim.api.nvim_set_current_buf(current)
+  vim.t.bufs = saved
+  vim.api.nvim_buf_delete(first, { force = true })
+  vim.api.nvim_buf_delete(second, { force = true })
+end)
+
+check("buffer cycling falls back to loaded listed buffers", function()
+  local current, saved = vim.api.nvim_get_current_buf(), vim.t.bufs
+  local first = vim.api.nvim_create_buf(true, false)
+  local second = vim.api.nvim_create_buf(true, false)
+  vim.api.nvim_set_current_buf(second)
+  vim.api.nvim_set_current_buf(first)
+  local listed = {}
+  for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
+    if buffer ~= first and buffer ~= second then
+      listed[buffer] = vim.bo[buffer].buflisted
+      vim.bo[buffer].buflisted = false
+    end
+  end
+  vim.t.bufs = nil
+
+  vim.fn.maparg("<Tab>", "n", false, true).callback()
+  assert(vim.api.nvim_get_current_buf() == second)
+  vim.fn.maparg("<S-Tab>", "n", false, true).callback()
+  assert(vim.api.nvim_get_current_buf() == first)
+
+  vim.api.nvim_set_current_buf(current)
+  vim.t.bufs = saved
+  for buffer, was_listed in pairs(listed) do
+    if vim.api.nvim_buf_is_valid(buffer) then
+      vim.bo[buffer].buflisted = was_listed
+    end
+  end
+  vim.api.nvim_buf_delete(first, { force = true })
+  vim.api.nvim_buf_delete(second, { force = true })
+end)
+
 check("changing the save key restores the original user binding", function()
   orbit.setup({ modules = { corekeys = { save = "<F12>" } } })
   assert(rhs("<C-s>") == original_save)
@@ -164,6 +248,11 @@ check("disabling restores user maps from every edited mode", function()
     assert(vim.fn.maparg(item[2], item[1]) == item[3],
       string.format("lost user %s %s mapping", item[1], item[2]))
   end
+end)
+
+check("disabling restores original buffer cycling keys", function()
+  assert(rhs("<Tab>") == previous_next)
+  assert(rhs("<S-Tab>") == previous_prev)
 end)
 
 check("reenabling does not stack mappings", function()
