@@ -19,6 +19,12 @@ local definitions = {
     desc = "Save the current buffer" },
   { lhs = "<leader>bn", mode = "n", rhs = function() vim.cmd.enew() end,
     desc = "Open a new buffer" },
+  { lhs = "<leader>bD", mode = "n", rhs = function()
+    require("orbit.modules.keymaps.buffer_actions").close_others()
+  end, desc = "Close other unmodified listed buffers" },
+  { lhs = "<leader>x", mode = "n", rhs = function()
+    require("orbit.modules.keymaps.buffer_actions").close_current()
+  end, desc = "Close the current unmodified buffer" },
   { lhs = "<leader>fd", mode = "n", rhs = function()
     require("orbit.modules.keymaps.project").cd_to_root()
   end, desc = "Change directory to the current project root" },
