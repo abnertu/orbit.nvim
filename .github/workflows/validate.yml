@@ -108,6 +108,11 @@ jobs:
           nvim --headless -u NONE -l tests/keyguide_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Which-key guide tests failed' }
 
+      - name: Test Windows ShaDa recovery owner
+        run: |
+          nvim --headless -u NONE -l tests/system_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Windows ShaDa recovery tests failed' }
+
       - name: Test core event lifecycle
         run: |
           nvim --headless -u NONE -l tests/events_spec.lua
