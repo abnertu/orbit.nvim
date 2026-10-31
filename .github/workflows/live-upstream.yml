@@ -121,6 +121,11 @@ jobs:
           nvim --headless -u NONE -l tests/live_dap_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Real nvim-dap integration failed' }
 
+      - name: Run pinned real Hangar state and tool ordering integration
+        run: |
+          nvim --headless -u NONE -l tests/live_hangar_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Real Hangar persistence integration failed' }
+
       - name: Run pinned real nvim-lint diagnostic integration
         run: |
           nvim --headless -u NONE -l tests/live_lint_spec.lua
