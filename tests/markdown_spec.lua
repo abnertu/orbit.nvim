@@ -80,6 +80,22 @@ check("build callback waits for the installer and verifies the new version", fun
   vim.system = original_system
 end)
 
+check("unlaunchable preview binaries are rebuilt before verification", function()
+  local checks, installs = 0, 0
+  vim.system = function(argv)
+    if argv[1] == binary then
+      checks = checks + 1
+      if checks == 1 then error("fixture spawn failure") end
+      return { wait = function() return { code = 0, stdout = "1.2.3\\n" } end }
+    end
+    installs = installs + 1
+    return { wait = function() return { code = 0 } end }
+  end
+  runtime.build_preview({ dir = temp })
+  assert(checks == 2 and installs == 1)
+  vim.system = original_system
+end)
+
 check("installer errors and mismatched output do not report success", function()
   vim.system = function(argv)
     if argv[1] == binary then
