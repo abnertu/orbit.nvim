@@ -29,6 +29,12 @@ local definitions = {
   { lhs = "q", mode = "n", rhs = "<Nop>", desc = "Reserve lowercase q" },
   { lhs = "K", mode = "n", rhs = "<Nop>", desc = "Reserve K for an attached LSP" },
   { lhs = "<C-x>", mode = "t", rhs = "<C-\\><C-n>", desc = "Leave terminal mode" },
+  { lhs = "<Tab>", mode = "n", rhs = function()
+    require("orbit.modules.corekeys.buffers").next()
+  end, desc = "Go to next listed buffer" },
+  { lhs = "<S-Tab>", mode = "n", rhs = function()
+    require("orbit.modules.corekeys.buffers").prev()
+  end, desc = "Go to previous listed buffer" },
 }
 
 local function identity(mode, lhs)
