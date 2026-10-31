@@ -185,6 +185,38 @@ local ok, err = xpcall(function()
   assert(table.concat(vim.fn.readfile(note_path), "\n") == rewritten,
     "checkbox command changed the previously saved vault note")
   print("PASS real Obsidian range/current-line checkbox commands and persistence")
+
+  -- Use a fixed date to test the real daily-note command on both platforms.
+  -- Reopening the date must reuse the note without resetting user content.
+  local daily_path = vim.fs.joinpath(vault, "2024-06-15.md")
+  vim.cmd("Obsidian today 2024-6-15")
+  assert(vim.wait(5000, function()
+    return canonical(vim.api.nvim_buf_get_name(0)) == canonical(daily_path)
+  end, 20), "dated daily-note command did not open the expected vault note")
+  assert(vim.fn.filereadable(daily_path) == 1,
+    "dated daily-note command did not persist its note")
+  assert(vim.bo.filetype == "markdown" and vim.b.obsidian_buffer == true,
+    "dated daily note did not attach to the real vault lifecycle")
+  local first_daily = table.concat(vim.fn.readfile(daily_path), "\n")
+  assert(first_daily:find("created:", 1, true)
+    and first_daily:find("modified:", 1, true),
+    "dated daily note did not persist Orbit frontmatter")
+  vim.api.nvim_buf_set_lines(0, -1, -1, false, { "Daily note user content." })
+  vim.cmd("write")
+  local saved_daily = table.concat(vim.fn.readfile(daily_path), "\n")
+  assert(saved_daily:find("Daily note user content.", 1, true),
+    "dated daily note did not persist user content")
+
+  vim.cmd("edit " .. vim.fn.fnameescape(new_path))
+  vim.cmd("Obsidian today 2024-6-15")
+  assert(vim.wait(5000, function()
+    return canonical(vim.api.nvim_buf_get_name(0)) == canonical(daily_path)
+  end, 20), "reopening a dated daily note did not select its existing buffer")
+  assert(table.concat(vim.fn.readfile(daily_path), "\n") == saved_daily,
+    "reopening a dated daily note overwrote persisted user content")
+  assert(table.concat(vim.fn.readfile(note_path), "\n") == rewritten,
+    "dated daily-note command modified an unrelated vault note")
+  print("PASS real Obsidian dated daily-note creation and idempotent reopening")
 end, debug.traceback)
 
 vim.wo.conceallevel = initial_conceal
