@@ -1,0 +1,41 @@
+{
+  "type": "object",
+  "description": "Core editor options applied on startup.",
+  "additionalProperties": false,
+  "properties": {
+    "enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Apply configured editor options."
+    },
+    "number": {
+      "type": "boolean",
+      "default": true,
+      "description": "Show absolute line numbers."
+    },
+    "relativenumber": {
+      "type": "boolean",
+      "default": true,
+      "description": "Show relative line numbers."
+    },
+    "expandtab": {
+      "type": "boolean",
+      "default": true,
+      "description": "Insert spaces instead of tab characters."
+    },
+    "shiftwidth": {
+      "type": "integer",
+      "default": 2,
+      "minimum": 0,
+      "maximum": 16,
+      "description": "Number of spaces used for indentation."
+    },
+    "tabstop": {
+      "type": "integer",
+      "default": 2,
+      "minimum": 1,
+      "maximum": 16,
+      "description": "Display width of a tab character."
+    }
+  }
+}

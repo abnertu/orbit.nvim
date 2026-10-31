@@ -1,0 +1,84 @@
+# AGENTS Instructions
+
+## Git
+
+- Write commits in [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/) format.
+- Start the type, scope and description in lowercase. Preserve the case of code identifiers.
+- Explain non-trivial changes in a commit body.
+- Mark breaking changes with `!` and a `BREAKING CHANGE:` footer.
+- Author commits as the user alone. Do not add agent trailers or session links.
+- Commit as the approved plan progresses.
+- Squash related commits before a push.
+- Push only after the user approves the push.
+- Keep `.plans/`, logs, throwaway tests and personal settings outside tracked files.
+- Do not modify the legacy configuration's default branch as part of a migration experiment.
+
+## Releases
+
+- Follow [Semantic Versioning 2.0.0](https://semver.org/).
+- Use bare release tags, such as `1.2.3`, unless an established prefix requires another format.
+- Use [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) for a changelog.
+- Prepare the version and changelog together before the release.
+- Push the release commit before its annotated tag.
+- Wait for the default-branch validation to pass before tagging.
+- Push the tag alone, after approval.
+- Do not use `git push --follow-tags`.
+
+## Code
+
+- Keep one public namespace under `orbit`.
+- Give every module a `setup(opts)` entry point.
+- Use explicit option types and validate settings before module activation.
+- Keep declarations separate from runtime side effects.
+- Keep cross-module dependencies explicit.
+- Make one owner responsible for each shared task.
+- Put module defaults and configuration metadata in the owning `schema.json`.
+- Derive the bundled settings schema from those module definitions.
+- Do not introduce global variables for internal state.
+- Preserve commands, mappings and persistent data unless the approved plan changes them.
+- Keep Linux and Windows as equal targets for migrated features.
+
+## Tests
+
+- Add a stored test only when it protects a new behavior contract.
+- Require a test to fail when the protected behavior breaks.
+- Run throwaway checks freely without committing them.
+- Test persisted settings, failure recovery and plugin boundaries through real entry points.
+- Reject tests that only compare copied source text or duplicate configuration inventories.
+- Run `python3 -m unittest discover -s tests -v` for schema changes.
+- Run `python3 scripts/generate_schema.py --check` for schema changes.
+- Run `python3 scripts/check_legacy_names.py` after staging source changes.
+- Run Neovim startup and behavior checks before claiming runtime compatibility.
+- Fail required integration checks when dependencies are unavailable.
+- Report missing prerequisites and tests that could not execute.
+
+## CI
+
+- Keep the Linux and Windows checks on pushes, pull requests, and a daily default-branch schedule.
+- Require schema tests, generated-file checks, legacy-name checks, and headless Neovim smoke tests.
+- Add CI checks only for concrete behavior failures not covered by an existing check.
+- Run checks on pull requests and pushes to branches.
+- Keep release checks in a separate workflow for version tags.
+- Match release tags with the complete semantic version format.
+- Check out release jobs with full ancestry before testing the tagged commit.
+- Protect release tags with a tag ruleset.
+- Restrict release credentials to protected release tags.
+- Keep CI changes on the default branch before creating a release tag.
+- Propagate tool failures, including missing prerequisites.
+- Test real entry points or isolated fixtures rather than file existence.
+
+## Docs
+
+- Keep each document concise, factual and focused.
+- Keep standing rules here, and put implementation records near their source.
+- Write US English in active voice and use one instruction per sentence.
+- Follow [ASD-STE100](https://www.asd-ste100.org/) sentence guidance.
+- Keep instructions within 20 words and descriptions within 25 words where practical.
+- Review long sentences and split unrelated facts.
+- Use numbered lists for three or more ordered instructions.
+- Use bullet lists for long sets or lists of full sentences.
+- Translate non-English documents from a reviewed English draft.
+- Preserve commands, paths and code in translations.
+- Keep user installation and configuration instructions in `README.md`.
+- Read [architecture](doc/architecture.md) before changing module boundaries.
+- Read [migration](doc/migration.md) before renaming interfaces or moving persistent state.

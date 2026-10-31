@@ -1,0 +1,24 @@
+{
+  "type": "object",
+  "description": "Minimal key mappings owned by orbit.nvim.",
+  "additionalProperties": false,
+  "properties": {
+    "enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Register the module mappings."
+    },
+    "leader": {
+      "type": "string",
+      "default": " ",
+      "minLength": 1,
+      "description": "Leader key set before module mappings."
+    },
+    "save": {
+      "type": "string",
+      "default": "<leader>w",
+      "minLength": 1,
+      "description": "Normal-mode mapping that writes the current buffer."
+    }
+  }
+}
