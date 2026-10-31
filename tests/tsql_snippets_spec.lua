@@ -42,7 +42,7 @@ local expected = {
   cprocr = "CREATE OR ALTER PROCEDURE",
   cprocw = "SET XACT_ABORT ON",
   dynsql = "sys.sp_executesql",
-  dynident = "QUOTENAME(@SortColumn)",
+  dynident = "QUOTENAME($1)",
   sel = "SELECT",
 }
 for trigger, text in pairs(expected) do
