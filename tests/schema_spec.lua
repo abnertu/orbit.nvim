@@ -1,4 +1,4 @@
--- Behavioral tests for schema generation and validation. No third-party runner.
+-- Behavioral tests for LuaDoc-driven schema generation and validation.
 local script = debug.getinfo(1, "S").source:sub(2)
 local root = vim.fn.fnamemodify(script, ":p:h:h")
 vim.opt.rtp:prepend(root)
@@ -22,16 +22,29 @@ local function expect_error(action, needle)
   assert(tostring(message):find(needle, 1, true), tostring(message))
 end
 
+local function sample(name, fields)
+  local pascal = name:gsub("^%l", string.upper)
+  local lines = {
+    "local M = {}",
+    "---@class Orbit." .. pascal .. "Options # A fixture module.",
+  }
+  vim.list_extend(lines, fields or {
+    "---@field enabled boolean @default(true) # Enable this module.",
+  })
+  lines[#lines + 1] = "return M"
+  return table.concat(lines, "\n")
+end
+
 local function fixture(manifest, definitions, callback)
   local temp = vim.fn.tempname()
   local modules = vim.fs.joinpath(temp, "lua", "orbit", "modules")
   vim.fn.mkdir(modules, "p")
   vim.fn.writefile({ vim.json.encode(manifest) }, vim.fs.joinpath(modules, "manifest.json"))
-  for name, definition in pairs(definitions or {}) do
+  for name, source in pairs(definitions or {}) do
     local dir = vim.fs.joinpath(modules, name)
     vim.fn.mkdir(dir, "p")
-    vim.fn.writefile({ "return { setup = function() end }" }, vim.fs.joinpath(dir, "init.lua"))
-    vim.fn.writefile({ vim.json.encode(definition) }, vim.fs.joinpath(dir, "schema.json"))
+    vim.fn.writefile(vim.split(source, "\n", { plain = true }),
+      vim.fs.joinpath(dir, "init.lua"))
   end
   local ok, err = xpcall(function()
     callback(temp)
@@ -47,25 +60,24 @@ check("generated schema matches committed file", function()
 end)
 
 check("manifest is the only module inventory", function()
-  local manifest = vim.json.decode(table.concat(vim.fn.readfile(vim.fs.joinpath(root, "lua", "orbit", "modules", "manifest.json")), "\n"))
+  local manifest = vim.json.decode(table.concat(vim.fn.readfile(
+    vim.fs.joinpath(root, "lua", "orbit", "modules", "manifest.json")), "\n"))
   local actual = schema.build(root).properties.modules.properties
-  local count = 0
   for _, name in ipairs(manifest.order) do
     assert(actual[name] and actual[name].properties.enabled)
-    count = count + 1
+    assert(vim.fn.filereadable(vim.fs.joinpath(root, "lua", "orbit", "modules",
+      name, "schema.json")) == 0, "module schema.json must not be authored")
   end
-  assert(vim.tbl_count(actual) == count)
+  assert(vim.tbl_count(actual) == #manifest.order)
 end)
 
 check("duplicate module names are rejected", function()
-  fixture({ order = { "editor", "editor" } }, { editor = {
-    type = "object", additionalProperties = false,
-    properties = { enabled = { type = "boolean" } },
-  } }, function(temp)
-    expect_error(function()
-      schema.build(temp)
-    end, "unique module names")
-  end)
+  fixture({ order = { "editor", "editor" } }, { editor = sample("editor") },
+    function(temp)
+      expect_error(function()
+        schema.build(temp)
+      end, "unique module names")
+    end)
 end)
 
 check("invalid module names are rejected before filesystem access", function()
@@ -76,14 +88,73 @@ check("invalid module names are rejected before filesystem access", function()
   end)
 end)
 
-check("malformed module schemas are rejected", function()
-  fixture({ order = { "broken" } }, { broken = {
-    type = "object", additionalProperties = true,
-  } }, function(temp)
+check("required class and field metadata are validated", function()
+  fixture({ order = { "broken" } }, { broken = "return {}" }, function(temp)
     expect_error(function()
       schema.build(temp)
-    end, "closed object schema")
+    end, "required LuaDoc class")
   end)
+
+  fixture({ order = { "broken" } }, {
+    broken = sample("broken", {
+      "---@field enabled boolean # Missing default.",
+    }),
+  }, function(temp)
+    expect_error(function()
+      schema.build(temp)
+    end, "@default(...) is required")
+  end)
+
+  fixture({ order = { "broken" } }, {
+    broken = sample("broken", {
+      "---@field enabled boolean @default(true) # Enabled.",
+      "---@field enabled boolean @default(false) # Duplicate.",
+    }),
+  }, function(temp)
+    expect_error(function()
+      schema.build(temp)
+    end, "duplicate field")
+  end)
+end)
+
+check("LuaDoc primitive metadata and literal unions become schema", function()
+  fixture({ order = { "sample" } }, {
+    sample = sample("sample", {
+      "---@field enabled boolean @default(false) # Enabled.",
+      "---@field indent integer @default(4) @minimum(0) @maximum(8) # Indent size.",
+      "---@field label string @default(\" \") @minLength(1) # Label text.",
+      "---@field mode 'screen'|'cursor' @default(\"screen\") # Split behavior.",
+    }),
+  }, function(temp)
+    local node = schema.build(temp).properties.modules.properties.sample
+    assert(node.properties.enabled.default == false)
+    assert(node.properties.indent.minimum == 0)
+    assert(node.properties.indent.maximum == 8)
+    assert(node.properties.label.default == " ")
+    assert(node.properties.label.minLength == 1)
+    assert(vim.deep_equal(node.properties.mode.enum, { "screen", "cursor" }))
+    assert(node.properties.mode.description == "Split behavior.")
+  end)
+end)
+
+check("invalid defaults and unsupported types fail immediately", function()
+  for _, field in ipairs({
+    "---@field width integer @default(2.5) # Width.",
+    "---@field width integer @default(11) @maximum(10) # Width.",
+    "---@field mode 'a'|'b' @default(\"c\") # Mode.",
+    "---@field options table @default({}) # Unsupported nested type.",
+  }) do
+    fixture({ order = { "broken" } }, {
+      broken = sample("broken", {
+        "---@field enabled boolean @default(true) # Enabled.",
+        field,
+      }),
+    }, function(temp)
+      expect_error(function()
+        schema.build(temp)
+      end, ": ")
+    end)
+  end
 end)
 
 check("module override contract rejects unknown keys and invalid types", function()

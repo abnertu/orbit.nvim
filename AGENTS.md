@@ -41,8 +41,8 @@
 - Keep declarations separate from runtime side effects.
 - Keep cross-module dependencies explicit.
 - Make one owner responsible for each shared task.
-- Put module defaults and configuration metadata in the owning `schema.json`.
-- Derive the bundled settings schema from those module definitions.
+- Declare module types, defaults, bounds and descriptions only in the owning `init.lua` LuaDoc.
+- Generate `settings.schema.json` from LuaDoc annotations. Do not author module `schema.json` files.
 - Preserve global, buffer-local and window-local option scope during migrations.
 - Preserve pre-existing Neovim filetype mappings when a feature disables or rolls back.
 - Do not introduce global variables for internal state.

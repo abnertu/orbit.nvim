@@ -26,6 +26,10 @@ Skill source: `abnertu/skills` at `a27ed07af44c4ca8539a00d09824170108b6f877`.
 
 The reference is architectural, not a proposal to replace the existing Lazy or Hangar owners. No migration to mini.deps is planned without an independent performance and compatibility review.
 
+## LuaDoc schema migration
+
+Per-module `schema.json` files are removed. The generator now reads `---@class` and `---@field` from each owning module and compiles inline defaults, bounds and literal unions. Module runtime remains independent of source parsing: it reads the committed aggregate `settings.schema.json`. Generator check mode catches drift. New negative tests reject unsupported types and invalid defaults.
+
 ## Preview verification
 
 - Python schema generator and contract tests: 5 passed.

@@ -66,7 +66,17 @@ Reading never creates or rewrites the file. See [saved settings](doc/settings.md
 
 ## Generate the JSON Schema
 
-Each module owns a `schema.json` beside its Lua entry point. `lua/orbit/modules/manifest.json` defines the activation order. The generator combines these files into `settings.schema.json`.
+Each module declares its settings entirely in LuaDoc annotations inside `init.lua`. The manifest defines activation order. The generator parses those annotations into `settings.schema.json`, so no module-specific schema file is authored.
+
+```lua
+---@class Orbit.ExampleOptions # Example module settings.
+---@field enabled boolean @default(true) # Enable this module.
+---@field size integer @default(2) @minimum(0) @maximum(16) # Indentation width.
+---@field label string @default(" ") @minLength(1) # Display label.
+---@field style 'compact'|'wide' @default("compact") # Display style.
+```
+
+Primitive field types and LuaLS literal unions are supported. The metadata provides defaults and bounds. The text following `#` is the schema description. Unsupported types or missing defaults fail schema generation.
 
 ```sh
 nvim --headless -u NONE -l scripts/generate_schema.lua
