@@ -113,7 +113,9 @@ local ok, err = xpcall(function()
       .. vim.inspect(matches))
   print("PASS real C# SQL query predicates accept raw and ordinary string literals")
 
-  parser:parse()
+  -- Neovim only computes injected LanguageTrees for an explicit parse range.
+  -- A nil range parses the parent grammar but does not scan injections.
+  parser:parse(true)
   local sql_tree_count = 0
   parser:for_each_tree(function(_, language_tree)
     if language_tree:lang() == "sql" then
