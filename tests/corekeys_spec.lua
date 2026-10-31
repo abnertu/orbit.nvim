@@ -22,11 +22,15 @@ local original_save = rhs("<C-s>")
 -- User-owned mappings on fixed slots must also survive disable and rollback.
 vim.keymap.set("n", ";", "<cmd>echo 'user-command'<cr>", { silent = true })
 vim.keymap.set("x", ">", "<cmd>echo 'user-visual'<cr>", { silent = true })
+vim.keymap.set("x", "J", "<cmd>echo 'user-move-down'<cr>", { silent = true })
+vim.keymap.set("x", "K", "<cmd>echo 'user-move-up'<cr>", { silent = true })
 vim.keymap.set("i", "jk", "<cmd>echo 'user-insert'<cr>", { silent = true })
 vim.keymap.set("t", "<C-x>", "<cmd>echo 'user-terminal'<cr>", { silent = true })
 local previous = {
   { "n", ";", vim.fn.maparg(";", "n") },
   { "x", ">", vim.fn.maparg(">", "x") },
+  { "x", "J", vim.fn.maparg("J", "x") },
+  { "x", "K", vim.fn.maparg("K", "x") },
   { "i", "jk", vim.fn.maparg("jk", "i") },
   { "t", "<C-x>", vim.fn.maparg("<C-x>", "t") },
 }
@@ -69,6 +73,34 @@ check("common editing shortcuts use the legacy modes and actions", function()
     assert(matches,
       string.format("missing %s %s: %s", item[1], item[2], actual))
   end
+end)
+
+check("visual J/K callbacks preserve selection and move in opposite directions", function()
+  local down = vim.fn.maparg("J", "x", false, true)
+  local up = vim.fn.maparg("K", "x", false, true)
+  assert(type(down.callback) == "function")
+  assert(type(up.callback) == "function")
+
+  local original_feedkeys, original_cmd = vim.api.nvim_feedkeys, vim.cmd
+  local actions = {}
+  vim.api.nvim_feedkeys = function(keys, mode, escape)
+    assert(type(keys) == "string" and #keys > 0)
+    assert(mode == "x" and escape == false)
+    actions[#actions + 1] = "escape"
+  end
+  vim.cmd = function(command)
+    actions[#actions + 1] = command
+  end
+  local ok, err = xpcall(function()
+    down.callback()
+    up.callback()
+  end, debug.traceback)
+  vim.api.nvim_feedkeys, vim.cmd = original_feedkeys, original_cmd
+  assert(ok, err)
+  assert(vim.deep_equal(actions, {
+    "escape", "'<,'>move '>+1", "normal! gv-gv",
+    "escape", "'<,'>move '<-2", "normal! gv-gv",
+  }))
 end)
 
 check("changing the save key restores the original user binding", function()

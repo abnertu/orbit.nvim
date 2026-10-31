@@ -9,6 +9,17 @@ local owned = {}
 ---@field window_up string @default("<C-k>") @minLength(1) # Focus the upper window.
 ---@field window_down string @default("<C-j>") @minLength(1) # Focus the lower window.
 
+-- Preserve the selected range and visual selection when moving lines.
+local function move_visual(direction)
+  vim.api.nvim_feedkeys(vim.keycode("<Esc>"), "x", false)
+  if direction == "down" then
+    vim.cmd("'<,'>move '>+1")
+  else
+    vim.cmd("'<,'>move '<-2")
+  end
+  vim.cmd("normal! gv-gv")
+end
+
 local definitions = {
   { field = "save", mode = "n", rhs = "<cmd>write<cr>", desc = "Save the current buffer" },
   { field = "window_left", mode = "n", rhs = "<C-w>h", desc = "Focus left window" },
@@ -24,6 +35,10 @@ local definitions = {
   { lhs = "<", mode = "x", rhs = "<gv", desc = "Decrease indent and keep selection" },
   { lhs = ">", mode = "x", rhs = ">gv", desc = "Increase indent and keep selection" },
   { lhs = "p", mode = "x", rhs = "P", desc = "Paste without replacing the unnamed register" },
+  { lhs = "J", mode = "x", rhs = function() move_visual("down") end,
+    desc = "Move selected lines down" },
+  { lhs = "K", mode = "x", rhs = function() move_visual("up") end,
+    desc = "Move selected lines up" },
   { lhs = "jk", mode = "i", rhs = "<Esc>", desc = "Leave insert mode" },
   { lhs = "Q", mode = "n", rhs = "q", desc = "Record a macro" },
   { lhs = "q", mode = "n", rhs = "<Nop>", desc = "Reserve lowercase q" },
