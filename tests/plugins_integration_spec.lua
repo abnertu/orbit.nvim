@@ -10,6 +10,7 @@ local installed = vim.fs.joinpath(temp, "data", "lazy.nvim")
 local lockfile = vim.fs.joinpath(temp, "lazy-lock.json")
 local recorded = vim.fs.joinpath(temp, "loaded.txt")
 local replay = vim.fs.joinpath(temp, "replayed.txt")
+local features = vim.fs.joinpath(temp, "features.txt")
 local count = 0
 
 local function git(args)
@@ -38,6 +39,30 @@ return {
     assert(#items == 2)
     assert(items[1][1] == "nvim-mini/mini.icons")
     assert(items[2][1] == "lewis6991/gitsigns.nvim")
+    -- Emulate Lazy's feature configuration boundary without fetching plugins.
+    package.preload["mini.icons"] = function()
+      return {
+        setup = function(options)
+          assert(vim.deep_equal(options, {}))
+          vim.fn.writefile({"icons.setup"}, %q, "a")
+        end,
+        mock_nvim_web_devicons = function()
+          vim.fn.writefile({"icons.mock"}, %q, "a")
+        end,
+      }
+    end
+    items[1].config()
+    package.loaded["mini.icons"] = nil
+    package.preload["mini.icons"] = nil
+    local gitsigns = {
+      setup = function(options)
+        assert(options.signs.change.text == "C")
+        assert(options.signs.add.text == "▎")
+        assert(options.signs_staged.add.text == "+")
+        vim.fn.writefile({"gitsigns.setup"}, %q, "a")
+      end,
+    }
+    gitsigns.setup(items[2].opts)
     vim.fn.writefile({%q}, %q)
     vim.api.nvim_create_autocmd("BufReadPre", {
       group = vim.api.nvim_create_augroup("OrbitIntegrationLazyRead", {clear = true}),
@@ -47,7 +72,7 @@ return {
     })
   end,
 }
-]=], version, recorded, replay)
+]=], features, features, features, version, recorded, replay)
 end
 
 vim.fn.mkdir(vim.fs.joinpath(source, "lua", "lazy"), "p")
@@ -83,10 +108,11 @@ check("setup is hermetic and defers Git clone until demanded", function()
     path = installed,
     source = source,
     lockfile = lockfile,
-  } } })
+  }, git = { marks = { change = "C" }, staged = { add = "+" } } } })
   assert(plugins.status() == "pending")
   assert(vim.uv.fs_stat(installed) == nil)
   assert(vim.fn.filereadable(recorded) == 0)
+  assert(vim.fn.filereadable(features) == 0)
 end)
 
 check("first file-read demand clones locked revision and imports real specs", function()
@@ -95,6 +121,8 @@ check("first file-read demand clones locked revision and imports real specs", fu
   assert(plugins.status() == "loaded")
   assert(git({ "-C", installed, "rev-parse", "HEAD" }) == locked)
   assert(vim.deep_equal(vim.fn.readfile(recorded), {"locked"}))
+  assert(vim.deep_equal(vim.fn.readfile(features),
+    {"icons.setup", "icons.mock", "gitsigns.setup"}))
   assert(vim.deep_equal(vim.fn.readfile(replay), {"replayed"}))
   assert(earlier == 1, "earlier observer should run once")
 end)
@@ -104,6 +132,8 @@ check("later demand runs file observers but not Lazy setup again", function()
   vim.api.nvim_exec_autocmds("BufReadPre", {buffer=buffer, modeline=false})
   assert(vim.deep_equal(vim.fn.readfile(recorded), {"locked"}))
   assert(vim.deep_equal(vim.fn.readfile(replay), {"replayed", "replayed"}))
+  assert(vim.deep_equal(vim.fn.readfile(features),
+    {"icons.setup", "icons.mock", "gitsigns.setup"}))
   assert(earlier == 2)
 end)
 
