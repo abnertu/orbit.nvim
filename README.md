@@ -25,7 +25,9 @@ require("orbit").setup({
 })
 ```
 
-When enabled at first setup, Lazy initializes on the first demand event or missing-module lookup. Plugin options are restart-only. This module does not clone or update Lazy.
+When enabled at first setup, Lazy initializes on the first demand event or missing-module lookup. Plugin options are restart-only.
+
+Set `bootstrap = true` to clone Lazy only when first demanded and not already installed. The default Git source is `https://github.com/folke/lazy.nvim.git`. When a `lazy-lock.json` exists, the bootstrap checks out its `lazy.nvim` commit, rather than the current stable head. The optional `lockfile` and `source` fields support custom locations and hermetic local Git tests. No network is needed for CI.
 
 ## Try the preview
 

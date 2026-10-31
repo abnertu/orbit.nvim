@@ -287,6 +287,12 @@
           "additionalProperties": false,
           "description": "On-demand Lazy plugin initialization.",
           "properties": {
+            "bootstrap": {
+              "default": false,
+              "description": "Clone Lazy on first demand when missing.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
             "enabled": {
               "default": false,
               "description": "Enable plugin initialization for this session.",
@@ -300,9 +306,22 @@
               "type": "string",
               "x-orbit-restart": true
             },
+            "lockfile": {
+              "default": "",
+              "description": "Optional locked revision file.",
+              "type": "string",
+              "x-orbit-restart": true
+            },
             "path": {
               "default": "",
               "description": "Optional existing lazy.nvim installation directory.",
+              "type": "string",
+              "x-orbit-restart": true
+            },
+            "source": {
+              "default": "https://github.com/folke/lazy.nvim.git",
+              "description": "Git source for Lazy bootstrap.",
+              "minLength": 1,
               "type": "string",
               "x-orbit-restart": true
             }
