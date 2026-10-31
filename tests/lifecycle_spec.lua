@@ -30,7 +30,7 @@ check("failed later module restores option defaults and local overrides", functi
   end
   local ok, err = pcall(orbit.setup, { modules = {
     editor = { shiftwidth = 8, number = false },
-    keymaps = { leader = ",", save = "<leader>x" },
+    keymaps = { leader = ",", save = "<leader>z" },
   } })
   keymaps.setup = old_setup
 
@@ -43,7 +43,7 @@ check("failed later module restores option defaults and local overrides", functi
   assert(vim.o.laststatus == 3)
   assert(vim.g.mapleader == " ")
   assert(vim.fn.maparg(" w", "n") ~= "")
-  assert(vim.fn.maparg(",x", "n") == "")
+  assert(vim.fn.maparg(",z", "n") == "")
 end)
 
 check("failed editor activation restores its own partial changes", function()
@@ -65,21 +65,21 @@ check("failed editor activation restores its own partial changes", function()
 end)
 
 check("failed remapping restores a pre-existing mapping", function()
-  vim.keymap.set("n", ",x", "<cmd>echo 'original'<cr>", { silent = true })
-  local before = vim.fn.maparg(",x", "n")
+  vim.keymap.set("n", ",z", "<cmd>echo 'original'<cr>", { silent = true })
+  local before = vim.fn.maparg(",z", "n")
   local old_setup = keymaps.setup
   keymaps.setup = function(opts)
     old_setup(opts)
     error("injected failure")
   end
   local ok = pcall(orbit.setup, { modules = {
-    keymaps = { leader = ",", save = "<leader>x" },
+    keymaps = { leader = ",", save = "<leader>z" },
   } })
   keymaps.setup = old_setup
   assert(not ok)
-  assert(vim.fn.maparg(",x", "n") == before, "previous mapping was not restored")
+  assert(vim.fn.maparg(",z", "n") == before, "previous mapping was not restored")
   assert(vim.fn.maparg(" w", "n") ~= "", "active mapping disappeared")
-  vim.keymap.del("n", ",x")
+  vim.keymap.del("n", ",z")
 end)
 
 check("successful setup after a failure can replace mappings", function()
