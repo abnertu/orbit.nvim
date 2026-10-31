@@ -101,6 +101,8 @@ Each module receives validated defaults for omitted options. Set `enabled = fals
 
 On Windows, the `system` module also provides the explicit `:ClearShada` recovery command. It removes only regular `*.tmp` files in the current and legacy ShaDa directories; it never deletes `main.shada`, other files, or directories. Settings are defined in the module's LuaDoc. No files are deleted during setup.
 
+The `python_tools` module restores the explicit `:PyrightReCreateStub` command. Select an existing directory under project `typings/` to regenerate it. The previous directory remains in a temporary backup until Pyright succeeds; failed processes restore the original contents. The command never runs during editor startup and requires the `pyright` executable only when used.
+
 ## Saved settings
 
 `require("orbit").setup_from_file(path)` loads JSON overrides and validates them before activation. If `path` is omitted, it reads `stdpath("data") .. "/settings.json"`. Missing files use defaults. Invalid input leaves the accepted configuration unchanged.
