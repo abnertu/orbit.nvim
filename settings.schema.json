@@ -1001,6 +1001,20 @@
               "type": "boolean",
               "x-orbit-restart": true
             },
+            "harpoon": {
+              "default": true,
+              "description": "Enable Harpoon buffer navigation.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "harpoon_short_path_length": {
+              "default": 8,
+              "description": "Harpoon display path segment limit.",
+              "maximum": 128,
+              "minimum": 1,
+              "type": "integer",
+              "x-orbit-restart": true
+            },
             "oil": {
               "default": true,
               "description": "Enable Oil floating explorer.",

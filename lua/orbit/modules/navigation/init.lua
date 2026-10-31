@@ -9,6 +9,8 @@ local subscribed = false
 ---@field delete_to_trash boolean @default(true) @restart(true) # Move Oil deletions to trash.
 ---@field tree_width integer @default(40) @minimum(10) @maximum(200) @restart(true) # Tree window width.
 ---@field sync_root boolean @default(true) @restart(true) # Synchronize tree root with cwd.
+---@field harpoon boolean @default(true) @restart(true) # Enable Harpoon buffer navigation.
+---@field harpoon_short_path_length integer @default(8) @minimum(1) @maximum(128) @restart(true) # Harpoon display path segment limit.
 
 function M.capture()
   return accepted and vim.deepcopy(accepted) or nil
@@ -113,6 +115,32 @@ function M.spec()
       },
       opts = tree_options(c),
       config = function(_, opts) setup_tree(opts) end,
+    }
+  end
+  if c.harpoon then
+    specs[#specs + 1] = {
+      "Orbit-Lua/harpoon",
+      branch = "harpoon2",
+      dependencies = { "nvim-lua/plenary.nvim" },
+      keys = {
+        { "<C-e>", function()
+          local h = require("harpoon")
+          h.ui:toggle_quick_menu(h:list())
+        end, desc = "harpoon quick menu" },
+        { "<M-S-p>", function()
+          require("harpoon"):list():prev()
+        end, desc = "harpoon previous item" },
+        { "<M-S-n>", function()
+          require("harpoon"):list():next()
+        end, desc = "harpoon next item" },
+        { "<leader>ba", function()
+          require("harpoon"):list():add()
+        end, desc = "add buffer to harpoon" },
+      },
+      config = function()
+        require("orbit.modules.navigation.harpoon")
+          .setup(c.harpoon_short_path_length)
+      end,
     }
   end
   return specs

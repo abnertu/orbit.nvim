@@ -228,6 +228,11 @@ jobs:
           nvim --headless -u NONE -l tests/treesitter_sql_syntax_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'SQL syntax fallback tests failed' }
 
+      - name: Test Harpoon navigation callbacks
+        run: |
+          nvim --headless -u NONE -l tests/harpoon_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Harpoon navigation tests failed' }
+
       - name: Reject old runtime names
         run: |
           nvim --headless -u NONE -l scripts/check_legacy_names.lua
