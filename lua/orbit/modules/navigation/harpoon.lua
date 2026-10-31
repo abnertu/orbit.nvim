@@ -12,8 +12,10 @@ function M.pretty_path(path, length, root)
   local normalized = vim.fs.normalize(path)
   if root then
     local prefix = vim.fs.normalize(root)
-    if normalized:sub(1, #prefix + 1) == prefix .. "/" then
-      normalized = normalized:sub(#prefix + 2)
+    -- Filesystem roots already end in a separator ("/" or "C:/").
+    local boundary = prefix:sub(-1) == "/" and prefix or prefix .. "/"
+    if normalized:sub(1, #boundary) == boundary then
+      normalized = normalized:sub(#boundary + 1)
     end
   end
   local parts = vim.split(normalized, "[\\/]", { plain = false })
