@@ -31,9 +31,15 @@ end)
 check("registry derives plugin specs from module manifest", function()
   local expected = require("orbit.plugins")
   local compatible = require("plugins")
-  assert(#expected >= 2 and expected[1] == compatible[1])
-  assert(expected[2][1] == "lewis6991/gitsigns.nvim")
-  assert(expected[1][1] == "nvim-mini/mini.icons")
+  assert(#expected == #compatible)
+  local names = {}
+  for index, spec in ipairs(expected) do
+    assert(spec == compatible[index], "compatibility import changed a feature")
+    names[spec[1]] = (names[spec[1]] or 0) + 1
+  end
+  assert(names["nvim-mini/mini.icons"] == 1)
+  assert(names["lewis6991/gitsigns.nvim"] == 1)
+  assert(names["folke/which-key.nvim"] == 1)
 end)
 
 check("calling plugin config uses the module's initial accepted settings", function()
