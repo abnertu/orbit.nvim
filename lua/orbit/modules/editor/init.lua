@@ -94,14 +94,18 @@ function M.restore(snapshot)
 end
 
 ---@param opts? Orbit.EditorOptions
-function M.setup(opts)
+---@param previous? Orbit.EditorOptions
+function M.setup(opts, previous)
   opts = require("orbit.config").resolve_module("editor", opts)
   if not opts.enabled then
     return
   end
 
   for _, name in ipairs(options) do
-    apply_option(name, opts[name])
+    -- After the first application, update only fields that changed.
+    if not previous or not previous.enabled or previous[name] ~= opts[name] then
+      apply_option(name, opts[name])
+    end
   end
 end
 

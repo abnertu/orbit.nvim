@@ -25,17 +25,22 @@ function M.setup(opts)
     assert(type(module.capture) == "function", "missing capture contract: " .. name)
     assert(type(module.restore) == "function", "missing restore contract: " .. name)
 
-    prepared[#prepared + 1] = {
-      name = name,
-      module = module,
-      options = options,
-      previous = module.capture(options),
-    }
+    -- Unchanged options must not reset buffer/window-local user overrides.
+    local before = configured and configured.modules[name]
+    if not before or not vim.deep_equal(before, options) then
+      prepared[#prepared + 1] = {
+        name = name,
+        module = module,
+        options = options,
+        previous_config = before,
+        previous = module.capture(options),
+      }
+    end
   end
 
   for index, item in ipairs(prepared) do
     local applied, apply_error = xpcall(function()
-      item.module.setup(item.options)
+      item.module.setup(item.options, item.previous_config)
     end, debug.traceback)
 
     if not applied then
@@ -81,6 +86,14 @@ function M.setup_from_file(path)
   end
 
   return true
+end
+
+---Explicitly reload saved settings using transactional setup.
+---Unchanged module settings do not reset current local editor overrides.
+---@param path? string
+---@return boolean, string?
+function M.reload_from_file(path)
+  return M.setup_from_file(path)
 end
 
 ---@return Orbit.Config?

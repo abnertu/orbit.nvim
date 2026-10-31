@@ -78,6 +78,11 @@ jobs:
           nvim --headless -u NONE -l tests/lifecycle_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Module lifecycle tests failed' }
 
+      - name: Test explicit settings reload
+        run: |
+          nvim --headless -u NONE -l tests/reload_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Explicit settings reload tests failed' }
+
       - name: Reject old runtime names
         run: |
           nvim --headless -u NONE -l scripts/check_legacy_names.lua
