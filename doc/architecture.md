@@ -35,7 +35,7 @@ The nvim-lint module debounces triggers per buffer, skips SQLFluff while editing
 
 The shared SQLFluff adapter resolves project configuration, process roots and stdin arguments for Conform and nvim-lint. It uses a bundled T-SQL fallback only when no project SQLFluff section exists.
 
-The Conform formatter module keeps async requests owned by one buffer and cleans up pending operations when a buffer is wiped. It retains language formatter defaults, but needs Hangar ordering and project-specific command adapters before full parity.
+The Conform formatter module keeps async requests owned by one buffer and cleans up pending operations when a buffer is wiped. A pinned upstream Linux/Windows test exercises native Lua formatting, delayed completion and duplicate request rejection. Real external formatter binaries, Hangar ordering and project-specific adapters remain separate parity checks.
 
 The Tree-sitter module contributes parser, context and autotag specs. Parser activation is guarded by buffer/filetype validity and excludes bigfile buffers. SQL-specific injection predicates and legacy syntax fallback remain planned.
 

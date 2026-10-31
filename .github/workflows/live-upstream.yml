@@ -81,6 +81,11 @@ jobs:
           nvim --headless -u NONE -l tests/live_noice_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Real Noice integration failed' }
 
+      - name: Run pinned real Conform formatter integration
+        run: |
+          nvim --headless -u NONE -l tests/live_conform_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Real Conform integration failed' }
+
       - name: Run pinned real Trouble diagnostics integration
         run: |
           nvim --headless -u NONE -l tests/live_trouble_spec.lua
