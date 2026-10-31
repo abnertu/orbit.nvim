@@ -82,6 +82,13 @@ local ok, err = xpcall(function()
       end
     end
   end
+  if not matches["SELECT 10"] then
+    print("DEBUG C# query files: " .. vim.inspect(
+      vim.treesitter.query.get_files("c_sharp", "injections")))
+    print("DEBUG C# query captures: " .. vim.inspect(query.captures))
+    print("DEBUG C# parse tree: " .. parser:parse()[1]:root():to_sexp():sub(1, 5000))
+    print("DEBUG collected SQL matches: " .. vim.inspect(matches))
+  end
   assert(matches["SELECT 10"] == 1,
     "comment-annotated raw SQL was not injected exactly once: "
       .. vim.inspect(matches))
