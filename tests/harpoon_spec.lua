@@ -79,6 +79,17 @@ check("list items retain path, cursor and shortened display context", function()
   assert(runtime.pretty_path("", 8) == "")
 end)
 
+check("filesystem roots shorten absolute paths without losing the first segment", function()
+  local drive = vim.fn.getcwd():match("^%a:")
+  local filesystem_root = drive and (drive .. "/") or "/"
+  local path = vim.fs.joinpath(filesystem_root, "alpha", "beta.lua")
+  assert(runtime.pretty_path(path, 8, filesystem_root) == "alpha/beta.lua",
+    "filesystem root must not leave an absolute path in the display")
+  local sibling_root = vim.fs.joinpath(filesystem_root, "alph")
+  assert(runtime.pretty_path(path, 8, sibling_root) ==
+    runtime.pretty_path(path, 8), "unrelated root must not strip a prefix")
+end)
+
 check("UI_CREATE highlights current buffer row and advances menu cursor", function()
   local buf = vim.api.nvim_create_buf(true, false)
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, {
