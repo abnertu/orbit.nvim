@@ -62,7 +62,7 @@ function M.highlight_current_file(length)
       local display = M.format_display(current)
       for line, entry in pairs(cx.contents or {}) do
         if type(line) == "number" and type(entry) == "string" and entry ~= ""
-          and display:find(entry, 1, true)
+          and entry == display
         then
           local content = vim.api.nvim_buf_get_lines(
             cx.bufnr, line - 1, line, false)[1]
