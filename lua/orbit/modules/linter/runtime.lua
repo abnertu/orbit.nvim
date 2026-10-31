@@ -73,7 +73,8 @@ function M.setup(opts)
     group = group,
     callback = function(event)
       local buf = event.buf
-      editing[buf] = editing[buf] ~= false and event.event == "TextChanged"
+      -- Each event replaces the previous timer; its kind must replace the state.
+      editing[buf] = event.event == "TextChanged"
       close_timer(buf)
       local timer = assert(vim.uv.new_timer(), "could not allocate lint timer")
       timers[buf] = timer
