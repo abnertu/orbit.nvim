@@ -16,6 +16,7 @@ An omitted option takes its declared default. An unknown option or invalid type 
 | --- | --- |
 | `lua/orbit/init.lua` | Public setup and activation order |
 | `lua/orbit/config.lua` | Option validation and defaults |
+| `lua/orbit/settings.lua` | JSON settings input and validation before explicit activation |
 | `lua/orbit/modules/manifest.json` | Module inventory and activation order |
 | `lua/orbit/modules/*/schema.json` | Per-module option contract |
 | `lua/orbit/modules/*/init.lua` | Module activation and runtime owner |

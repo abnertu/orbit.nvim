@@ -22,6 +22,26 @@ function M.setup(opts)
   configured = vim.deepcopy(config)
 end
 
+---Load, validate and apply saved JSON settings on explicit request.
+---Missing files use module defaults. Invalid files leave accepted options unchanged.
+---@param path? string
+---@return boolean, string?
+function M.setup_from_file(path)
+  local options, err = require("orbit.settings").read(path)
+  if not options then
+    return false, err
+  end
+
+  local ok, failure = xpcall(function()
+    M.setup(options)
+  end, debug.traceback)
+  if not ok then
+    return false, tostring(failure)
+  end
+
+  return true
+end
+
 ---@return Orbit.Config?
 function M.get_config()
   return configured and vim.deepcopy(configured) or nil
