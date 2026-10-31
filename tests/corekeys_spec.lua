@@ -233,7 +233,7 @@ check("later module failure restores previous bindings", function()
   assert(rhs("<C-s>") == original_save)
   assert(mapping_rhs("n", ";") == ":")
   assert(mapping_rhs("x", ">") == ">gv")
-  assert(mapping_rhs("i", "jk") == "<esc>")
+  assert(mapping_rhs("i", "jk") == "<esc>", vim.inspect(vim.fn.maparg("jk", "i", false, true)))
   assert(vim.deep_equal(orbit.get_config(), accepted))
 end)
 
