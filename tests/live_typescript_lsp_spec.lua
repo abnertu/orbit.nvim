@@ -137,7 +137,7 @@ local ok, err = xpcall(function()
     counts[diagnostic.message] = (counts[diagnostic.message] or 0) + 1
   end
   assert(counts.duplicate == 1 and counts.distinct == 1
-      and counts.repeat == 2,
+      and counts["repeat"] == 2,
     "TypeScript duplicate filtering removed distinct/other diagnostics: "
       .. vim.inspect(counts))
   assert(vim.tbl_contains(request_log, "initialize")
