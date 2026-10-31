@@ -13,6 +13,27 @@
           "additionalProperties": false,
           "description": "Core editor options applied on startup.",
           "properties": {
+            "autoread": {
+              "default": true,
+              "description": "Detect changes made to files outside Neovim.",
+              "type": "boolean"
+            },
+            "clipboard": {
+              "default": "unnamedplus",
+              "description": "Use the system clipboard as unnamed register.",
+              "type": "string"
+            },
+            "cursorlineopt": {
+              "default": "number",
+              "description": "Highlight the cursor line number.",
+              "enum": [
+                "line",
+                "screenline",
+                "number",
+                "both"
+              ],
+              "type": "string"
+            },
             "enabled": {
               "default": true,
               "description": "Apply configured editor options.",
@@ -23,14 +44,49 @@
               "description": "Insert spaces instead of tab characters.",
               "type": "boolean"
             },
+            "fileformats": {
+              "default": "unix,dos",
+              "description": "Accept Unix and DOS file endings.",
+              "type": "string"
+            },
+            "laststatus": {
+              "default": 3,
+              "description": "Use one global status line.",
+              "maximum": 3,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mouse": {
+              "default": "a",
+              "description": "Enable mouse input across modes.",
+              "enum": [
+                "",
+                "a",
+                "n",
+                "v"
+              ],
+              "type": "string"
+            },
             "number": {
               "default": true,
               "description": "Show absolute line numbers.",
               "type": "boolean"
             },
+            "numberwidth": {
+              "default": 2,
+              "description": "Set minimum line number width.",
+              "maximum": 20,
+              "minimum": 1,
+              "type": "integer"
+            },
             "relativenumber": {
               "default": true,
               "description": "Show relative line numbers.",
+              "type": "boolean"
+            },
+            "ruler": {
+              "default": false,
+              "description": "Hide the redundant cursor ruler.",
               "type": "boolean"
             },
             "shiftwidth": {
@@ -40,12 +96,47 @@
               "minimum": 0,
               "type": "integer"
             },
+            "showmode": {
+              "default": false,
+              "description": "Hide the extra mode indicator.",
+              "type": "boolean"
+            },
+            "signcolumn": {
+              "default": "yes",
+              "description": "Keep the sign column visible.",
+              "enum": [
+                "yes",
+                "no",
+                "auto"
+              ],
+              "type": "string"
+            },
+            "smartindent": {
+              "default": true,
+              "description": "Enable automatic indentation.",
+              "type": "boolean"
+            },
+            "splitkeep": {
+              "default": "screen",
+              "description": "Preserve screen text while splitting.",
+              "enum": [
+                "screen",
+                "cursor",
+                "topline"
+              ],
+              "type": "string"
+            },
             "tabstop": {
               "default": 2,
               "description": "Display width of a tab character.",
               "maximum": 16,
               "minimum": 1,
               "type": "integer"
+            },
+            "undofile": {
+              "default": true,
+              "description": "Persist undo history between sessions.",
+              "type": "boolean"
             }
           },
           "type": "object"

@@ -32,7 +32,7 @@ A case-insensitive code search identified old identifiers across runtime files, 
 1. Freeze current behavior and identify external contracts.
 2. Introduce the `orbit` namespace and independent setup APIs.
 3. Define per-module schemas and generate the combined JSON Schema.
-4. Move editor, keymaps and startup with contract tests.
+4. Move editor, keymaps and startup with contract tests. Core scalar editor options now live in the editor schema.
 5. Move theme, UI and navigation without redundant providers.
 6. Move LSP, completion and language tooling with their existing tests.
 7. Move Hangar, DAP, SQL, Markdown and platform integrations.

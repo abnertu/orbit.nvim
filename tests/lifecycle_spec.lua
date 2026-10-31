@@ -39,6 +39,8 @@ check("failed later module restores option defaults and local overrides", functi
   assert(vim.api.nvim_get_option_value("shiftwidth", { scope = "global" }) == 4)
   assert(vim.bo[buffer].shiftwidth == 7)
   assert(vim.wo.number == true)
+  assert(vim.wo.signcolumn == "yes")
+  assert(vim.o.laststatus == 3)
   assert(vim.g.mapleader == " ")
   assert(vim.fn.maparg(" w", "n") ~= "")
   assert(vim.fn.maparg(",x", "n") == "")
