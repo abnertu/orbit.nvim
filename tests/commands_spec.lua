@@ -51,7 +51,10 @@ check("invalid reload warns but preserves prior configuration", function()
   local ok, err = pcall(vim.cmd, "OrbitSettings reload")
   vim.notify = original
   assert(ok, tostring(err))
-  assert(#notified == 1 and notified[1][2] == vim.log.levels.WARN)
+  assert(#notified == 1 and notified[1][2] == vim.log.levels.WARN,
+    "expected warning, got " .. vim.inspect(notified) ..
+      "; file=" .. table.concat(vim.fn.readfile(path), "\\n") ..
+      "; path=" .. path)
   assert(vim.deep_equal(orbit.get_config(), before))
 end)
 
