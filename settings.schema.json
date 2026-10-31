@@ -502,6 +502,63 @@
           },
           "type": "object"
         },
+        "mason": {
+          "additionalProperties": false,
+          "description": "Lazy Mason package manager integration.",
+          "properties": {
+            "enabled": {
+              "default": true,
+              "description": "Enable Mason commands.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "installed_icon": {
+              "default": " ",
+              "description": "Installed package icon.",
+              "type": "string",
+              "x-orbit-restart": true
+            },
+            "max_concurrent_installers": {
+              "default": 10,
+              "description": "Concurrent package installation limit.",
+              "maximum": 64,
+              "minimum": 1,
+              "type": "integer",
+              "x-orbit-restart": true
+            },
+            "path_mode": {
+              "default": "skip",
+              "description": "Mason PATH handling policy.",
+              "enum": [
+                "skip",
+                "prepend",
+                "append"
+              ],
+              "type": "string",
+              "x-orbit-restart": true
+            },
+            "pending_icon": {
+              "default": " ",
+              "description": "Pending package icon.",
+              "type": "string",
+              "x-orbit-restart": true
+            },
+            "registry": {
+              "default": "github:mason-org/mason-registry",
+              "description": "Primary Mason registry.",
+              "minLength": 1,
+              "type": "string",
+              "x-orbit-restart": true
+            },
+            "uninstalled_icon": {
+              "default": " ",
+              "description": "Uninstalled package icon.",
+              "type": "string",
+              "x-orbit-restart": true
+            }
+          },
+          "type": "object"
+        },
         "plugins": {
           "additionalProperties": false,
           "description": "On-demand Lazy plugin initialization.",
