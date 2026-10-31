@@ -4,7 +4,8 @@ local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
 
 local source = "https://github.com/Orbit-Lua/hangar.nvim.git"
-local revision = "e70d617183d6b69bffa5103afc3782d1075ce9c5"
+-- v0.3.1 is an annotated tag: pin its dereferenced commit, not the tag object.
+local revision = "fb79cc024aba1a20661064245541a821d0516ead"
 local plugin = vim.fn.tempname() .. " upstream Hangar checkout with spaces"
 local storage = vim.fn.tempname() .. " orbit Hangar state with spaces"
 local state_path = vim.fs.joinpath(storage, "managed", "hangar.json")
@@ -51,7 +52,6 @@ local ok, err = xpcall(function()
   local hangar = require("hangar")
   local state = require("hangar.state")
   local bridge = require("orbit.hangar_bridge")
-  assert(vim.api.nvim_get_commands({}).Hangar ~= nil)
   assert(vim.api.nvim_get_commands({}).Hangar ~= nil)
   assert(require("hangar.config").get().state_path() == state_path,
     "explicit Orbit state path was not passed to real Hangar")
