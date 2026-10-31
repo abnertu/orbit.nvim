@@ -83,7 +83,7 @@ require("orbit").setup({
 
 The editor module exposes configurable statusline, clipboard, mouse, signcolumn, undo and file-format defaults.
 
-The corekeys module owns `<C-s>` for save and `<C-h/j/k/l>` for window navigation. Each key is independently configurable and restores the previous mapping when disabled.
+The corekeys module owns `<C-s>` for save, `<C-h/j/k/l>` for window navigation, and the legacy visual `J/K` line-move callbacks. Configurable keys and fixed editing mappings restore previous user bindings when disabled.
 
 The events module owns diagnostic redraw, startup buffers, directory arguments and an optional one-shot `User FilePost` event. FilePost fires only when a named normal file is ready after UI entry, then replays FileType to attach delayed plugin observers. Each behavior can be disabled independently.
 
