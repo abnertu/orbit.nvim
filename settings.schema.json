@@ -638,6 +638,51 @@
           },
           "type": "object"
         },
+        "navigation": {
+          "additionalProperties": false,
+          "description": "Oil and nvim-tree file explorers.",
+          "properties": {
+            "delete_to_trash": {
+              "default": true,
+              "description": "Move Oil deletions to trash.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "enabled": {
+              "default": true,
+              "description": "Enable explorer integrations.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "oil": {
+              "default": true,
+              "description": "Enable Oil floating explorer.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "sync_root": {
+              "default": true,
+              "description": "Synchronize tree root with cwd.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "tree": {
+              "default": true,
+              "description": "Enable nvim-tree.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "tree_width": {
+              "default": 40,
+              "description": "Tree window width.",
+              "maximum": 200,
+              "minimum": 10,
+              "type": "integer",
+              "x-orbit-restart": true
+            }
+          },
+          "type": "object"
+        },
         "plugins": {
           "additionalProperties": false,
           "description": "On-demand Lazy plugin initialization.",
