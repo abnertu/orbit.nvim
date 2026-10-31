@@ -1324,6 +1324,23 @@
           },
           "type": "object"
         },
+        "system": {
+          "additionalProperties": false,
+          "description": "Platform-specific recovery commands.",
+          "properties": {
+            "clear_shada": {
+              "default": true,
+              "description": "Offer a Windows ShaDa temporary-file cleanup command.",
+              "type": "boolean"
+            },
+            "enabled": {
+              "default": true,
+              "description": "Enable platform recovery commands.",
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
         "treesitter_plugins": {
           "additionalProperties": false,
           "description": "Tree-sitter parser and companion plugins.",
