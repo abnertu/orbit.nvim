@@ -47,6 +47,8 @@ require("orbit").setup({
 
 The editor module exposes configurable statusline, clipboard, mouse, signcolumn, undo and file-format defaults.
 
+The filetypes module registers Compose YAML and JSX detection with optional custom type names. Disabling it restores the prior matching rules.
+
 Each module receives validated defaults for omitted options. Set `enabled = false` to skip a module during setup. Saved JSON overrides can be loaded with `setup_from_file(path)` and reapplied with `reload_from_file(path)`. Unchanged options preserve local editor overrides. File watching is opt-in through `watch_settings(path)` and can be stopped with `unwatch_settings()`.
 
 ## Saved settings

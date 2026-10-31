@@ -88,6 +88,11 @@ jobs:
           nvim --headless -u NONE -l tests/watch_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Settings observer tests failed' }
 
+      - name: Test configurable filetype detection
+        run: |
+          nvim --headless -u NONE -l tests/filetypes_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Filetype module tests failed' }
+
       - name: Reject old runtime names
         run: |
           nvim --headless -u NONE -l scripts/check_legacy_names.lua

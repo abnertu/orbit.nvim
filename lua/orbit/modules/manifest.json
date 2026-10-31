@@ -1,3 +1,7 @@
 {
-  "order": ["editor", "keymaps"]
+  "order": [
+    "editor",
+    "filetypes",
+    "keymaps"
+  ]
 }
