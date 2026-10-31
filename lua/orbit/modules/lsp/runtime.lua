@@ -51,7 +51,7 @@ function M.setup(opts)
   local names = vim.tbl_keys(opts.servers)
   table.sort(names)
   for _, name in ipairs(names) do
-    if opts.servers[name] then
+    if opts.servers[name] and tool_state.is_enabled("lsp", name) then
       local config = vim.tbl_deep_extend("force", {
         capabilities = vim.deepcopy(capabilities),
         on_init = function(client)

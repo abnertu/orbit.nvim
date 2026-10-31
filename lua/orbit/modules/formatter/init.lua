@@ -86,6 +86,11 @@ function M.spec()
           timeout_ms = c.timeout_ms, lsp_format = c.lsp_format,
         } or false,
       },
+      config = function(_, opts)
+        opts.formatters_by_ft = require("orbit.hangar_bridge")
+          .filter("formatter", opts.formatters_by_ft)
+        require("conform").setup(opts)
+      end,
     },
   }
 end
