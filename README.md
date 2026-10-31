@@ -53,6 +53,8 @@ The Markdown module contributes command- and filetype-lazy markdown-preview.nvim
 
 The Markdown module also supports an optional Obsidian vault. Set `modules.markdown.vault` to a directory to expose the filetype-lazy Obsidian spec. The vault path and enablement are restart-only. Frontmatter preserves legacy metadata and updates the modified timestamp. Custom Markdown highlight queries and real vault workflows still require upstream verification.
 
+The `keyguide` module restores the legacy which-key group labels, the `<leader>wK` listing and `<leader>wk` query. It loads `folke/which-key.nvim` through Lazy only when demanded, without Base46 cache dependencies. Its `preset` and `border` settings come from LuaDoc and require restart.
+
 ## Try the preview
 
 Run these commands from the extracted `orbit.nvim` directory:

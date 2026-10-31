@@ -33,6 +33,7 @@ The module manifest orders runtime setup and Lazy specs. LuaDoc in each owning `
 
 - Core editor options, filetypes, independent events, settings commands, and transactional rollback now have Lua tests.
 - Core mappings cover file saving, window movement, visual line movement, buffer cycling, native comments, project roots, diagnostics, settings, and explicit encoding conversions.
+- The keyguide owner now supplies WhichKey grouping and explicit list/query keys without legacy Base46 caches.
 - Plugin features include Snacks, navigation, Harpoon, Markdown preview, Obsidian, Tree-sitter, LSP providers, completion, DAP, Mason, Conform, nvim-lint, and Hangar.
 - Linux and Windows CI validate contracts, but hermetic plugin mocks do not prove upstream runtime parity.
 
