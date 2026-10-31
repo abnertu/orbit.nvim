@@ -52,6 +52,31 @@ check("TextChanged excludes SQLFluff but BufWritePost can run it", function()
   assert(vim.deep_equal(runs[1], { "sqlfluff" }))
 end)
 
+check("the latest debounce event determines SQLFluff suppression", function()
+  local buf = vim.api.nvim_create_buf(true, false)
+  vim.bo[buf].filetype = "sql"
+  local before = #runs
+
+  -- Reading followed by an edit must not lint SQLFluff during typing.
+  vim.api.nvim_exec_autocmds("BufReadPost", { buffer = buf, modeline = false })
+  vim.api.nvim_exec_autocmds("TextChanged", { buffer = buf, modeline = false })
+  vim.wait(450, function() return false end, 10)
+  assert(#runs == before, "the latest TextChanged must skip SQLFluff")
+
+  -- A save supersedes the edit and must run SQLFluff exactly once.
+  vim.api.nvim_exec_autocmds("TextChanged", { buffer = buf, modeline = false })
+  vim.api.nvim_exec_autocmds("BufWritePost", { buffer = buf, modeline = false })
+  assert(vim.wait(1000, function() return #runs > before end, 10))
+  assert(#runs == before + 1)
+  assert(vim.deep_equal(runs[#runs], { "sqlfluff" }))
+
+  -- Editing after a save must suppress the replaced save timer.
+  vim.api.nvim_exec_autocmds("BufWritePost", { buffer = buf, modeline = false })
+  vim.api.nvim_exec_autocmds("TextChanged", { buffer = buf, modeline = false })
+  vim.wait(450, function() return false end, 10)
+  assert(#runs == before + 1, "a later edit must cancel save-time lint")
+end)
+
 check("pending lint is cancelled when buffer is wiped", function()
   local before = #runs
   local buf = vim.api.nvim_create_buf(true, false)
