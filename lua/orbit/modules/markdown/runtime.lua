@@ -40,8 +40,11 @@ function M.build_preview(plugin, timeout)
   local executable = M.executable(plugin.dir, platform)
   local function installed()
     if not vim.uv.fs_stat(executable) then return false end
-    local result = vim.system({ executable, "--version" }, { text = true }):wait(10000)
-    return result.code == 0 and vim.trim(result.stdout or "") == version
+    -- A stale or corrupt binary may fail to spawn. Rebuild it instead.
+    local ok, result = pcall(function()
+      return vim.system({ executable, "--version" }, { text = true }):wait(10000)
+    end)
+    return ok and result.code == 0 and vim.trim(result.stdout or "") == version
   end
   if installed() then return end
 
