@@ -99,6 +99,8 @@ The filetypes module registers Compose YAML and JSX detection with optional cust
 
 Each module receives validated defaults for omitted options. Set `enabled = false` to skip a module during setup. Saved JSON overrides can be loaded with `setup_from_file(path)` and reapplied with `reload_from_file(path)`. Unchanged options preserve local editor overrides. File watching is opt-in through `watch_settings(path)` and can be stopped with `unwatch_settings()`.
 
+On Windows, the `system` module also provides the explicit `:ClearShada` recovery command. It removes only regular `*.tmp` files in the current and legacy ShaDa directories; it never deletes `main.shada`, other files, or directories. Settings are defined in the module's LuaDoc. No files are deleted during setup.
+
 ## Saved settings
 
 `require("orbit").setup_from_file(path)` loads JSON overrides and validates them before activation. If `path` is omitted, it reads `stdpath("data") .. "/settings.json"`. Missing files use defaults. Invalid input leaves the accepted configuration unchanged.
