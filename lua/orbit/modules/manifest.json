@@ -11,6 +11,7 @@
     "editor_plugins",
     "diagnostics_plugins",
     "snacks",
+    "mason",
     "plugins"
   ]
 }

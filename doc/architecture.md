@@ -25,7 +25,9 @@ An omitted option takes its declared default. An unknown option or invalid type 
 
 ## Future integration
 
-The `orbit.plugins` spec import scans the module manifest. Modules that implement `spec()` contribute Lazy declarations without a second feature inventory. `lua/plugins/init.lua` is only a compatibility import shim. The Snacks module owns the legacy picker shortcuts and the narrow invalid-window redraw guard. Theme, dashboard art and extended picker layout migration remain separate.
+The `orbit.plugins` spec import scans the module manifest. Modules that implement `spec()` contribute Lazy declarations without a second feature inventory. `lua/plugins/init.lua` is only a compatibility import shim. The Mason module owns only the command-lazy package manager declaration and its settings. It does not register or enable LSP servers, which require a separate runtime lifecycle.
+
+The Snacks module owns the legacy picker shortcuts and the narrow invalid-window redraw guard. Theme, dashboard art and extended picker layout migration remain separate.
 
 The diagnostics_plugins owner contributes Trouble and todo-comments. Its LSP-reference handler and TODO-picker entry points are covered by Lua fixtures; Snacks integration is pending its own module.
 
