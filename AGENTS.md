@@ -55,6 +55,7 @@
 - Preserve commands, mappings and persistent data unless the approved plan changes them.
 - Never overwrite a user-owned command. Create settings files only on explicit open.
 - Own and reuse Neovim autocommand groups. Do not replay or duplicate event handlers on reload.
+- Emit FilePost only once after a ready file; preserve existing observer execution counts.
 - Keep Linux and Windows as equal targets for migrated features.
 
 ## Tests

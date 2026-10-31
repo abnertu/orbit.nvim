@@ -226,6 +226,12 @@
               "description": "Enable core event behavior.",
               "type": "boolean"
             },
+            "filepost": {
+              "default": true,
+              "description": "Emit a one-shot FilePost event when a normal file is ready.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
             "startup_buffer": {
               "default": true,
               "description": "Keep a listed unnamed buffer behind startup interfaces.",
