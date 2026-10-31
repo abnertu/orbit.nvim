@@ -74,3 +74,5 @@ Keep startup side effects outside module imports. Complete asynchronous work onl
 ## Tooling language
 
 Write executable tooling and tests in Lua. Use Neovim as the Lua host to reuse `vim.json`, filesystem APIs and process execution. Keep only the generated `settings.schema.json`, the manifest and GitHub Actions YAML as data formats. Add non-Lua code only when a specific requirement cannot be met reasonably with Lua, and document the exception.
+
+C# SQL injection queries use the `after/queries/c_sharp/injections.scm` extension. The Lua predicates exclude undecodable escape sequences and allow independently configured comment and SQL-name detection. Actual parser compatibility remains an upstream integration gate.
