@@ -101,10 +101,10 @@ function M.open(pos, id)
   end, debug.traceback)
 
   if not ok then
-    if displayed and vim.api.nvim_win_is_valid(displayed)
-      and displayed ~= origin
-    then
-      pcall(vim.api.nvim_win_close, displayed, true)
+    -- display() may fail after creating a split but before returning its window.
+    local opened = displayed or vim.api.nvim_get_current_win()
+    if opened ~= origin and vim.api.nvim_win_is_valid(opened) then
+      pcall(vim.api.nvim_win_close, opened, true)
     end
     if created and vim.api.nvim_buf_is_valid(buffer) then
       pcall(vim.api.nvim_buf_delete, buffer, { force = true })
