@@ -15,6 +15,20 @@ local definitions = {
   { field = "window_right", mode = "n", rhs = "<C-w>l", desc = "Focus right window" },
   { field = "window_up", mode = "n", rhs = "<C-w>k", desc = "Focus upper window" },
   { field = "window_down", mode = "n", rhs = "<C-w>j", desc = "Focus lower window" },
+  -- Plugin-independent legacy editing keys use fixed slots. They share the
+  -- owner lifecycle with the configurable save and window navigation keys.
+  { lhs = "<C-c>", mode = "n", rhs = "<cmd>%y+<cr>", desc = "Copy the whole file" },
+  { lhs = ";", mode = "n", rhs = ":", desc = "Enter command mode" },
+  { lhs = "<", mode = "n", rhs = "<<", desc = "Decrease line indent" },
+  { lhs = ">", mode = "n", rhs = ">>", desc = "Increase line indent" },
+  { lhs = "<", mode = "x", rhs = "<gv", desc = "Decrease indent and keep selection" },
+  { lhs = ">", mode = "x", rhs = ">gv", desc = "Increase indent and keep selection" },
+  { lhs = "p", mode = "x", rhs = "P", desc = "Paste without replacing the unnamed register" },
+  { lhs = "jk", mode = "i", rhs = "<Esc>", desc = "Leave insert mode" },
+  { lhs = "Q", mode = "n", rhs = "q", desc = "Record a macro" },
+  { lhs = "q", mode = "n", rhs = "<Nop>", desc = "Reserve lowercase q" },
+  { lhs = "K", mode = "n", rhs = "<Nop>", desc = "Reserve K for an attached LSP" },
+  { lhs = "<C-x>", mode = "t", rhs = "<C-\\><C-n>", desc = "Leave terminal mode" },
 }
 
 local function identity(mode, lhs)
@@ -50,7 +64,7 @@ local function targets(opts)
   end
   local seen = {}
   for _, definition in ipairs(definitions) do
-    local lhs = opts[definition.field]
+    local lhs = definition.lhs or opts[definition.field]
     local key = identity(definition.mode, lhs)
     assert(not seen[key], "duplicate core mapping: " .. lhs)
     seen[key] = true
