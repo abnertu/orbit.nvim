@@ -94,14 +94,14 @@ check("UI_CREATE highlights only the exact current-file display row", function()
   -- Harpoon UI_CREATE.contents comes from HarpoonList:display(), including
   -- the same icon and padding as the popup buffer.
   local shorter = runtime.format_display("src/other.lua")
-  local current = runtime.format_display("src/other.lua.bak")
+  local current = runtime.format_display("src/other.lua.backup.lua")
   local buf = vim.api.nvim_create_buf(true, false)
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, { shorter, current })
   local win = vim.api.nvim_get_current_win()
   local previous = vim.api.nvim_get_current_buf()
   vim.api.nvim_win_set_buf(win, buf)
   extension.UI_CREATE({
-    current_file = "src/other.lua.bak",
+    current_file = "src/other.lua.backup.lua",
     contents = { shorter, current },
     bufnr = buf, win_id = win,
   })
