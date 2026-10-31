@@ -24,15 +24,17 @@ function M.recreate(root, name, on_done)
   local parent = vim.fs.joinpath(root, "typings")
   local target = vim.fs.joinpath(parent, name)
   local root_stat = vim.uv.fs_lstat(parent)
+  -- The active operation has moved the original directory to its backup.
+  -- Reject a concurrent request before checking whether the target exists.
+  if active[target] then
+    on_done(false, "This stub is already being regenerated")
+    return false
+  end
   local target_stat = vim.uv.fs_lstat(target)
   if not root_stat or root_stat.type ~= "directory"
     or not target_stat or target_stat.type ~= "directory"
   then
     on_done(false, "Selected stub is no longer a directory")
-    return false
-  end
-  if active[target] then
-    on_done(false, "This stub is already being regenerated")
     return false
   end
 
