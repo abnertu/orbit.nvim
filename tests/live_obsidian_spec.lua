@@ -87,8 +87,8 @@ local ok, err = xpcall(function()
 
   -- Reopen the saved note with user metadata to exercise a second real write.
   -- A fresh buffer forces upstream Obsidian to read the persisted frontmatter.
-  local first_created = saved:match("\\ncreated:%s*([^\\n]+)")
-    or saved:match("^created:%s*([^\\n]+)")
+  local first_created = saved:match("\ncreated:%s*([^\n]+)")
+    or saved:match("^created:%s*([^\n]+)")
   assert(first_created, "first save did not persist the created timestamp")
   local updated, modified_fields = {}, 0
   for _, line in ipairs(vim.fn.readfile(note_path)) do
@@ -109,9 +109,9 @@ local ok, err = xpcall(function()
   vim.api.nvim_buf_set_lines(0, -1, -1, false, { "A second write." })
   vim.cmd("write")
 
-  local rewritten = table.concat(vim.fn.readfile(note_path), "\\n")
-  local second_created = rewritten:match("\\ncreated:%s*([^\\n]+)")
-    or rewritten:match("^created:%s*([^\\n]+)")
+  local rewritten = table.concat(vim.fn.readfile(note_path), "\n")
+  local second_created = rewritten:match("\ncreated:%s*([^\n]+)")
+    or rewritten:match("^created:%s*([^\n]+)")
   assert(second_created == first_created,
     "rewriting a note changed its original created timestamp")
   assert(rewritten:find("custom: preserved-by-orbit", 1, true),
@@ -122,7 +122,7 @@ local ok, err = xpcall(function()
     and rewritten:find("A second write.", 1, true),
     "rewriting a note discarded Markdown content")
   local delimiters = 0
-  for line in rewritten:gmatch("[^\\n]+") do
+  for line in rewritten:gmatch("[^\n]+") do
     if line == "---" then delimiters = delimiters + 1 end
   end
   assert(delimiters == 2, "rewriting a note duplicated YAML frontmatter")
