@@ -74,6 +74,51 @@
           },
           "type": "object"
         },
+        "dap": {
+          "additionalProperties": false,
+          "description": "Debug adapters and DAP UI integrations.",
+          "properties": {
+            "coreclr": {
+              "default": true,
+              "description": "Enable dotnet-cli debug adapter.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "enabled": {
+              "default": true,
+              "description": "Enable debug plugins.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "python": {
+              "default": true,
+              "description": "Enable Python debugpy adapter.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "python_host": {
+              "default": "127.0.0.1",
+              "description": "Python attach host.",
+              "minLength": 1,
+              "type": "string",
+              "x-orbit-restart": true
+            },
+            "python_port": {
+              "default": "8001",
+              "description": "Python attach port.",
+              "minLength": 1,
+              "type": "string",
+              "x-orbit-restart": true
+            },
+            "ui": {
+              "default": true,
+              "description": "Enable DAP UI.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            }
+          },
+          "type": "object"
+        },
         "diagnostics_plugins": {
           "additionalProperties": false,
           "description": "Trouble and todo-comments integrations.",

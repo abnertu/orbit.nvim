@@ -28,6 +28,16 @@ function M.options(opts)
     end,
     border = opts.border,
     adapters = {
+      dap = {
+        runtime = function()
+          return require("orbit.modules.dap.runtime")
+        end,
+        options = function()
+          local current = require("orbit").get_config()
+          return require("orbit.modules.dap.definitions")
+            .build(current.modules.dap)
+        end,
+      },
       activation = {
         formatter = function() return settings_for("formatter") end,
         linter = function() return settings_for("linter") end,

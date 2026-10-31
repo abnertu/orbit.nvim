@@ -71,10 +71,10 @@ function M.setup(dap, definitions)
   dap.adapters = dap.adapters or {}
   dap.configurations = dap.configurations or {}
   local bridge = require("orbit.hangar_bridge")
-  if bridge.is_enabled("dap", "python") then
+  if definitions.enabled.python and bridge.is_enabled("dap", "python") then
     M.apply_adapter(dap, "python", true, definitions)
   end
-  if bridge.is_enabled("dap", "coreclr") then
+  if definitions.enabled.coreclr and bridge.is_enabled("dap", "coreclr") then
     local ok, message = M.apply_adapter(dap, "coreclr", true, definitions)
     if not ok then
       vim.notify(tostring(message), vim.log.levels.WARN, { title = "Dotnet" })
@@ -86,7 +86,7 @@ end
 function M.setup_ui(opts)
   if ui_initialized then return end
   local dap, ui = require("dap"), require("dapui")
-  ui.setup(opts)
+  ui.setup(opts or {})
   dap.listeners.before.terminate["orbit_dapui"] = function()
     ui.close()
   end
