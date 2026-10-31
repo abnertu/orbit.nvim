@@ -18,7 +18,7 @@
             (string_literal
               (string_literal_content) @injection.content) @_sql_string
             (raw_string_literal
-              (raw_string_content) @injection.content)
+              (raw_string_content) @injection.content) @_sql_string
           ])))
     (field_declaration
       (variable_declaration
@@ -27,7 +27,7 @@
             (string_literal
               (string_literal_content) @injection.content) @_sql_string
             (raw_string_literal
-              (raw_string_content) @injection.content)
+              (raw_string_content) @injection.content) @_sql_string
           ])))
   ]
   (#orbit-sql-string-supported? @_sql_string)
@@ -90,7 +90,7 @@
         (string_literal
           (string_literal_content) @injection.content) @_sql_string
         (raw_string_literal
-          (raw_string_content) @injection.content)
+          (raw_string_content) @injection.content) @_sql_string
       ]))
   (#orbit-sql-string-supported? @_sql_string)
   (#orbit-sql-comment-injection-enabled? @_injection_comment)
@@ -131,7 +131,7 @@
     (string_literal
       (string_literal_content) @injection.content) @_sql_string
     (raw_string_literal
-      (raw_string_content) @injection.content)
+      (raw_string_content) @injection.content) @_sql_string
   ]
   (#orbit-sql-string-supported? @_sql_string)
   (#orbit-sql-auto-injection-enabled? @_sql_variable)
@@ -171,7 +171,7 @@
     (string_literal
       (string_literal_content) @injection.content) @_sql_string
     (raw_string_literal
-      (raw_string_content) @injection.content)
+      (raw_string_content) @injection.content) @_sql_string
   ]
   (#orbit-sql-string-supported? @_sql_string)
   (#orbit-sql-auto-injection-enabled? @_sql_variable)

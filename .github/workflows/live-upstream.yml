@@ -81,6 +81,11 @@ jobs:
           nvim --headless -u NONE -l tests/live_noice_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Real Noice integration failed' }
 
+      - name: Run pinned C-sharp and SQL Tree-sitter parser integration
+        run: |
+          nvim --headless -u NONE -l tests/live_treesitter_sql_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Real Tree-sitter SQL injection integration failed' }
+
       - name: Run pinned real nvim-dap TCP protocol integration
         run: |
           nvim --headless -u NONE -l tests/live_dap_spec.lua
