@@ -1,4 +1,4 @@
--- Native terminal windows and sessions, without NvChad or shell-script glue.
+-- Native terminal windows and sessions with no external UI or shell-script glue.
 local M = {}
 local sessions = {}
 
