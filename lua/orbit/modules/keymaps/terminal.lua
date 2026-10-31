@@ -80,8 +80,15 @@ end
 ---@return boolean
 function M.can_toggle()
   local config = vim.api.nvim_win_get_config(0)
-  return config.relative == ""
-    or vim.bo.filetype:match("^Term_") ~= nil
+  if config.relative == "" then return true end
+  -- A filetype is user-controlled; only a saved session owns a floating buffer.
+  local current = vim.api.nvim_get_current_buf()
+  for _, buffer in pairs(sessions) do
+    if buffer == current and vim.api.nvim_buf_is_valid(buffer) then
+      return true
+    end
+  end
+  return false
 end
 
 ---Create a terminal in a new split or floating window.
