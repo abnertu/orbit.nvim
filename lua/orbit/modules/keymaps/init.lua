@@ -25,6 +25,30 @@ local definitions = {
   { lhs = "<leader>x", mode = "n", rhs = function()
     require("orbit.modules.keymaps.buffer_actions").close_current()
   end, desc = "Close the current unmodified buffer" },
+  { lhs = "<leader>h", mode = "n", rhs = function()
+    require("orbit.modules.keymaps.terminal").open("sp")
+  end, desc = "New horizontal terminal" },
+  { lhs = "<leader>v", mode = "n", rhs = function()
+    require("orbit.modules.keymaps.terminal").open("vsp")
+  end, desc = "New vertical terminal" },
+  { lhs = "<M-h>", mode = "n", rhs = function()
+    require("orbit.modules.keymaps.terminal").toggle("sp", "htoggleTerm")
+  end, desc = "Toggle horizontal terminal" },
+  { lhs = "<M-h>", mode = "t", rhs = function()
+    require("orbit.modules.keymaps.terminal").toggle("sp", "htoggleTerm")
+  end, desc = "Toggle horizontal terminal" },
+  { lhs = "<M-v>", mode = "n", rhs = function()
+    require("orbit.modules.keymaps.terminal").toggle("vsp", "vtoggleTerm")
+  end, desc = "Toggle vertical terminal" },
+  { lhs = "<M-v>", mode = "t", rhs = function()
+    require("orbit.modules.keymaps.terminal").toggle("vsp", "vtoggleTerm")
+  end, desc = "Toggle vertical terminal" },
+  { lhs = "<M-i>", mode = "n", rhs = function()
+    require("orbit.modules.keymaps.terminal").toggle("float", "floatTerm")
+  end, desc = "Toggle floating terminal" },
+  { lhs = "<M-i>", mode = "t", rhs = function()
+    require("orbit.modules.keymaps.terminal").toggle("float", "floatTerm")
+  end, desc = "Toggle floating terminal" },
   { lhs = "<leader>fd", mode = "n", rhs = function()
     require("orbit.modules.keymaps.project").cd_to_root()
   end, desc = "Change directory to the current project root" },
