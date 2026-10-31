@@ -55,6 +55,17 @@ function M.spec()
         debounce_ms = c.debounce_ms,
         skip_while_editing = c.skip_sql_on_change and { "sqlfluff" } or {},
         linters_by_ft = language_defaults(),
+        linters = {
+          sqlfluff = function()
+            local filename = vim.api.nvim_buf_get_name(0)
+            local adapter = require("orbit.sqlfluff")
+            local definition = vim.deepcopy(require("lint.linters.sqlfluff"))
+            definition.args = adapter.lint_args(filename)
+            definition.cwd = adapter.cwd(filename)
+            definition.env = { PYTHONUTF8 = "1" }
+            return definition
+          end,
+        },
       },
       config = function(_, opts)
         require("orbit.modules.linter.runtime").setup(opts)

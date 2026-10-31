@@ -60,6 +60,10 @@ function M.setup(opts)
   for buf in pairs(timers) do close_timer(buf) end
   editing = {}
   local lint = require("lint")
+  lint.linters = lint.linters or {}
+  for name, definition in pairs(opts.linters or {}) do
+    lint.linters[name] = definition
+  end
   lint.linters_by_ft = vim.deepcopy(opts.linters_by_ft)
   vim.env.ESLINT_D_PPID = tostring(vim.fn.getpid())
 
