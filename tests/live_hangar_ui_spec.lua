@@ -101,9 +101,12 @@ local ok, err = xpcall(function()
   local again_buf, again_win = hangar_body()
   assert(again_buf == buffer and again_win == win,
     "reopening Hangar must focus, not duplicate its floating view")
+  -- The initial view is scoped to the Lua buffer, so no Python adapter
+  -- belongs there. Switch to all-tool scope before testing DAP navigation.
+  key(buffer, "s")
   key(buffer, "<Tab>")
   assert(lines(buffer):find("python", 1, true),
-    "NUI category switch did not render Python debug adapter")
+    "all-tool NUI category switch did not render Python debug adapter")
   key(buffer, "<S-Tab>")
   assert(lines(buffer):find("lua_ls", 1, true),
     "reverse NUI category switch did not return to Lua LSP")
