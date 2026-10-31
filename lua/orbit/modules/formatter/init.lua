@@ -68,6 +68,20 @@ function M.spec()
           lsp_format = c.lsp_format,
         },
         formatters_by_ft = default_filetypes(),
+        formatters = {
+          sqlfluff = {
+            command = "sqlfluff",
+            env = { PYTHONUTF8 = "1" },
+            stdin = true,
+            require_cwd = true,
+            args = function(_, ctx)
+              return require("orbit.sqlfluff").format_args(ctx.filename)
+            end,
+            cwd = function(_, ctx)
+              return require("orbit.sqlfluff").cwd(ctx.filename)
+            end,
+          },
+        },
         format_on_save = c.format_on_save and {
           timeout_ms = c.timeout_ms, lsp_format = c.lsp_format,
         } or false,

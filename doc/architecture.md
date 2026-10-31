@@ -29,6 +29,8 @@ The `orbit.plugins` spec import scans the module manifest. Modules that implemen
 
 The nvim-lint module debounces triggers per buffer, skips SQLFluff while editing, and cancels pending timers on buffer wipe. Windows command quoting, custom project tool resolution and Hangar ordering remain separate integration tasks.
 
+The shared SQLFluff adapter resolves project configuration, process roots and stdin arguments for Conform and nvim-lint. It uses a bundled T-SQL fallback only when no project SQLFluff section exists.
+
 The Conform formatter module keeps async requests owned by one buffer and cleans up pending operations when a buffer is wiped. It retains language formatter defaults, but needs Hangar ordering and project-specific command adapters before full parity.
 
 The Tree-sitter module contributes parser, context and autotag specs. Parser activation is guarded by buffer/filetype validity and excludes bigfile buffers. SQL-specific injection predicates and legacy syntax fallback remain planned.
