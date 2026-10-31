@@ -672,6 +672,44 @@
           },
           "type": "object"
         },
+        "keyguide": {
+          "additionalProperties": false,
+          "description": "Discoverable leader-key groups through which-key.",
+          "properties": {
+            "border": {
+              "default": "rounded",
+              "description": "Popup window border.",
+              "enum": [
+                "none",
+                "single",
+                "double",
+                "rounded",
+                "solid",
+                "shadow"
+              ],
+              "type": "string",
+              "x-orbit-restart": true
+            },
+            "enabled": {
+              "default": true,
+              "description": "Contribute the which-key Lazy specification.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "preset": {
+              "default": "helix",
+              "description": "Which-key popup layout.",
+              "enum": [
+                "classic",
+                "modern",
+                "helix"
+              ],
+              "type": "string",
+              "x-orbit-restart": true
+            }
+          },
+          "type": "object"
+        },
         "keymaps": {
           "additionalProperties": false,
           "description": "Minimal key mappings owned by orbit.nvim.",
