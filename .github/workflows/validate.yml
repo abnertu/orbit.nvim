@@ -128,6 +128,11 @@ jobs:
           nvim --headless -u NONE -l tests/icons_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Lazy icon feature spec tests failed' }
 
+      - name: Test one-shot FilePost event
+        run: |
+          nvim --headless -u NONE -l tests/filepost_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'FilePost event tests failed' }
+
       - name: Reject old runtime names
         run: |
           nvim --headless -u NONE -l scripts/check_legacy_names.lua

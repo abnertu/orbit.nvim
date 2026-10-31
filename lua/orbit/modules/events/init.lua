@@ -1,12 +1,16 @@
 local M = {}
 local group
 local active
+local ui_entered = false
+local filepost_emitted = false
+local filepost_id
 
 ---@class Orbit.EventsOptions # Standalone core Neovim events.
 ---@field enabled boolean @default(true) # Enable core event behavior.
 ---@field diagnostics_redraw boolean @default(true) # Redraw the statusline when diagnostics change.
 ---@field startup_buffer boolean @default(true) @restart(true) # Keep a listed unnamed buffer behind startup interfaces.
 ---@field directory_argument boolean @default(true) @restart(true) # Change directory for a directory startup argument.
+---@field filepost boolean @default(true) @restart(true) # Emit a one-shot FilePost event when a normal file is ready.
 
 local function is_active(name)
   return active and active.enabled and active[name]
@@ -33,6 +37,52 @@ local function register()
     "refusing to overwrite existing OrbitCoreEvents group")
 
   group = vim.api.nvim_create_augroup("OrbitCoreEvents", { clear = true })
+
+  filepost_id = vim.api.nvim_create_autocmd({
+    "UIEnter", "BufReadPost", "BufNewFile",
+  }, {
+    group = group,
+    desc = "Emit FilePost exactly once after the UI and a file are ready",
+    callback = function(event)
+      if event.event == "UIEnter" then
+        ui_entered = true
+      end
+      if filepost_emitted or not is_active("filepost") or not ui_entered then
+        return
+      end
+
+      local buffer = event.buf
+      if not buffer or not vim.api.nvim_buf_is_valid(buffer) then
+        return
+      end
+      local name = vim.api.nvim_buf_get_name(buffer)
+      local buftype = vim.api.nvim_get_option_value("buftype", { buf = buffer })
+      if name == "" or buftype == "nofile" then
+        return
+      end
+
+      filepost_emitted = true
+      if filepost_id then
+        vim.api.nvim_del_autocmd(filepost_id)
+        filepost_id = nil
+      end
+
+      vim.api.nvim_exec_autocmds("User", {
+        pattern = "FilePost",
+        modeline = false,
+      })
+      vim.schedule(function()
+        if vim.api.nvim_buf_is_valid(buffer)
+          and vim.api.nvim_buf_is_loaded(buffer)
+        then
+          vim.api.nvim_exec_autocmds("FileType", {
+            buffer = buffer,
+            modeline = false,
+          })
+        end
+      end)
+    end,
+  })
   vim.api.nvim_create_autocmd("DiagnosticChanged", {
     group = group,
     desc = "Redraw the statusline when diagnostics change",
@@ -87,6 +137,9 @@ function M.capture()
   return {
     group = group,
     active = active and vim.deepcopy(active) or nil,
+    ui_entered = ui_entered,
+    filepost_emitted = filepost_emitted,
+    filepost_id = filepost_id,
   }
 end
 
@@ -95,7 +148,11 @@ function M.restore(snapshot)
   if group and not snapshot.group then
     pcall(vim.api.nvim_del_augroup_by_id, group)
     group = nil
+    filepost_id = nil
   end
+  ui_entered = snapshot.ui_entered
+  filepost_emitted = snapshot.filepost_emitted
+  filepost_id = snapshot.filepost_id
   active = snapshot.active and vim.deepcopy(snapshot.active) or nil
 end
 

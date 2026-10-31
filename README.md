@@ -81,7 +81,7 @@ The editor module exposes configurable statusline, clipboard, mouse, signcolumn,
 
 The corekeys module owns `<C-s>` for save and `<C-h/j/k/l>` for window navigation. Each key is independently configurable and restores the previous mapping when disabled.
 
-The events module owns diagnostic statusline redraw, unnamed startup buffers and directory startup arguments. Each behavior can be disabled independently.
+The events module owns diagnostic redraw, startup buffers, directory arguments and an optional one-shot `User FilePost` event. FilePost fires only when a named normal file is ready after UI entry, then replays FileType to attach delayed plugin observers. Each behavior can be disabled independently.
 
 The filetypes module registers Compose YAML and JSX detection with optional custom type names. Disabling it restores the prior matching rules.
 
