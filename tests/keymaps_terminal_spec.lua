@@ -69,6 +69,8 @@ check("terminal display failure restores the original window and buffer state", 
   local allocated
   vim.api.nvim_win_set_buf = function(_, buffer)
     allocated = buffer
+    -- A WinEnter or buffer callback may move focus before setup fails.
+    vim.api.nvim_set_current_win(origin)
     error("injected terminal display failure")
   end
   local ok, err = pcall(function() map("n", " v").callback() end)
