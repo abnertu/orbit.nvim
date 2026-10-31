@@ -5,8 +5,8 @@ local active
 ---@class Orbit.EventsOptions # Standalone core Neovim events.
 ---@field enabled boolean @default(true) # Enable core event behavior.
 ---@field diagnostics_redraw boolean @default(true) # Redraw the statusline when diagnostics change.
----@field startup_buffer boolean @default(true) # Keep a listed unnamed buffer behind startup interfaces.
----@field directory_argument boolean @default(true) # Change directory for a directory startup argument.
+---@field startup_buffer boolean @default(true) @restart(true) # Keep a listed unnamed buffer behind startup interfaces.
+---@field directory_argument boolean @default(true) @restart(true) # Change directory for a directory startup argument.
 
 local function is_active(name)
   return active and active.enabled and active[name]

@@ -1,5 +1,6 @@
 local M = {}
 local configured
+local pending_restart = {}
 
 local function read_manifest()
   local files = vim.api.nvim_get_runtime_file("lua/orbit/modules/manifest.json", false)
@@ -10,7 +11,8 @@ end
 ---Configure modules as one transaction. Failed activation restores affected module state.
 ---@param opts? Orbit.Config
 function M.setup(opts)
-  local config = require("orbit.config").resolve(opts)
+  local requested = require("orbit.config").resolve(opts)
+  local config, deferred = require("orbit.config").defer_restart(configured, requested)
   local manifest = read_manifest()
   local prepared = {}
   local seen = {}
@@ -66,6 +68,7 @@ function M.setup(opts)
   end
 
   configured = vim.deepcopy(config)
+  pending_restart = deferred
 end
 
 ---Load, validate and apply saved JSON settings on explicit request.
@@ -119,6 +122,12 @@ end
 ---@return Orbit.Config?
 function M.get_config()
   return configured and vim.deepcopy(configured) or nil
+end
+
+---Return requested restart-only values not yet applied to the current process.
+---@return table<string, any>
+function M.get_pending_restart()
+  return vim.deepcopy(pending_restart)
 end
 
 return M

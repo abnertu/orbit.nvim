@@ -95,6 +95,63 @@ local function resolve(value, node, path)
   return value
 end
 
+-- Restart-only fields retain their active values until the next Neovim process.
+-- Arrays with restart-only members defer as a unit to avoid unstable indices.
+local function has_restart(node)
+  if node["x-orbit-restart"] then
+    return true
+  end
+  if node.type == "array" then
+    return has_restart(assert(node.items, "array schema needs items"))
+  end
+  if node.type == "object" then
+    for _, child in pairs(node.properties or {}) do
+      if has_restart(child) then
+        return true
+      end
+    end
+  end
+  return false
+end
+
+local function defer_node(current, requested, node, path, pending)
+  if node["x-orbit-restart"] or
+    (node.type == "array" and has_restart(node.items))
+  then
+    if not vim.deep_equal(current, requested) then
+      pending[path] = vim.deepcopy(requested)
+      return vim.deepcopy(current)
+    end
+    return requested
+  end
+
+  if node.type == "object" then
+    local effective = vim.deepcopy(requested)
+    for name, child in pairs(node.properties or {}) do
+      effective[name] = defer_node(current[name], requested[name], child,
+        path .. "." .. name, pending)
+    end
+    return effective
+  end
+  return requested
+end
+
+---Keep restart-only values active while applying other validated fields.
+---On first setup, there is no active configuration to preserve.
+---@param current? Orbit.Config
+---@param requested Orbit.Config
+---@param supplied_schema? table
+---@return Orbit.Config, table
+function M.defer_restart(current, requested, supplied_schema)
+  if not current then
+    return vim.deepcopy(requested), {}
+  end
+  local pending = {}
+  local effective = defer_node(current, requested, supplied_schema or get_schema(),
+    "orbit", pending)
+  return effective, pending
+end
+
 ---Resolve a supplied schema without activating any modules.
 ---Used to validate generated schema fixtures before publishing them.
 ---@param opts table?

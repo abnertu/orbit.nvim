@@ -83,6 +83,11 @@ jobs:
           nvim --headless -u NONE -l tests/reload_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Explicit settings reload tests failed' }
 
+      - name: Test restart-only settings lifecycle
+        run: |
+          nvim --headless -u NONE -l tests/restart_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Restart-only settings tests failed' }
+
       - name: Test opt-in settings observation
         run: |
           nvim --headless -u NONE -l tests/watch_spec.lua

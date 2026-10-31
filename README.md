@@ -68,6 +68,8 @@ end
 
 Reading never creates or rewrites the file. See [saved settings](doc/settings.md) for precedence and current limitations.
 
+Startup-only fields use `@restart(true)` in their owning module's `init.lua` LuaDoc. On later setup or reload, changes to those fields are deferred while safe fields apply immediately. `require("orbit").get_pending_restart()` returns the requested values by field path. Restart Neovim to activate them. The current preview marks the two startup event options as restart-only.
+
 ## Settings command
 
 `:OrbitSettings` opens the settings file and creates it only when missing, with a reference to the generated schema. `:OrbitSettings reload` validates and applies saved options. `:OrbitSettings info` shows accepted values. Configure its name or path through `modules.commands`.
@@ -98,6 +100,8 @@ Nested LuaDoc classes and arrays are also supported:
 ```
 
 Nested objects inherit their member defaults. Arrays are validated by element type and replace previous arrays. The generator rejects recursive class references and unknown types. For composite types, use empty `@default({})` and `@default([])`.
+
+Use `@restart(true)` to mark a field that cannot safely change in a running session. The generated schema exposes `x-orbit-restart: true`. A nested restart-only field defers independently; arrays containing restart-only fields defer as a whole.
 
 Primitive field types and LuaLS literal unions are supported. The metadata provides defaults and bounds. The text following `#` is the schema description. Unsupported types or missing defaults fail schema generation.
 

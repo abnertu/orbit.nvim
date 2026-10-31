@@ -29,6 +29,7 @@ local function attributes(source, location)
     minimum = true,
     maximum = true,
     minLength = true,
+    restart = true,
   }
 
   while source:match("%S") do
@@ -46,6 +47,9 @@ local function attributes(source, location)
   end
 
   assert(result.default ~= nil, location .. ": @default(...) is required")
+  if result.restart ~= nil then
+    assert(result.restart == true, location .. ": @restart(true) is required")
+  end
   return result
 end
 
@@ -104,6 +108,9 @@ compile_field = function(type_name, metadata, description, location, classes, st
   local attr = attributes(metadata, location)
   node.description = description
   node.default = attr.default
+  if attr.restart then
+    node["x-orbit-restart"] = true
+  end
 
   if node.type == "integer" then
     assert(type(node.default) == "number" and node.default == math.floor(node.default),
