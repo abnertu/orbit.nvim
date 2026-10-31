@@ -1031,6 +1031,77 @@
           },
           "type": "object"
         },
+        "messages": {
+          "additionalProperties": false,
+          "description": "Optional Noice commandline and LSP message integration.",
+          "properties": {
+            "cmdline": {
+              "default": true,
+              "description": "Show the commandline popup.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "doc_max_height": {
+              "default": 20,
+              "description": "Maximum documentation popup rows.",
+              "maximum": 100,
+              "minimum": 3,
+              "type": "integer",
+              "x-orbit-restart": true
+            },
+            "doc_max_width": {
+              "default": 80,
+              "description": "Maximum documentation popup columns.",
+              "maximum": 200,
+              "minimum": 10,
+              "type": "integer",
+              "x-orbit-restart": true
+            },
+            "enabled": {
+              "default": true,
+              "description": "Include Noice and its message routes.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "hover": {
+              "default": true,
+              "description": "Present LSP hover documentation.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "lsp_message": {
+              "default": false,
+              "description": "Let Noice display LSP showMessage notifications.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "messages": {
+              "default": true,
+              "description": "Display Neovim messages through Noice.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "popupmenu": {
+              "default": true,
+              "description": "Use the NUI commandline completion popup.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "progress": {
+              "default": true,
+              "description": "Display LSP progress updates.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "signature": {
+              "default": true,
+              "description": "Present LSP signature help.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            }
+          },
+          "type": "object"
+        },
         "navigation": {
           "additionalProperties": false,
           "description": "Oil and nvim-tree file explorers.",
