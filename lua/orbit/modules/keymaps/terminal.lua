@@ -139,6 +139,28 @@ function M.toggle(pos, id)
   local win = buffer and vim.api.nvim_buf_is_valid(buffer)
     and tab_window_for(buffer) or nil
   if win then
+    if vim.api.nvim_win_get_config(win).relative == "" then
+      local other_normal = false
+      for _, candidate in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+        if candidate ~= win
+          and vim.api.nvim_win_get_config(candidate).relative == ""
+        then
+          other_normal = true
+          break
+        end
+      end
+      if not other_normal then
+        -- Neovim cannot close the tab's last normal window. Hide the
+        -- terminal in place so its session stays available for reopening.
+        local replacement = vim.api.nvim_create_buf(true, false)
+        local ok, err = pcall(vim.api.nvim_win_set_buf, win, replacement)
+        if not ok then
+          pcall(vim.api.nvim_buf_delete, replacement, { force = true })
+          error(err, 0)
+        end
+        return true
+      end
+    end
     vim.api.nvim_win_close(win, true)
     return true
   end
