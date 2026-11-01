@@ -91,6 +91,18 @@ function M.can_toggle()
   return false
 end
 
+---Check whether a saved buffer still owns a running terminal process.
+---@param buffer integer
+---@return boolean
+function M.is_live_terminal(buffer)
+  if not vim.api.nvim_buf_is_valid(buffer)
+    or vim.bo[buffer].buftype ~= "terminal" then
+    return false
+  end
+  local job = vim.b[buffer].terminal_job_id
+  return type(job) == "number" and vim.fn.jobwait({ job }, 0)[1] == -1
+end
+
 ---Create a terminal in a new split or floating window.
 ---@param pos 'sp'|'vsp'|'float'
 ---@param id? string
@@ -103,17 +115,7 @@ function M.open(pos, id)
     and reuse or nil
   -- A saved buffer may have been repurposed by another owner. Only
   -- terminal buffers with a running PTY are safe to reuse.
-  if buffer and vim.bo[buffer].buftype ~= "terminal" then
-    buffer = nil
-  end
-  if buffer then
-    -- A terminal buffer remains valid after its PTY exits. Reopening it
-    -- cannot restart the shell, so allocate a fresh buffer and job instead.
-    local job = vim.b[buffer].terminal_job_id
-    if type(job) ~= "number" or vim.fn.jobwait({ job }, 0)[1] ~= -1 then
-      buffer = nil
-    end
-  end
+  if buffer and not M.is_live_terminal(buffer) then buffer = nil end
   if not buffer then buffer = vim.api.nvim_create_buf(false, true) end
   local created = not (reuse and buffer == reuse)
   local origin = vim.api.nvim_get_current_win()
