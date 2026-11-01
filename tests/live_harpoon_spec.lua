@@ -139,6 +139,36 @@ local ok, err = xpcall(function()
   assert(harpoon:list():length() == 1,
     "Harpoon did not recover the original project's list")
   print("PASS real Harpoon project lists remain isolated")
+
+  -- A new Neovim process reads the saved list through Orbit's spec config.
+  local child = vim.fs.joinpath(workspace, "restart child.lua")
+  local result = vim.fs.joinpath(workspace, "restart result.json")
+  assert(vim.fn.writefile({
+    "for _, path in ipairs(" .. vim.inspect({
+      root,
+      vim.fs.joinpath(workspace, "plenary"),
+      vim.fs.joinpath(workspace, "harpoon"),
+    }) .. ") do vim.opt.rtp:prepend(path) end",
+    "vim.api.nvim_set_current_dir(" .. vim.inspect(project) .. ")",
+    "require('harpoon.data').test.set_fullpath(function() return "
+      .. vim.inspect(persistence_path) .. " end)",
+    "require('orbit').setup()",
+    "for _, spec in ipairs(require('orbit.modules.navigation').spec()) do",
+    "  if spec[1] == 'Orbit-Lua/harpoon' then spec.config() end",
+    "end",
+    "local list = require('harpoon'):list()",
+    "local item = list:get(1) or {}",
+    "vim.fn.writefile({ vim.json.encode({ length = list:length(),",
+    "  value = item.value, context = item.context }) }, " .. vim.inspect(result) .. ")",
+  }, child) == 0)
+  local restarted = vim.system({ vim.v.progpath, "--headless", "-u", "NONE", "-i", "NONE",
+    "-l", child }, { text = true, timeout = 60000 }):wait()
+  assert(restarted.code == 0, "restarted Neovim failed: " .. tostring(restarted.stderr))
+  local reopened = vim.json.decode(table.concat(vim.fn.readfile(result), "\n"))
+  assert(reopened.length == 1 and reopened.value == "nested/sample.lua"
+    and reopened.context.row == 2 and reopened.context.col == 3,
+    "restarted Neovim lost the Harpoon list: " .. vim.inspect(reopened))
+  print("PASS real Harpoon list survives a Neovim process restart")
 end, debug.traceback)
 
 vim.api.nvim_set_current_dir(cwd)
