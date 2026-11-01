@@ -60,11 +60,32 @@ end
 ---Close only upstream menu buffers, then release temporary input ownership.
 function M.close()
   local state = package.loaded["menu.state"]
-  local buffer = state and state.bufids[1]
+  local buffers = vim.deepcopy(state and state.bufids or {})
+  local buffer = buffers[1]
+  local closed = false
   if buffer and vim.api.nvim_buf_is_valid(buffer) then
     local quit = mapping("n", "q", buffer)
-    assert(quit and type(quit.callback) == "function", "Context menu has no close callback")
-    quit.callback()
+    if quit and type(quit.callback) == "function" then closed = pcall(quit.callback) end
+  end
+  if state and (not closed or #state.bufids > 0) then
+    -- Upstream allocates buffers and renders before installing close mappings.
+    -- A failed render must not leave an unclosable session behind.
+    local volt_state, events = package.loaded["volt.state"], package.loaded["volt.events"]
+    for _, id in ipairs(buffers) do
+      if vim.api.nvim_buf_is_valid(id) then
+        local ok, err = pcall(vim.api.nvim_buf_delete, id, { force = true })
+        if not ok then vim.notify(tostring(err), vim.log.levels.ERROR, { title = "Context Menu" }) end
+      end
+      if volt_state then volt_state[id] = nil end
+      if events then
+        events.bufs = vim.tbl_filter(function(value) return value ~= id end, events.bufs)
+      end
+    end
+    state.bufs, state.bufids, state.nested_menu, state.config = {}, {}, "", nil
+    if active and vim.api.nvim_win_is_valid(active.win)
+      and vim.api.nvim_win_get_buf(active.win) == active.buf then
+      vim.api.nvim_set_current_win(active.win)
+    end
   end
   release()
 end

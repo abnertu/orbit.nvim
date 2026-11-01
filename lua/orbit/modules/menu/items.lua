@@ -28,7 +28,10 @@ local function deferred(source, action)
       if not vim.api.nvim_win_is_valid(source.win)
         or not vim.api.nvim_buf_is_valid(source.buf)
         or vim.api.nvim_win_get_buf(source.win) ~= source.buf then return end
-      local ok, err = pcall(vim.api.nvim_win_call, source.win, action)
+      local ok, err = pcall(function()
+        vim.api.nvim_set_current_win(source.win)
+        action()
+      end)
       if not ok then vim.notify(tostring(err), vim.log.levels.ERROR, { title = "Context Menu" }) end
     end)
   end
