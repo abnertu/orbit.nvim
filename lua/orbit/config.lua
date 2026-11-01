@@ -1,7 +1,36 @@
 local M = {}
 
+---@class Orbit.ModuleOverrides
+---@field editor? Orbit.EditorOptions
+---@field filetypes? Orbit.FiletypesOptions
+---@field keymaps? Orbit.KeymapsOptions
+---@field keyguide? Orbit.KeyguideOptions
+---@field events? Orbit.EventsOptions
+---@field system? Orbit.SystemOptions
+---@field python_tools? Orbit.PythonToolsOptions
+---@field corekeys? Orbit.CorekeysOptions
+---@field commands? Orbit.CommandsOptions
+---@field icons? Orbit.IconsOptions
+---@field git? Orbit.GitOptions
+---@field editor_plugins? Orbit.EditorPluginsOptions
+---@field diagnostics_plugins? Orbit.DiagnosticsPluginsOptions
+---@field messages? Orbit.MessagesOptions
+---@field snacks? Orbit.SnacksOptions
+---@field mason? Orbit.MasonOptions
+---@field treesitter_plugins? Orbit.TreesitterPluginsOptions
+---@field formatter? Orbit.FormatterOptions
+---@field linter? Orbit.LinterOptions
+---@field markdown? Orbit.MarkdownOptions
+---@field navigation? Orbit.NavigationOptions
+---@field lsp? Orbit.LspOptions
+---@field dap? Orbit.DapOptions
+---@field hangar? Orbit.HangarOptions
+---@field completion? Orbit.CompletionOptions
+---@field lsp_providers? Orbit.LspProvidersOptions
+---@field plugins? Orbit.PluginsOptions
+
 ---@class Orbit.Config
----@field modules? table<string, table>
+---@field modules? Orbit.ModuleOverrides
 
 local schema
 
@@ -74,15 +103,17 @@ local function resolve(value, node, path)
   end
 
   if kind == "object" then
-    local result = default_for(node)
+    local overrides = {}
     for name, child_value in pairs(value) do
       local child = (node.properties or {})[name]
       if child == nil then
         error(path .. "." .. name .. ": unknown setting", 0)
       end
-      result[name] = resolve(child_value, child, path .. "." .. name)
+      overrides[name] = resolve(child_value, child, path .. "." .. name)
     end
-    return result
+    -- Validate first, then overlay only supplied fields. Deep merging would
+    -- merge arrays by index and change the settings replacement contract.
+    return vim.tbl_extend("force", default_for(node), overrides)
   elseif kind == "array" then
     local result = {}
     for index, item in ipairs(value) do

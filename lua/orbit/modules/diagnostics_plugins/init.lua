@@ -10,10 +10,12 @@ local accepted
 ---@field preview_height_percent integer @default(30) @minimum(1) @maximum(100) @restart(true) # Diagnostic preview height percentage.
 ---@field todo_icon string @default(" ") @minLength(1) @restart(true) # WORKAROUND marker icon.
 
+---@return Orbit.DiagnosticsPluginsOptions?
 function M.capture()
   return accepted and vim.deepcopy(accepted) or nil
 end
 
+---@param snapshot Orbit.DiagnosticsPluginsOptions?
 function M.restore(snapshot)
   accepted = snapshot and vim.deepcopy(snapshot) or nil
 end
@@ -44,7 +46,7 @@ local function todo_picker(keywords)
   end
 end
 
----@return table[]
+---@return LazySpec
 function M.spec()
   if not accepted or not accepted.enabled then
     return {}

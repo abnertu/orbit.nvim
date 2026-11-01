@@ -20,10 +20,12 @@ local accepted
 ---@field comment boolean @default(true) # Parse SQL after language=sql comments.
 ---@field auto boolean @default(true) # Parse SQL assigned to sql-prefixed variables.
 
+---@return Orbit.TreesitterPluginsOptions?
 function M.capture()
   return accepted and vim.deepcopy(accepted) or nil
 end
 
+---@param snapshot Orbit.TreesitterPluginsOptions?
 function M.restore(snapshot)
   accepted = snapshot and vim.deepcopy(snapshot) or nil
 end
@@ -38,7 +40,7 @@ function M.current_options()
   return accepted and vim.deepcopy(accepted) or nil
 end
 
----@return table[]
+---@return LazySpec
 function M.spec()
   if not accepted or not accepted.enabled then
     return {}

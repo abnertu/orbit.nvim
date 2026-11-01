@@ -10,10 +10,12 @@ local accepted
 ---@field installed_icon string @default(" ") @restart(true) # Installed package icon.
 ---@field uninstalled_icon string @default(" ") @restart(true) # Uninstalled package icon.
 
+---@return Orbit.MasonOptions?
 function M.capture()
   return accepted and vim.deepcopy(accepted) or nil
 end
 
+---@param snapshot Orbit.MasonOptions?
 function M.restore(snapshot)
   accepted = snapshot and vim.deepcopy(snapshot) or nil
 end
@@ -23,7 +25,7 @@ function M.setup(opts)
   accepted = require("orbit.config").resolve_module("mason", opts)
 end
 
----@return table[]
+---@return LazySpec
 function M.spec()
   if not accepted or not accepted.enabled then
     return {}

@@ -20,10 +20,12 @@ local groups = {
   { "<leader>w", group = "whichkey" },
 }
 
+---@return Orbit.KeyguideOptions?
 function M.capture()
   return accepted and vim.deepcopy(accepted) or nil
 end
 
+---@param snapshot Orbit.KeyguideOptions?
 function M.restore(snapshot)
   accepted = snapshot and vim.deepcopy(snapshot) or nil
 end
@@ -40,7 +42,7 @@ function M.query()
   vim.api.nvim_cmd({ cmd = "WhichKey", args = { query } }, {})
 end
 
----@return table[]
+---@return LazySpec
 function M.spec()
   if not accepted or not accepted.enabled then return {} end
   local opts = vim.deepcopy(accepted)

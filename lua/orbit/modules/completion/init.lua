@@ -10,10 +10,12 @@ local accepted
 ---@field cmdline boolean @default(true) @restart(true) # Complete command line input.
 ---@field snippet_history boolean @default(true) @restart(true) # Keep LuaSnip jump history.
 
+---@return Orbit.CompletionOptions?
 function M.capture()
   return accepted and vim.deepcopy(accepted) or nil
 end
 
+---@param snapshot Orbit.CompletionOptions?
 function M.restore(snapshot)
   accepted = snapshot and vim.deepcopy(snapshot) or nil
 end
@@ -23,7 +25,7 @@ function M.setup(opts)
   accepted = require("orbit.config").resolve_module("completion", opts)
 end
 
----@return table[]
+---@return LazySpec
 function M.spec()
   if not accepted or not accepted.enabled then return {} end
   local c = vim.deepcopy(accepted)

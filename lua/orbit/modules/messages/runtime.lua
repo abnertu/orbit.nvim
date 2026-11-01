@@ -29,7 +29,7 @@ end
 ---@param c Orbit.MessagesOptions
 ---@return table
 function M.options(c)
-  local size = docs_size(c)
+  local documentation_window = { border = "single", size = docs_size(c) }
   return {
     routes = {
       {
@@ -66,7 +66,7 @@ function M.options(c)
       },
       hover = {
         enabled = c.hover, silent = true,
-        opts = { border = "single", size = vim.deepcopy(size) },
+        opts = vim.deepcopy(documentation_window),
       },
       signature = {
         enabled = c.signature,
@@ -74,10 +74,9 @@ function M.options(c)
           enabled = true, trigger = true,
           luasnip = true, throttle = 50,
         },
-        opts = {
-          focusable = false, border = "single",
-          size = vim.deepcopy(size),
-        },
+        opts = vim.tbl_extend("force", vim.deepcopy(documentation_window), {
+          focusable = false,
+        }),
       },
       progress = { enabled = c.progress },
       message = { enabled = c.lsp_message },

@@ -33,10 +33,12 @@ local accepted
 ---@field diagnostics Orbit.LspDiagnostics @default({}) @restart(true) # Shared diagnostics presentation.
 ---@field semantic_tokens boolean @default(false) @restart(true) # Keep server semantic tokens instead of Tree-sitter.
 
+---@return Orbit.LspOptions?
 function M.capture()
   return accepted and vim.deepcopy(accepted) or nil
 end
 
+---@param snapshot Orbit.LspOptions?
 function M.restore(snapshot)
   accepted = snapshot and vim.deepcopy(snapshot) or nil
 end
@@ -46,7 +48,7 @@ function M.setup(opts)
   accepted = require("orbit.config").resolve_module("lsp", opts)
 end
 
----@return table[]
+---@return LazySpec
 function M.spec()
   if not accepted or not accepted.enabled then
     return {}

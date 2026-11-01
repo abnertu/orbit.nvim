@@ -8,10 +8,12 @@ local accepted
 ---@field timeout_ms integer @default(5000) @minimum(100) @maximum(60000) @restart(true) # Formatter timeout in milliseconds.
 ---@field lsp_format 'fallback'|'never'|'first'|'last' @default("fallback") @restart(true) # LSP formatting fallback strategy.
 
+---@return Orbit.FormatterOptions?
 function M.capture()
   return accepted and vim.deepcopy(accepted) or nil
 end
 
+---@param snapshot Orbit.FormatterOptions?
 function M.restore(snapshot)
   accepted = snapshot and vim.deepcopy(snapshot) or nil
 end
@@ -47,7 +49,7 @@ local function default_filetypes()
   }
 end
 
----@return table[]
+---@return LazySpec
 function M.spec()
   if not accepted or not accepted.enabled then
     return {}
