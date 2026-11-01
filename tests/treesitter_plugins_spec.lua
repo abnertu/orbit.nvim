@@ -116,4 +116,48 @@ check("later plugin changes are deferred until restart", function()
   assert(orbit.get_pending_restart()["orbit.modules.treesitter_plugins.context"] == false)
 end)
 
+check("TSInstallAll installs every registry parser through the spec config", function()
+  orbit.setup()
+  local spec = feature.spec()[1]
+  local previous = package.loaded["nvim-treesitter"]
+  local setup_opts, received
+  package.loaded["nvim-treesitter"] = {
+    setup = function(opts) setup_opts = opts end,
+    install = function(names) received = names end,
+  }
+  assert(vim.api.nvim_get_commands({}).TSInstallAll == nil)
+  spec.config(nil, spec.opts)
+  spec.config(nil, spec.opts)
+  vim.cmd.TSInstallAll()
+  package.loaded["nvim-treesitter"] = previous
+  assert(setup_opts.install_dir == spec.opts.install_dir)
+  local expected = vim.tbl_keys(require("orbit.modules.hangar.registry").parser)
+  table.sort(expected)
+  assert(vim.deep_equal(received, expected), vim.inspect(received))
+  vim.api.nvim_del_user_command("TSInstallAll")
+end)
+
+check("TSInstallAll never replaces a user command and can be disabled", function()
+  package.loaded["orbit.modules.treesitter_plugins.commands"] = nil
+  local previous = package.loaded["nvim-treesitter"]
+  package.loaded["nvim-treesitter"] = { setup = function() end, install = function() end }
+  local notify, warned = vim.notify, nil
+  vim.notify = function(message) warned = message end
+  vim.api.nvim_create_user_command("TSInstallAll", "let g:orbit_user_install = 1", {})
+  local spec = feature.spec()[1]
+  spec.config(nil, spec.opts)
+  vim.cmd.TSInstallAll()
+  vim.notify = notify
+  assert(vim.g.orbit_user_install == 1 and warned:find("TSInstallAll", 1, true))
+  vim.api.nvim_del_user_command("TSInstallAll")
+  vim.g.orbit_user_install = nil
+
+  package.loaded["orbit.modules.treesitter_plugins.commands"] = nil
+  feature.setup({ install_all = false })
+  spec = feature.spec()[1]
+  spec.config(nil, spec.opts)
+  package.loaded["nvim-treesitter"] = previous
+  assert(vim.api.nvim_get_commands({}).TSInstallAll == nil)
+end)
+
 print(string.format("%d Tree-sitter tests passed.", passed))

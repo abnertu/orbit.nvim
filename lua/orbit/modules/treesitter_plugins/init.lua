@@ -4,6 +4,7 @@ local accepted
 ---@class Orbit.TreesitterPluginsOptions # Tree-sitter parser and companion plugins.
 ---@field enabled? boolean @default(true) @restart(true) # Include Tree-sitter plugin specs.
 ---@field core? boolean @default(true) @restart(true) # Install the main parser manager.
+---@field install_all? boolean @default(true) @restart(true) # Add TSInstallAll for every registry parser.
 ---@field context? boolean @default(true) @restart(true) # Enable Tree-sitter context view.
 ---@field autotag? boolean @default(true) @restart(true) # Enable HTML/XML auto tags.
 ---@field context_lines? integer @default(3) @minimum(0) @maximum(50) @restart(true) # Context line limit.
@@ -60,6 +61,12 @@ function M.spec()
         install_dir = c.install_dir ~= "" and c.install_dir or
           vim.fs.joinpath(vim.fn.stdpath("data"), "site"),
       },
+      config = function(_, opts)
+        require("nvim-treesitter").setup(opts)
+        if c.install_all then
+          require("orbit.modules.treesitter_plugins.commands").setup()
+        end
+      end,
     }
   end
   if c.context then
