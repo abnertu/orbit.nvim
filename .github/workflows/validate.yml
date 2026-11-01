@@ -223,6 +223,11 @@ jobs:
           nvim --headless -u NONE -l tests/dotnet_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'dotnet-cli feature spec failed' }
 
+      - name: Test Edgy layout owner
+        run: |
+          nvim --headless -u NONE -l tests/layout_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Edgy layout owner tests failed' }
+
       - name: Test first-demand Lazy startup with locked local Git
         run: |
           nvim --headless -u NONE -l tests/plugins_integration_spec.lua
