@@ -63,6 +63,8 @@ The independent `live-upstream.yml` workflow exercises a pinned real mini.icons 
 
 The opt-in plugin module owns one package searcher and one demand-event group. It initializes an existing Lazy installation on first use. Newly registered file observers receive only the missed event. Setup does not clone plugins or require the network. First demand may clone the stable Lazy source when explicitly authorized by `bootstrap = true`. The optional lockfile pins the checkout. Existing installations are never replaced by bootstrap. All plugin options are restart-only because loaded plugins cannot be rolled back.
 
+The plugin owner retains Orbit's native package runtime and `after` directory through Lazy's runtimepath reset. This preserves manifest imports, deferred helpers, and query extensions.
+
 Keep plugin loading with Lazy until a separate benchmark and compatibility plan approves another owner. Keep tool state and operations with hangar.nvim. Keep the configuration registry and runtime adapters within orbit.nvim.
 
 The editor module owns core statusline, clipboard, mouse, indentation and signcolumn defaults. Its schema declares every migrated scalar option.
@@ -80,6 +82,8 @@ The events module owns core Neovim events and the legacy one-shot `User FilePost
 The events module owns only standalone core events. It registers callbacks once and disables them through state instead of destroying an event group needed for rollback.
 
 The startup integration test attaches an embedded Neovim UI and observes native startup events. It covers empty, startup-interface, existing-file, new-file, and directory arguments. A local Git fixture verifies optional Lazy activation and read-observer counts. Real EditorConfig replay restores project indentation after FileType callbacks. Directory startup currently consumes FilePost before its argument buffer is removed. The fixture disables netrw to isolate Orbit's directory owner; it does not verify explorer or dashboard integration.
+
+The separate upstream startup test installs Orbit through native `pack/start` and runs pinned Lazy, Snacks, Oil, and nvim-tree. Its attached UI verifies dashboard rendering, backing-buffer retention, file arguments, directory cleanup, mapped explorer demand, and repeated setup. It preserves real Lazy path resets and built-in plugin loading. Directory arguments do not automatically open an explorer. Artwork, themes, and broader explorer workflows remain separate acceptance tasks.
 
 The commands module owns the settings command and restores its registration after failed activation. It does not replace other commands.
 
