@@ -223,6 +223,29 @@ check("invalid mouse sources and deferred disposed sources execute no action", f
   vim.api.nvim_buf_delete(replacement, { force = true })
 end)
 
+check("closing a partial nested render disposes every allocated buffer and window", function()
+  open()
+  local root_buffer = state.bufids[1]
+  -- Like upstream, the old q callback captured only the root before rendering
+  -- allocated another buffer and failed before refreshing the close mapping.
+  vim.keymap.set("n", "q", function()
+    vim.api.nvim_buf_delete(root_buffer, { force = true })
+    state.bufids = {}
+  end, { buffer = root_buffer })
+  local partial = vim.api.nvim_create_buf(false, true)
+  local window = vim.api.nvim_open_win(partial, false, {
+    relative = "editor", row = 1, col = 1, width = 10, height = 2,
+  })
+  state.bufids[#state.bufids + 1] = partial
+  runtime.close()
+  assert(not vim.api.nvim_buf_is_valid(root_buffer))
+  assert(not vim.api.nvim_buf_is_valid(partial) and not vim.api.nvim_win_is_valid(window),
+    "partial nested render left an orphan menu buffer or window")
+  assert(#state.bufids == 0)
+  open()
+  runtime.close()
+end)
+
 check("opening and action failures report errors and release temporary ownership", function()
   local notify, menu_open = vim.notify, package.loaded.menu.open
   local errors = {}
