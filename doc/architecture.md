@@ -60,7 +60,7 @@ The Mason module owns only the command-lazy package manager declaration and its 
 
 The messages module owns Noice's commandline, notification, and LSP presentation settings. It constructs routes and popup layouts only at the Lazy callback boundary. It does not import Noice during root setup. Pinned Linux/Windows tests verify formatter notifications render in a real NUI popup. The popup dismissal and reopen lifecycle has dedicated coverage. Native-package commandline children combine real Lazy, Blink, Noice, and NUI through production callbacks. Actual input verifies commandline popup rendering, cancellation, reopening, repeated setup, and each owner's independent disabling. Native popupmenu rendering, LSP presentation, and theme parity remain unverified.
 
-The Snacks module owns the legacy picker shortcuts and the narrow invalid-window redraw guard. Theme, dashboard art and extended picker layout migration remain separate.
+The Snacks module owns the picker shortcuts, the narrow invalid-window redraw guard, dashboard artwork and sections, four picker layouts and a notifier source filter. A pinned Linux/Windows test drives real Snacks pickers, the dashboard and notifications.
 
 The diagnostics_plugins owner contributes Trouble and todo-comments. Its LSP-reference handler and TODO-picker entry points are covered by Lua fixtures; Snacks integration is pending its own module.
 
