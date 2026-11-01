@@ -113,4 +113,35 @@ function M.list(tab)
   return vim.tbl_filter(eligible, vim.api.nvim_list_bufs())
 end
 
+---Delete a listed normal buffer while keeping every window that shows it.
+---Each such window moves to the neighbour in this tab's order, or to a new
+---empty buffer. Modified and special buffers are refused.
+---@param buffer integer
+---@return boolean, string?
+function M.close(buffer)
+  if not eligible(buffer) or vim.bo[buffer].buftype ~= "" then
+    return false, "cannot close a special or unlisted buffer"
+  end
+  if vim.bo[buffer].modified then
+    return false, "buffer has unsaved changes: " .. vim.api.nvim_buf_get_name(buffer)
+  end
+  local list = M.list()
+  local index = 1
+  for position, item in ipairs(list) do
+    if item == buffer then index = position end
+  end
+  local replacement = list[index + 1] or list[index - 1]
+  if replacement == buffer then replacement = nil end
+  for _, win in ipairs(vim.fn.win_findbuf(buffer)) do
+    if replacement then
+      vim.api.nvim_win_set_buf(win, replacement)
+    else
+      replacement = vim.api.nvim_create_buf(true, false)
+      vim.api.nvim_win_set_buf(win, replacement)
+    end
+  end
+  vim.api.nvim_buf_delete(buffer, { force = false })
+  return true
+end
+
 return M

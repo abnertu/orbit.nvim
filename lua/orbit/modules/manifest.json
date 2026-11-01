@@ -1,6 +1,8 @@
 {
   "order": [
     "editor",
+    "statusline",
+    "tabline",
     "filetypes",
     "theme",
     "keymaps",

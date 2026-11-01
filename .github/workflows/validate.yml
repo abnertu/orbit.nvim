@@ -233,6 +233,16 @@ jobs:
           nvim --headless -u NONE -l tests/theme_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Theme owner tests failed' }
 
+      - name: Test status line owner
+        run: |
+          nvim --headless -u NONE -l tests/statusline_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Status line tests failed' }
+
+      - name: Test tab line owner and mouse input
+        run: |
+          nvim --headless -u NONE -l tests/tabline_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Tab line tests failed' }
+
       - name: Test first-demand Lazy startup with locked local Git
         run: |
           nvim --headless -u NONE -l tests/plugins_integration_spec.lua

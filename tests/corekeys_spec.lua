@@ -261,9 +261,11 @@ end)
 check("disabling restores original buffer cycling keys", function()
   assert(rhs("<Tab>") == previous_next)
   assert(rhs("<S-Tab>") == previous_prev)
-  assert(not require("orbit.buffers").attached("corekeys"))
-  assert(not pcall(vim.api.nvim_get_autocmds, { group = "OrbitBufferOrder" }),
-    "disabling must remove the buffer-order group")
+  local buffers = require("orbit.buffers")
+  assert(not buffers.attached("corekeys"))
+  -- The group stays only while another owner, such as the tab line, uses it.
+  assert(pcall(vim.api.nvim_get_autocmds, { group = "OrbitBufferOrder" })
+    == buffers.attached("tabline"), "the last owner must remove the buffer-order group")
 end)
 
 check("reenabling does not stack mappings", function()

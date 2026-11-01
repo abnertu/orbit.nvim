@@ -1415,6 +1415,18 @@
           },
           "type": "object"
         },
+        "statusline": {
+          "additionalProperties": false,
+          "description": "Orbit global status line.",
+          "properties": {
+            "enabled": {
+              "default": true,
+              "description": "Draw the Orbit status line.",
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
         "system": {
           "additionalProperties": false,
           "description": "Platform-specific recovery commands.",
@@ -1427,6 +1439,18 @@
             "enabled": {
               "default": true,
               "description": "Enable platform recovery commands.",
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
+        "tabline": {
+          "additionalProperties": false,
+          "description": "Orbit buffer and tab line.",
+          "properties": {
+            "enabled": {
+              "default": true,
+              "description": "Draw the Orbit tab line.",
               "type": "boolean"
             }
           },
