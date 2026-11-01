@@ -20,7 +20,14 @@ function M.select()
   end
   table.sort(names)
   vim.ui.select(names, { prompt = "Select colorscheme" }, function(choice)
-    if choice then apply(choice) end
+    if not choice or not apply(choice) then return end
+    if not package.loaded["orbit.modules.theme.runtime"] then return end
+    -- The theme owner saves the choice only to an existing settings file.
+    local saved, err = require("orbit.modules.theme.runtime").persist(choice)
+    if not saved then
+      vim.notify("[theme] " .. choice .. " applies to this session: " .. tostring(err),
+        vim.log.levels.INFO)
+    end
   end)
 end
 

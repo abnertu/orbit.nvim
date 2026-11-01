@@ -156,6 +156,11 @@ jobs:
           nvim --headless -u NONE -l tests/live_layout_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Real Edgy layout integration failed' }
 
+      - name: Run pinned real tokyonight theme integration
+        run: |
+          nvim --headless -u NONE -l tests/live_theme_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Real theme integration failed' }
+
       - name: Run pinned real Harpoon navigation integration
         run: |
           nvim --headless -u NONE -l tests/live_harpoon_spec.lua

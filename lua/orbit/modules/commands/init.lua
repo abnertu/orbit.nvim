@@ -13,6 +13,12 @@ local function current_path()
   return require("orbit.settings").path(owned_path ~= "" and owned_path or nil)
 end
 
+---Return the settings path used by the settings command.
+---@return string
+function M.path()
+  return current_path()
+end
+
 local function initialize(path)
   local stat, err, code = vim.uv.fs_stat(path)
   if stat then
