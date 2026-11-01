@@ -5,6 +5,18 @@ local orbit = require("orbit")
 local feature = require("orbit.modules.completion")
 local runtime = require("orbit.modules.completion.runtime")
 local passed = 0
+---@type {suppress_events_for_callback: fun(self: {ignore_next_cursor_moved: boolean}, callback: fun())}
+local cmdline_events = {
+  -- Model the external 1.x boundary before Orbit installs its compatibility guard.
+  suppress_events_for_callback = function(self, callback)
+    local before = vim.fn.getcmdpos()
+    callback()
+    self.ignore_next_cursor_moved = true
+    if vim.fn.getcmdpos() == before then
+      vim.defer_fn(function() self.ignore_next_cursor_moved = false end, 20)
+    end
+  end,
+}
 
 local function check(name, fn)
   local ok, err = xpcall(fn, debug.traceback)
@@ -111,6 +123,7 @@ check("Blink and autopairs config callbacks each call their plugin once", functi
       blink_calls = blink_calls + 1
     end }
   end
+  package.preload["blink.cmp.lib.cmdline_events"] = function() return cmdline_events end
   package.preload["nvim-autopairs"] = function()
     return { setup = function(opts)
       assert(opts.disable_filetype[2] == "vim")
@@ -124,7 +137,46 @@ check("Blink and autopairs config callbacks each call their plugin once", functi
   pairs.config(nil, pairs.opts)
   assert(blink_calls == 1 and pair_calls == 1)
   package.loaded["blink.cmp"], package.preload["blink.cmp"] = nil, nil
+  package.loaded["blink.cmp.lib.cmdline_events"], package.preload["blink.cmp.lib.cmdline_events"] = nil, nil
   package.loaded["nvim-autopairs"], package.preload["nvim-autopairs"] = nil, nil
+end)
+
+check("older commandline timeouts cannot release newer previews or other instances", function()
+  local original_pos, original_mode, original_defer = vim.fn.getcmdpos, vim.api.nvim_get_mode, vim.defer_fn
+  local cursor, mode = 1, "c"
+  ---@type fun()[]
+  local deferred = {}
+  vim.fn.getcmdpos = function() return cursor end
+  vim.api.nvim_get_mode = function() return { mode = mode } end
+  vim.defer_fn = function(callback, delay)
+    assert(delay == 20)
+    deferred[#deferred + 1] = callback
+  end
+  local ok, err = xpcall(function()
+    local first = { ignore_next_cursor_moved = false }
+    local second = { ignore_next_cursor_moved = false }
+    cmdline_events.suppress_events_for_callback(first, function() end)
+    assert(#deferred == 1 and first.ignore_next_cursor_moved)
+    cmdline_events.suppress_events_for_callback(first, function() cursor = 2 end)
+    assert(#deferred == 1, "cursor-changing preview scheduled a release")
+    deferred[1]()
+    assert(first.ignore_next_cursor_moved, "old timeout cleared newer preview suppression")
+    cmdline_events.suppress_events_for_callback(first, function() end)
+    cmdline_events.suppress_events_for_callback(second, function() end)
+    assert(#deferred == 3)
+    deferred[2]()
+    assert(not first.ignore_next_cursor_moved and second.ignore_next_cursor_moved,
+      "latest release changed another event instance")
+    deferred[3]()
+    assert(not second.ignore_next_cursor_moved, "latest no-movement timeout did not release")
+    mode = "n"
+    local called = false
+    cmdline_events.suppress_events_for_callback(first, function() called = true end)
+    assert(called and not first.ignore_next_cursor_moved and #deferred == 3,
+      "non-commandline callback changed suppression")
+  end, debug.traceback)
+  vim.fn.getcmdpos, vim.api.nvim_get_mode, vim.defer_fn = original_pos, original_mode, original_defer
+  assert(ok, err)
 end)
 
 check("documentation deduplicates detail without discarding Markdown", function()

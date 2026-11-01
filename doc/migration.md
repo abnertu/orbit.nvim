@@ -42,6 +42,7 @@ The module manifest orders runtime setup and Lazy specs. LuaDoc in each owning `
 - Pinned native-package startup tests combine real Lazy, Snacks, Oil, and nvim-tree. They cover dashboard rendering, file arguments, directory cleanup, mapped explorers, and runtimepath retention.
 - Pinned Blink/LuaSnip input tests verify completion windows, acceptance events, snippet navigation, Escape, independent InsertLeave cleanup, and repeated setup. Native snippet fallback has a separate control.
 - Pinned Blink/Noice commandline tests verify colon demand, navigation, acceptance, execution, cancellation, search behavior, and independent owner disabling.
+- A Blink 1.x timeout guard preserves newer commandline previews when older suppression releases expire.
 
 ## Outstanding legacy contracts
 
