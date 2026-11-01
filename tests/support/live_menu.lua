@@ -124,6 +124,14 @@ return function(opts)
   end
 
   package.loaded["orbit.tests.live_menu"] = {
+    ---@param first string
+    ---@param second string
+    ---@return boolean
+    same_path = function(first, second)
+      first, second = vim.fs.normalize(first), vim.fs.normalize(second)
+      if vim.fn.has("win32") == 1 then first, second = first:lower(), second:lower() end
+      return first == second
+    end,
     ---@return LazySpec
     import = function()
       ---@type LazySpec

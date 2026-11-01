@@ -265,7 +265,7 @@ end)
     exec(string.format("vim.cmd.vsplit(%q); vim.api.nvim_set_current_win(%d); return true", second, initial.win))
     local target = exec(string.format([[
       for _, win in ipairs(vim.api.nvim_list_wins()) do
-        if vim.api.nvim_buf_get_name(vim.api.nvim_win_get_buf(win)) == %q then
+        if require('orbit.tests.live_menu').same_path(vim.api.nvim_buf_get_name(vim.api.nvim_win_get_buf(win)), %q) then
           local pos=vim.fn.screenpos(win,1,1); return {win=win,row=pos.row-1,col=pos.col+3}
         end
       end
@@ -291,7 +291,9 @@ end)
     s = open(treepos.row, treepos.col)
     click(s, "Open")
     closed()
-    await(function() return exec("return vim.api.nvim_buf_get_name(0)") == second end, "tree menu did not open clicked node")
+    await(function() return exec(string.format(
+      "return require('orbit.tests.live_menu').same_path(vim.api.nvim_buf_get_name(0), %q)", second)) end,
+      "tree menu did not open clicked node")
     assert(vim.deep_equal(vim.fn.readfile(second), { "tree target" }))
   end, debug.traceback)
 
