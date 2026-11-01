@@ -204,6 +204,7 @@ check("shell arguments are an argv vector and match the host platform", function
 end)
 
 check("an actual Neovim subprocess starts in a terminal buffer", function()
+  term.is_live_terminal = actual_is_live_terminal
   term.spawn = actual_spawn
   local original_argv = term.shell_argv
   term.shell_argv = function()
@@ -291,4 +292,5 @@ check("leader and mode mappings survive injected failure and disable", function(
 end)
 
 term.spawn, term.start_insert = actual_spawn, actual_start_insert
+term.is_live_terminal = actual_is_live_terminal
 print(string.format("%d terminal keymap tests passed.", passed))
