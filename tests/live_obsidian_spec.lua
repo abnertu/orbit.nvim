@@ -276,6 +276,39 @@ local ok, err = xpcall(function()
   assert(table.concat(vim.fn.readfile(note_path), "\n") == rewritten,
     "vault check modified a previously saved note")
   print("PASS real Obsidian vault audit warns without changing notes")
+
+  -- Follow existing wiki and Markdown links through the real upstream command.
+  -- Both links must resolve within the vault without a picker or new note.
+  local navigation_path = vim.fs.joinpath(vault, "navigation.md")
+  local navigation_lines = {
+    "# Vault navigation",
+    "[[live-note]]",
+    "[Saved note](live-note.md)",
+  }
+  assert(vim.fn.writefile(navigation_lines, navigation_path) == 0)
+  local files_before = vim.fn.globpath(vault, "*.md", false, true)
+  table.sort(files_before)
+  for _, row in ipairs({ 2, 3 }) do
+    vim.cmd("edit " .. vim.fn.fnameescape(assert(vim.uv.fs_realpath(navigation_path))))
+    assert(vim.b.obsidian_buffer == true,
+      "navigation source did not attach to the real vault")
+    vim.api.nvim_win_set_cursor(0, { row, 5 })
+    vim.cmd("Obsidian follow_link")
+    assert(vim.wait(5000, function()
+      return canonical(vim.api.nvim_buf_get_name(0)) == canonical(note_path)
+    end, 20), "real follow_link did not resolve vault link on row " .. row)
+    assert(vim.b.obsidian_buffer == true,
+      "follow_link target did not attach to the real vault")
+  end
+  local files_after = vim.fn.globpath(vault, "*.md", false, true)
+  table.sort(files_after)
+  assert(vim.deep_equal(files_after, files_before),
+    "following existing links unexpectedly created a note")
+  assert(vim.deep_equal(vim.fn.readfile(navigation_path), navigation_lines),
+    "following links rewrote the source note")
+  assert(table.concat(vim.fn.readfile(note_path), "\\n") == rewritten,
+    "following links modified the destination note")
+  print("PASS real Obsidian wiki/Markdown follow_link navigation preserves notes")
 end, debug.traceback)
 
 vim.wo.conceallevel = initial_conceal
