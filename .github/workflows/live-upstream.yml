@@ -161,6 +161,11 @@ jobs:
           nvim --headless -u NONE -l tests/live_theme_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Real theme integration failed' }
 
+      - name: Run pinned real Snacks dashboard and picker integration
+        run: |
+          nvim --headless -u NONE -l tests/live_snacks_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Real Snacks integration failed' }
+
       - name: Run pinned real Harpoon navigation integration
         run: |
           nvim --headless -u NONE -l tests/live_harpoon_spec.lua
