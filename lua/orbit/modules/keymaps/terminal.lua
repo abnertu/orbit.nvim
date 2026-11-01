@@ -101,7 +101,12 @@ function M.open(pos, id)
   local buffer = reuse
     and vim.api.nvim_buf_is_valid(reuse)
     and reuse or nil
-  if buffer and vim.bo[buffer].buftype == "terminal" then
+  -- A saved buffer may have been repurposed by another owner. Only
+  -- terminal buffers with a running PTY are safe to reuse.
+  if buffer and vim.bo[buffer].buftype ~= "terminal" then
+    buffer = nil
+  end
+  if buffer then
     -- A terminal buffer remains valid after its PTY exits. Reopening it
     -- cannot restart the shell, so allocate a fresh buffer and job instead.
     local job = vim.b[buffer].terminal_job_id
