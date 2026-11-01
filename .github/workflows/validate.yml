@@ -178,6 +178,11 @@ jobs:
           nvim --headless -u NONE -l tests/live_terminal_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Live terminal shell lifecycle failed' }
 
+      - name: Test interactive shell terminal sessions
+        run: |
+          nvim --headless -u NONE -l tests/terminal_session_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Interactive terminal session tests failed' }
+
       - name: Test migrated T-SQL LuaSnip declarations
         run: |
           nvim --headless -u NONE -l tests/tsql_snippets_spec.lua
