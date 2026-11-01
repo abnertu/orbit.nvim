@@ -44,14 +44,18 @@ end
 
 ---@param completion boolean
 ---@param messages boolean
-local function check(completion, messages)
+---@param scenario? 'typing'|'batch'|'execute'|'cancel'|'replace-colon'|'replace-search'|'search-forward'|'search-backward'|'cmdline-disabled'
+local function check(completion, messages, scenario)
+  scenario = scenario or "typing"
+  local completing = completion and scenario ~= "cmdline-disabled"
   local kind = completion and (messages and "combined" or "blink-only") or "noice-only"
+  kind = kind .. "-" .. scenario
   local base = vim.fs.joinpath(workspace, kind)
   local site = vim.fs.joinpath(base, "site")
   local installed = vim.fs.joinpath(site, "pack/orbit/start/orbit.nvim")
   local config = vim.fs.joinpath(base, "config")
   local init = vim.fs.joinpath(config, "init.lua")
-  local job, request = 0, 0
+  local job, request, enters, extra_executed = 0, 0, 0, 0
   ---@type string[]
   local stderr = {}
   ---@type {label: string, command: string, selected: string, index: integer, visible: boolean, items: string[], mapping: {callback: boolean, expr: integer, rhs: string, desc: string}}[]
@@ -108,6 +112,25 @@ end)
   ---@param keys string
   local function input(keys) vim.rpcnotify(job, "nvim_input", keys) end
 
+  ---@param keys string
+  ---@param count? integer
+  local function commandline(keys, count)
+    enters = enters + (count or 1)
+    input(keys)
+  end
+
+  ---@param predicate fun(state: Orbit.LiveCmdlineSnapshot): boolean
+  ---@param label string
+  local function settle(predicate, label)
+    local start = vim.uv.hrtime()
+    repeat
+      local state = snapshot()
+      assert(predicate(state), label .. ": " .. vim.inspect(state))
+      assert(#state.errors == 0 and state.errmsg == "", vim.inspect(state.errors) .. state.errmsg)
+      vim.wait(20)
+    until (vim.uv.hrtime() - start) / 1e6 >= 500
+  end
+
   local ok, err = xpcall(function()
     vim.fn.mkdir(vim.fs.joinpath(config, "lua"), "p")
     for _, name in ipairs(vim.split(run({ "git", "-C", root, "ls-files", "-z" }), "\0", { trimempty = true })) do
@@ -116,7 +139,7 @@ end)
       assert(vim.uv.fs_copyfile(vim.fs.joinpath(root, name), target))
     end
     local options = { site = site, installed = installed, dependencies = paths,
-      completion = completion, messages = messages }
+      completion = completion, messages = messages, cmdline = scenario ~= "cmdline-disabled" }
     vim.fn.writefile(vim.split(string.format("dofile(%q)(%s)",
       vim.fs.joinpath(root, "tests/support/live_cmdline_completion.lua"), vim.inspect(options)), "\n"), init)
     vim.fn.writefile({ "return require('orbit.tests.live_cmdline_completion').import()" },
@@ -160,10 +183,14 @@ end)
     ---@param text string
     ---@return Orbit.LiveCmdlineSnapshot
     local function enter(text)
-      input(":")
-      await(function(s) return s.mode == "c" and s.command_type == ":" and (not completion or s.blink) end,
-        "CmdlineEnter demand before typing command")
-      input(text)
+      if scenario == "typing" then
+        commandline(":")
+        await(function(s) return s.mode == "c" and s.command_type == ":" and (not completion or s.ready) end,
+          "CmdlineEnter demand before typing command")
+        input(text)
+      else
+        commandline(":" .. text)
+      end
       local state = await(function(s)
         return s.mode == "c" and s.command_type == ":" and s.command == text
           and (not messages or window_with(s, "noice", text) ~= nil)
@@ -196,6 +223,10 @@ end)
           and window_with(s, "blink-cmp-menu", "OrbitCmdlineAlpha") ~= nil
       end, "real command candidates with no preselection")
       assert(menu.command == "OrbitCmdline" and #menu.executed == #before.executed)
+      assert(#menu.accepts == #before.accepts, "automatic completion accepted a command")
+      for _, name in ipairs({ "OrbitCmdlineAlpha", "OrbitCmdlineBeta", "OrbitCmdlineGamma" }) do
+        assert(vim.tbl_contains(menu.items, name), "missing first-batch candidate: " .. name)
+      end
       record("candidates", menu)
       -- Observe selection, preview text, and menu redraw before the next key.
       ---@param index integer
@@ -228,7 +259,49 @@ end)
       owner_state(executed)
     end
 
-    if completion then
+    if scenario == "execute" or scenario == "cancel" then
+      extra_executed = scenario == "execute" and 1 or 0
+      commandline(scenario == "execute" and ":OrbitCmdlineAlpha<CR>" or ":OrbitCmdline<Esc>")
+      await(function(s) return s.ready and closed(s) and #s.executed == extra_executed end,
+        "first batch leaves before completion readiness")
+      settle(function(s)
+        return closed(s) and #s.accepts == 0 and #s.executed == extra_executed
+          and vim.deep_equal(s.lines, initial.lines) and vim.deep_equal(s.cursor, initial.cursor)
+      end, "late initialization changed a departed commandline")
+      if extra_executed == 1 then assert(snapshot().executed[1] == "OrbitCmdlineAlpha") end
+    elseif scenario == "replace-colon" then
+      commandline(":OrbitCmdline<Esc>:OrbitCmdline", 2)
+      local replaced = await(function(s)
+        return s.ready and s.command == "OrbitCmdline" and s.visible
+          and window_with(s, "blink-cmp-menu", "OrbitCmdlineAlpha") ~= nil
+      end, "replacement colon receives its own completion")
+      assert(#replaced.executed == 0 and #replaced.accepts == 0)
+      cancel(replaced)
+    elseif scenario == "replace-search" or scenario == "search-forward" or scenario == "search-backward" then
+      local direction = scenario == "search-backward" and "?" or "/"
+      local query = direction == "/" and "orbitSearchUniqueFor" or "orbitSearchUniqueBack"
+      local candidate = direction == "/" and "orbitSearchUniqueForward" or "orbitSearchUniqueBackward"
+      local replacement = scenario == "replace-search"
+      commandline((replacement and ":OrbitCmdline<Esc>" or "") .. direction .. query, replacement and 2 or 1)
+      await(function(s) return s.ready and s.command_type == direction and s.command == query end,
+        "search-first or replacement input")
+      settle(function(s)
+        return s.mode == "c" and s.command_type == direction and s.command == query
+          and not s.visible and not window_with(s, "blink-cmp-menu")
+          and #s.accepts == 0 and #s.executed == 0
+      end, "initialization opened or changed a search commandline")
+      input("<C-space>")
+      cancel(await(function(s) return s.visible and window_with(s, "blink-cmp-menu", candidate) ~= nil end,
+        "search-first manual positive control"))
+      commandline(direction .. query)
+      await(function(s) return s.command_type == direction and s.command == query end, "native search after readiness")
+      input("<CR>")
+      local found = await(closed, "search-first native search execution")
+      assert(found.cursor[1] == (direction == "/" and 3 or 1) and found.cursor[2] == 0)
+      exec("vim.api.nvim_win_set_cursor(0,{2,0}); return true")
+    end
+
+    if completing then
       completion_cycle()
       local active = snapshot()
       assert(active.loaded["blink.cmp"] == 1 and active.loaded.LuaSnip == 1
@@ -246,22 +319,17 @@ end)
         local query = direction == "/" and "orbitSearchUniqueFor" or "orbitSearchUniqueBack"
         local candidate = direction == "/" and "orbitSearchUniqueForward" or "orbitSearchUniqueBackward"
         -- Prove candidates exist independently; an empty provider cannot pass suppression.
-        input(direction .. query)
+        commandline(direction .. query)
         await(function(s) return s.command_type == direction and s.command == query end, "search positive-control input")
         input("<C-space>")
         cancel(await(function(s) return s.visible and window_with(s, "blink-cmp-menu", candidate) ~= nil end,
           "manual search completion positive control"))
-        input(direction .. query)
+        commandline(direction .. query)
         await(function(s) return s.command_type == direction and s.command == query end, "search suppression input")
-        local start = vim.uv.hrtime()
-        repeat
-          local state = snapshot()
-          assert(not state.visible and not window_with(state, "blink-cmp-menu"), "search menu opened automatically")
-          assert(#state.errors == 0 and state.errmsg == "", vim.inspect(state.errors) .. state.errmsg)
-          vim.wait(20)
-        until (vim.uv.hrtime() - start) / 1e6 >= 500
+        settle(function(s) return not s.visible and not window_with(s, "blink-cmp-menu") end,
+          "search menu opened automatically")
         cancel(snapshot())
-        input(direction .. query)
+        commandline(direction .. query)
         await(function(s) return s.command_type == direction and s.command == query end, "native search input")
         input("<CR>")
         local found = await(closed, "native search executes without completion acceptance")
@@ -277,6 +345,9 @@ end)
       completion_cycle()
     else
       enter("OrbitCmdlineAlpha")
+      await(function(s) return not completion or s.ready end, "disabled commandline owner ready")
+      settle(function(s) return not s.visible and not window_with(s, "blink-cmp-menu") end,
+        "disabled commandline completion opened")
       input("<CR>")
       local executed = await(function(s) return closed(s) and #s.executed == 1 end, "native command executes without Blink")
       assert(executed.executed[1] == "OrbitCmdlineAlpha")
@@ -289,8 +360,10 @@ end)
     local final = snapshot()
     owner_state(final)
     assert(closed(final) and #final.errors == 0 and final.errmsg == "")
-    assert(#final.accepts == (completion and 2 or 0) and #final.executed == (completion and 2 or 1),
+    assert(#final.accepts == (completing and 2 or 0) and #final.executed == (completing and 2 or 1) + extra_executed,
       "command acceptance or execution counts changed")
+    assert(#vim.tbl_filter(function(event) return event == "CmdlineEnter" end, final.events) == enters,
+      "pre-existing CmdlineEnter observer replayed or missed an entry")
     for _, count in pairs(final.loaded) do assert(count == 1, "plugin activation repeated") end
     print("PASS " .. kind .. " commandline input, acceptance, cancellation, search, and ownership")
   end, debug.traceback)
@@ -318,8 +391,15 @@ local ok, err = xpcall(function()
   check(true, true)
   check(true, false)
   check(false, true)
+  for _, messages in ipairs({ true, false }) do
+    for _, scenario in ipairs({ "batch", "execute", "cancel", "replace-colon", "replace-search",
+      "search-forward", "search-backward", "cmdline-disabled" }) do
+      check(true, messages, scenario)
+    end
+  end
+  check(false, true, "batch")
 end, debug.traceback)
 local removed = vim.fn.delete(workspace, "rf")
 assert(ok, tostring(err))
 assert(removed == 0, "live commandline fixture cleanup failed")
-print("3 pinned upstream commandline cases passed.")
+print("Pinned upstream commandline cases passed.")

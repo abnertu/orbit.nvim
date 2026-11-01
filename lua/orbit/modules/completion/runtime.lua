@@ -75,7 +75,7 @@ end
 
 function M.setup_blink(opts)
   if blink_started then return end
-  require("orbit.modules.completion.cmdline").install()
+  require("orbit.modules.completion.cmdline").install(opts.cmdline.enabled)
   require("blink.cmp").setup(opts)
   blink_started = true
 end

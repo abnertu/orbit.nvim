@@ -5,8 +5,9 @@ local orbit = require("orbit")
 local feature = require("orbit.modules.completion")
 local runtime = require("orbit.modules.completion.runtime")
 local passed = 0
----@type {suppress_events_for_callback: fun(self: {ignore_next_cursor_moved: boolean}, callback: fun())}
+---@type {listen: fun(), suppress_events_for_callback: fun(self: {ignore_next_cursor_moved: boolean}, callback: fun())}
 local cmdline_events = {
+  listen = function() end,
   -- Model the external 1.x boundary before Orbit installs its compatibility guard.
   suppress_events_for_callback = function(self, callback)
     local before = vim.fn.getcmdpos()
@@ -176,6 +177,83 @@ check("older commandline timeouts cannot release newer previews or other instanc
       "non-commandline callback changed suppression")
   end, debug.traceback)
   vim.fn.getcmdpos, vim.api.nvim_get_mode, vim.defer_fn = original_pos, original_mode, original_defer
+  assert(ok, err)
+end)
+
+check("first commandline recovery respects readiness, session lifetime, and disabling", function()
+  local original_mode = vim.api.nvim_get_mode
+  local original_text, original_type, original_pos = vim.fn.getcmdline, vim.fn.getcmdtype, vim.fn.getcmdpos
+  local original_schedule = vim.schedule
+  local runtime_name = "orbit.modules.completion.runtime"
+  local original_runtime = package.loaded[runtime_name]
+  local mode, text, kind, position = "c", "", ":", 1
+  ---@type fun()[]
+  local scheduled = {}
+  vim.api.nvim_get_mode = function() return { mode = mode } end
+  vim.fn.getcmdline = function() return text end
+  vim.fn.getcmdtype = function() return kind end
+  vim.fn.getcmdpos = function() return position end
+  vim.schedule = function(callback) scheduled[#scheduled + 1] = callback end
+  local ok, err = xpcall(function()
+    for _, scenario in ipairs({ "current", "replaced", "edited", "search", "cursor", "disabled" }) do
+      mode, text, kind, position, scheduled = "c", "", ":", 1, {}
+      local delivered, listening, ready = {}, 0, nil
+      local events = { suppress_events_for_callback = function() end }
+      events.listen = function() listening = listening + 1 end
+      local listen = events.listen
+      package.loaded[runtime_name] = nil
+      package.loaded["blink.cmp"], package.loaded["blink.cmp.lib.cmdline_events"] = nil, nil
+      package.preload["blink.cmp.lib.cmdline_events"] = function() return events end
+      package.preload["blink.cmp"] = function()
+        return { setup = function()
+          ready = function()
+            events:listen({
+              on_char_added = function(char, ignored)
+                assert(not ignored)
+                delivered[#delivered + 1] = char
+              end,
+              on_cursor_moved = function() end, on_leave = function() end,
+            })
+          end
+        end }
+      end
+      local spec = feature.spec()[1]
+      local opts = vim.deepcopy(spec.opts)
+      opts.cmdline.enabled = scenario ~= "disabled"
+      spec.config(nil, opts)
+      assert(listening == 0 and #delivered == 0, "recovery ran before Blink readiness")
+      text, position = "Orbit候", #"Orbit候" + 1
+      vim.api.nvim_exec_autocmds("CmdlineChanged", { modeline = false })
+      assert(ready)
+      ready()
+      assert(listening == 1 and events.listen == listen, "listener wrapper was not removed")
+      if scenario == "replaced" then
+        -- A new session can have exactly the same text and cursor position.
+        vim.api.nvim_exec_autocmds("CmdlineLeave", { modeline = false })
+        vim.api.nvim_exec_autocmds("CmdlineEnter", { modeline = false })
+      elseif scenario == "edited" then
+        vim.api.nvim_exec_autocmds("CmdlineChanged", { modeline = false })
+      elseif scenario == "search" then
+        kind = "/"
+      elseif scenario == "cursor" then
+        position = position - 1
+      end
+      for _, callback in ipairs(scheduled) do callback() end
+      if scenario == "current" then
+        assert(vim.deep_equal(delivered, { "候" }), "pending input was not delivered once as a UTF-8 character")
+      else
+        assert(#delivered == 0, "stale or disabled recovery reached listeners: " .. scenario)
+      end
+      assert(#vim.api.nvim_get_autocmds({ group = "OrbitCompletionCmdline" }) == 0,
+        "temporary initialization observers survived recovery")
+    end
+  end, debug.traceback)
+  vim.api.nvim_get_mode = original_mode
+  vim.fn.getcmdline, vim.fn.getcmdtype, vim.fn.getcmdpos = original_text, original_type, original_pos
+  vim.schedule = original_schedule
+  package.loaded[runtime_name] = original_runtime
+  package.loaded["blink.cmp"], package.preload["blink.cmp"] = nil, nil
+  package.loaded["blink.cmp.lib.cmdline_events"], package.preload["blink.cmp.lib.cmdline_events"] = nil, nil
   assert(ok, err)
 end)
 
