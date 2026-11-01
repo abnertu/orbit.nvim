@@ -33,7 +33,9 @@ local ok, err = xpcall(function()
   vim.opt.rtp:prepend(directory)
   vim.o.columns, vim.o.lines = 200, 50
 
-  require("orbit").setup()
+  -- Headless Neovim 0.12 can abort in au_cleanup when any tab line is shown
+  -- while Snacks switches picker windows. The tab line has its own tests.
+  require("orbit").setup({ modules = { tabline = { enabled = false } } })
   assert(package.loaded.snacks == nil, "root setup imported Snacks before Lazy activation")
   local spec = require("orbit.modules.snacks").spec()[1]
   spec.config(spec, spec.opts)
