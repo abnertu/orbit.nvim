@@ -31,7 +31,7 @@ An omitted option takes its declared default. An unknown option or invalid type 
 
 The Markdown owner contributes the legacy preview Lazy command and filetype entry points. Its build adapter verifies the platform executable version after installation. CI checks its process boundary without downloading upstream plugins. Browser rendering and real Obsidian vault workflows remain separate acceptance tasks. The opt-in Obsidian spec resolves a configured vault at Lazy activation and defers plugin imports until its config callback.
 
-The completion owner configures Blink, LuaSnip, autopairs and Lazydev only at Lazy callback boundaries. It keeps snippet filetype extensions and its own InsertLeave cleanup. Full custom snippets and live resizing remain separate parity checks.
+The completion owner configures Blink, LuaSnip, autopairs and Lazydev only at Lazy callback boundaries. It keeps snippet filetype extensions and its own InsertLeave cleanup. Pinned upstream input tests verify actual Blink windows, candidate acceptance, LuaSnip navigation, and independent Escape and InsertLeave cleanup. Native snippet fallback runs without external completion imports. The fixture uses Blink's Lua matcher and plain placeholders. Rust distribution, native regex builds, command-line completion, custom snippets, and live resizing remain separate parity checks.
 
 The `orbit.plugins` spec import scans the module manifest. Modules that implement `spec()` contribute Lazy declarations without a second feature inventory. `lua/plugins/init.lua` is only a compatibility import shim. The navigation module owns Oil and nvim-tree specs, Windows watcher settings and one FileCreated-to-CreateFile observer. Harpoon integration is a separate owner.
 

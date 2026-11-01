@@ -40,10 +40,11 @@ The module manifest orders runtime setup and Lazy specs. LuaDoc in each owning `
 - Native `packadd` installation and root initialization have an isolated local-checkout acceptance test.
 - Native startup with an attached embedded UI covers empty, startup-interface, existing-file, new-file, and directory arguments. The hermetic test observes real EditorConfig replay and local-fixture Lazy activation.
 - Pinned native-package startup tests combine real Lazy, Snacks, Oil, and nvim-tree. They cover dashboard rendering, file arguments, directory cleanup, mapped explorers, and runtimepath retention.
+- Pinned Blink/LuaSnip input tests verify completion windows, acceptance events, snippet navigation, Escape, independent InsertLeave cleanup, and repeated setup. Native snippet fallback has a separate control.
 
 ## Outstanding legacy contracts
 
-- Verify Escape/menu/snippet cleanup against real completion UI and plugin sessions.
+- Verify legacy context-menu cleanup, command-line completion, Rust matcher distribution, and native snippet regex builds. Blink's Lua matcher and plain-placeholder cleanup have real input coverage.
 - Verify long-running terminal processes and window restoration with real Windows shell sessions.
 - Verify theme reload integration, dashboard artwork, and remaining highlight ownership.
 - Verify broader explorer workflows and dashboard artwork. Native explorer/dashboard startup and built-in EditorConfig replay have actual-process coverage.
