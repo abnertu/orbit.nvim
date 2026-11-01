@@ -41,9 +41,6 @@ local actual_spawn, actual_start_insert = term.spawn, term.start_insert
 local spawns, inserts = 0, 0
 term.spawn = function()
   spawns = spawns + 1
-  -- Exercise the terminal-buffer contract without starting a real shell.
-  -- The dedicated live suite tests actual PTY process ownership.
-  vim.bo.buftype = "terminal"
   return spawns
 end
 term.start_insert = function() inserts = inserts + 1 end
