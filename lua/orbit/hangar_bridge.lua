@@ -6,7 +6,7 @@ local function active()
   return package.loaded.hangar ~= nil
 end
 
----@param category string
+---@param category Orbit.ToolCategory
 ---@param name string
 ---@return boolean
 function M.is_enabled(category, name)
