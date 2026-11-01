@@ -40,7 +40,7 @@ function M.options(c)
         filter = {
           event = "notify",
           cond = function(message)
-            return message.opts and message.opts.orbit_formatter ~= nil
+            return message.opts and message.opts.orbit_formatter == true
           end,
         },
       },
