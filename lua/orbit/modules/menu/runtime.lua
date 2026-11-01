@@ -67,7 +67,8 @@ function M.close()
     local quit = mapping("n", "q", buffer)
     if quit and type(quit.callback) == "function" then closed = pcall(quit.callback) end
   end
-  if state and (not closed or #state.bufids > 0) then
+  local remaining = vim.tbl_filter(vim.api.nvim_buf_is_valid, buffers)
+  if state and (not closed or #state.bufids > 0 or #remaining > 0) then
     -- Upstream allocates buffers and renders before installing close mappings.
     -- A failed render must not leave an unclosable session behind.
     local volt_state, events = package.loaded["volt.state"], package.loaded["volt.events"]
