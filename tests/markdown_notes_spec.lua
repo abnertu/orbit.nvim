@@ -82,6 +82,23 @@ check("frontmatter preserves note metadata and refreshes modified time", functio
   assert(plain.created == plain.modified)
 end)
 
+check("frontmatter overlay preserves explicit metadata and source ownership", function()
+  local metadata = {
+    id = "metadata-id", aliases = { "metadata alias" },
+    created = "2020-02-03", modified = "past",
+    custom = false,
+  }
+  local value = notes.frontmatter({
+    id = "note-id", aliases = { "note alias" }, metadata = metadata,
+  })
+  assert(value.id == "metadata-id")
+  assert(vim.deep_equal(value.aliases, { "metadata alias" }))
+  assert(value.created == "2020-02-03" and value.custom == false)
+  assert(value.modified ~= "past")
+  assert(metadata.modified == "past", "metadata must remain unchanged")
+  assert(metadata.id == "metadata-id")
+end)
+
 check("disabled notes and restart-only vault preserve accepted settings", function()
   feature.setup({ notes = false, vault = vault })
   assert(#feature.spec() == 1)
