@@ -222,7 +222,8 @@ local ok, err = xpcall(function()
   -- No browser is launched, but the upstream command must encode vault paths.
   local uri_note = vim.fs.joinpath(vault, "uri note with spaces.md")
   assert(vim.fn.writefile({ "# URI note", "Second line." }, uri_note) == 0)
-  vim.cmd("edit " .. vim.fn.fnameescape(uri_note))
+  -- Use the resolved path so Windows short temp-directory aliases match the vault root.
+  vim.cmd("edit " .. vim.fn.fnameescape(assert(vim.uv.fs_realpath(uri_note))))
   assert(vim.b.obsidian_buffer == true,
     "URI note did not attach to the real vault lifecycle")
   local opened = {}
