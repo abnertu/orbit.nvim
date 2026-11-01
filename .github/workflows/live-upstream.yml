@@ -63,6 +63,33 @@ jobs:
           sqlfluff --version
           if ($LASTEXITCODE -ne 0) { throw 'SQLFluff is not on PATH' }
 
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Install pinned netcoredbg
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $base = 'https://github.com/Samsung/netcoredbg/releases/download/3.2.0-1092'
+          if ($IsWindows) {
+            $archive = Join-Path $env:RUNNER_TEMP 'netcoredbg-win64.zip'
+            Invoke-WebRequest "$base/netcoredbg-win64.zip" -OutFile $archive
+            $expected = '3c410a45fa502415203a94fcb88654af65bf8e3dac158a5527a722e7a6b9274a'
+          } else {
+            $archive = Join-Path $env:RUNNER_TEMP 'netcoredbg-linux-amd64.tar.gz'
+            Invoke-WebRequest "$base/netcoredbg-linux-amd64.tar.gz" -OutFile $archive
+            $expected = '080eb3b2d2152465f599d3b33d1ee6e747794e11cc0a3773ec689f5e5f2c5afa'
+          }
+          if ((Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant() -ne $expected) { throw 'netcoredbg archive checksum mismatch' }
+          if ($IsWindows) {
+            Expand-Archive -LiteralPath $archive -DestinationPath $env:RUNNER_TEMP
+          } else {
+            tar -xzf $archive -C $env:RUNNER_TEMP
+            if ($LASTEXITCODE -ne 0) { throw 'netcoredbg extraction failed' }
+          }
+          Join-Path $env:RUNNER_TEMP 'netcoredbg' | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+
       - name: Verify Neovim installation
         run: |
           nvim --version
@@ -182,6 +209,20 @@ jobs:
         run: |
           nvim --headless -u NONE -l tests/live_sqlfluff_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Real SQLFluff integration failed' }
+
+      - name: Run real CoreCLR debugging with the nvim-dap fork
+        env:
+          ORBIT_NVIM_DAP: fork
+        run: |
+          nvim --headless -u NONE -l tests/live_coreclr_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Real CoreCLR integration failed with the fork' }
+
+      - name: Run real CoreCLR debugging with upstream nvim-dap
+        env:
+          ORBIT_NVIM_DAP: upstream
+        run: |
+          nvim --headless -u NONE -l tests/live_coreclr_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Real CoreCLR integration failed with upstream' }
 
       - name: Run pinned real Harpoon navigation integration
         run: |
