@@ -29,8 +29,6 @@ end
 
 -- Keep test cleanup deterministic even when an assertion fails.
 local function isolated(run)
-  io.stderr:write("live terminal: creating isolated PTY fixture\\n")
-  io.stderr:flush()
   -- A timed shell command has a deterministic lifetime in headless CI.
   -- Interactive cmd.exe may exit on EOF when no terminal UI is attached.
   -- Keep the production jobstart/PTY path; substitute only its argv input.
@@ -57,8 +55,6 @@ local function isolated(run)
     run(track)
   end, debug.traceback)
 
-  io.stderr:write("live terminal: teardown, passed=" .. tostring(ok) .. " error=" .. tostring(err) .. "\\n")
-  io.stderr:flush()
   for _, job in ipairs(jobs) do
     if alive(job) then
       if windows then
@@ -95,8 +91,6 @@ check("real shell survives hiding and reopening the mapped vertical terminal", f
     assert(type(binding.callback) == "function", "vertical toggle key is missing")
     local original = vim.api.nvim_get_current_win()
     binding.callback()
-    io.stderr:write("live terminal: mapped job started\\n")
-    io.stderr:flush()
     local buffer, job = track()
     local terminal_window = vim.api.nvim_get_current_win()
     assert(vim.bo[buffer].filetype == "Term_vsp")
@@ -107,19 +101,13 @@ check("real shell survives hiding and reopening the mapped vertical terminal", f
       return not alive(job)
     end, 20), "timed shell command exited unexpectedly")
 
-    io.stderr:write("live terminal: sleeping command survived\\n")
-    io.stderr:flush()
     binding.callback()
-    io.stderr:write("live terminal: toggle hide returned\\n")
-    io.stderr:flush()
     assert(not vim.api.nvim_win_is_valid(terminal_window), "toggle did not hide split")
     assert(vim.api.nvim_get_current_win() == original, "original window lost focus")
     assert(vim.api.nvim_buf_is_valid(buffer) and alive(job),
       "hiding the split terminated the shell")
 
     binding.callback()
-    io.stderr:write("live terminal: toggle reopen returned\\n")
-    io.stderr:flush()
     assert(vim.api.nvim_get_current_buf() == buffer, "toggle lost saved terminal buffer")
     assert(vim.b[buffer].terminal_job_id == job and alive(job),
       "reopening started another process or lost the original shell")
