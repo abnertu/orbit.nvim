@@ -168,6 +168,23 @@ check("terminal toggle preserves the last normal window beside a foreign float",
   vim.cmd.tabclose()
 end)
 
+check("repurposed saved buffer is never reused as a terminal", function()
+  local origin = vim.api.nvim_get_current_win()
+  local before = spawns
+  local first = term.open("vsp", "repurposed-session")
+  local first_win = vim.api.nvim_get_current_win()
+  vim.api.nvim_win_close(first_win, true)
+  -- Another owner can change a scratch buffer's type after it is saved.
+  vim.bo[first].buftype = "nofile"
+  local second = term.open("vsp", "repurposed-session")
+  assert(second ~= first, "reopening must not reuse a nonterminal buffer")
+  assert(spawns == before + 2, "repurposed session did not spawn again")
+  vim.api.nvim_win_close(vim.api.nvim_get_current_win(), true)
+  assert(vim.api.nvim_get_current_win() == origin)
+  vim.api.nvim_buf_delete(second, { force = true })
+  vim.api.nvim_buf_delete(first, { force = true })
+end)
+
 check("shell arguments are an argv vector and match the host platform", function()
   local original = vim.o.shell
   vim.o.shell = vim.fn.has("win32") == 1 and "pwsh.exe" or "/bin/sh"
