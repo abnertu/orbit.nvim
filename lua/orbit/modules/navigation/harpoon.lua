@@ -4,7 +4,7 @@ local namespace = vim.api.nvim_create_namespace("orbit.harpoon")
 
 ---Format path segments without requiring Plenary.
 ---@param path string
----@param length number
+---@param length integer
 ---@param root? string
 ---@return string
 function M.pretty_path(path, length, root)
@@ -34,9 +34,10 @@ function M.format_display(path)
   return "  " .. icon .. " " .. path
 end
 
----@param config table
+---@param config {get_root_dir: fun():string}
 ---@param value? string
----@param length number
+---@param length integer
+---@return {value: string, context: {row: integer, col: integer, short_path: string}}
 function M.create_list_item(config, value, length)
   if not value then
     local path = vim.api.nvim_buf_get_name(0)
@@ -82,7 +83,7 @@ function M.highlight_current_file(length)
 end
 
 local started = false
----@param length number
+---@param length integer
 function M.setup(length)
   if started then return end
   local harpoon = require("harpoon")

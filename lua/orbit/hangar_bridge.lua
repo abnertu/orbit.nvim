@@ -17,8 +17,8 @@ function M.is_enabled(category, name)
 end
 
 ---@param category "formatter"|"linter"
----@param by_ft table
----@return table
+---@param by_ft table<string, string[]>
+---@return table<string, string[]>
 function M.filter(category, by_ft)
   if not active() then
     return vim.deepcopy(by_ft)

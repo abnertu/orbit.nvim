@@ -1,8 +1,10 @@
 -- Adapter definitions are independent of the external nvim-dap package.
 local M = {}
 
+---@alias Orbit.DapDefinitions {enabled: {python: boolean, coreclr: boolean}, adapters: table<string, function>, configurations: table<string, table<string, any>[]>}
+
 ---@param opts Orbit.DapOptions
----@return table
+---@return Orbit.DapDefinitions
 function M.build(opts)
   local python = require("orbit.modules.dap.python")
   return {

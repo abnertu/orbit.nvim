@@ -1,5 +1,9 @@
 local M = {}
 
+---@alias Orbit.EditorOptionValue string|number|boolean
+---@alias Orbit.EditorOptionSnapshot {global: Orbit.EditorOptionValue, buffers: table<integer, Orbit.EditorOptionValue>, windows: table<integer, Orbit.EditorOptionValue>}
+---@alias Orbit.EditorSnapshot table<string, Orbit.EditorOptionSnapshot>
+
 ---@class Orbit.EditorOptions # Core editor options applied on startup.
 ---@field autoread? boolean @default(true) # Detect changes made to files outside Neovim.
 ---@field clipboard? string @default("unnamedplus") # Use the system clipboard as unnamed register.
@@ -78,7 +82,7 @@ local function apply_option(name, value)
 end
 
 ---Capture the actual values, including existing local overrides.
----@return table
+---@return Orbit.EditorSnapshot
 function M.capture()
   local snapshot = {}
   for _, name in ipairs(options) do
@@ -107,7 +111,7 @@ function M.capture()
 end
 
 ---Restore global defaults first, then each captured local override.
----@param snapshot table
+---@param snapshot Orbit.EditorSnapshot
 function M.restore(snapshot)
   for _, name in ipairs(options) do
     local previous = assert(snapshot[name], "missing editor option snapshot: " .. name)

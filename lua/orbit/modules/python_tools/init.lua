@@ -49,11 +49,12 @@ local function register()
   owns_command = true
 end
 
+---@return Orbit.CommandOwnerSnapshot
 function M.capture()
   return { owns_command = owns_command }
 end
 
----@param snapshot table
+---@param snapshot Orbit.CommandOwnerSnapshot
 function M.restore(snapshot)
   if owns_command then
     pcall(vim.api.nvim_del_user_command, "PyrightReCreateStub")

@@ -1,4 +1,6 @@
 local M = {}
+
+---@alias Orbit.EventsSnapshot {group?: integer, active?: Orbit.EventsOptions, ui_entered: boolean, filepost_emitted: boolean, filepost_id?: integer}
 local group
 local active
 local ui_entered = false
@@ -152,7 +154,7 @@ local function register()
 end
 
 ---Capture owner state without disturbing other Neovim events.
----@return table
+---@return Orbit.EventsSnapshot
 function M.capture()
   return {
     group = group,
@@ -163,7 +165,7 @@ function M.capture()
   }
 end
 
----@param snapshot table
+---@param snapshot Orbit.EventsSnapshot
 function M.restore(snapshot)
   if group and not snapshot.group then
     pcall(vim.api.nvim_del_augroup_by_id, group)

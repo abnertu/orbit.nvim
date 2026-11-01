@@ -1,6 +1,18 @@
 -- Compile LuaDoc settings into JSON Schema without evaluating module code.
 local M = {}
 
+---@class Orbit.SchemaNode
+---@field type? 'object'|'array'|'boolean'|'string'|'number'|'integer'
+---@field properties? table<string, Orbit.SchemaNode>
+---@field items? Orbit.SchemaNode
+---@field default? any
+---@field description? string
+---@field additionalProperties? boolean
+---@field enum? string[]
+---@field minimum? number
+---@field maximum? number
+---@field minLength? integer
+
 local function module_root(root)
   return vim.fs.joinpath(root, "lua", "orbit", "modules")
 end
@@ -165,7 +177,7 @@ end
 ---Do not require() the source; imports could have runtime side effects.
 ---@param path string
 ---@param name string
----@return table
+---@return Orbit.SchemaNode
 function M.parse_module(path, name)
   local ok, lines = pcall(vim.fn.readfile, path)
   assert(ok, "cannot read " .. path .. ": " .. tostring(lines))
@@ -219,7 +231,7 @@ end
 
 ---Combine module LuaDoc using the ordered manifest as the sole inventory.
 ---@param root string
----@return table
+---@return Orbit.SchemaNode
 function M.build(root)
   local modules = module_root(root)
   local manifest = read_json(vim.fs.joinpath(modules, "manifest.json"))

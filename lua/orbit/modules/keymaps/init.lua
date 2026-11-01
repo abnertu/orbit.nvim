@@ -1,4 +1,9 @@
 local M = {}
+
+---@alias Orbit.KeymapsBinding table<string, any>|false
+---@alias Orbit.KeymapsOwned {mode: string, lhs: string, original: Orbit.KeymapsBinding}
+---@alias Orbit.KeymapsAffected {mode: string, lhs: string, current: Orbit.KeymapsBinding}
+---@alias Orbit.KeymapsSnapshot {leader?: string, owned: table<string, Orbit.KeymapsOwned>, affected: table<string, Orbit.KeymapsAffected>}
 local owned = {}
 
 ---@class Orbit.KeymapsOptions # Minimal key mappings owned by orbit.nvim.
@@ -128,7 +133,7 @@ end
 
 ---Capture the old physical mappings and the proposed targets in each mode.
 ---@param opts Orbit.KeymapsOptions
----@return table
+---@return Orbit.KeymapsSnapshot
 function M.capture(opts)
   local affected = {}
   for key, previous in pairs(owned) do
@@ -154,7 +159,7 @@ function M.capture(opts)
   }
 end
 
----@param snapshot table
+---@param snapshot Orbit.KeymapsSnapshot
 function M.restore(snapshot)
   for _, entry in pairs(owned) do
     pcall(vim.keymap.del, entry.mode, entry.lhs)

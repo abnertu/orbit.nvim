@@ -1,6 +1,8 @@
 -- Register standard native LSP configs at the Lazy config boundary.
 -- Once activated, server state requires a fresh Neovim process to change.
 local M = {}
+
+---@alias Orbit.LspActivation {already_started?: boolean, activated: string[], failures: table<string, string>}
 local started = false
 
 function M.client_capabilities()
@@ -39,7 +41,7 @@ local function set_diagnostics(opts)
 end
 
 ---@param opts Orbit.LspOptions
----@return table
+---@return Orbit.LspActivation
 function M.setup(opts)
   if started then
     return { already_started = true, activated = {}, failures = {} }
