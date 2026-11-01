@@ -244,7 +244,7 @@ local ok, err = xpcall(function()
     "real Obsidian advanced URI lost the note path or cursor line: "
       .. vim.inspect(opened))
   Obsidian.opts.open.func = original_opener
-  assert(table.concat(vim.fn.readfile(note_path), "\\n") == rewritten,
+  assert(table.concat(vim.fn.readfile(note_path), "\n") == rewritten,
     "opening an external URI modified the previously saved note")
   print("PASS real Obsidian open command encodes standard and advanced vault URIs")
 end, debug.traceback)
