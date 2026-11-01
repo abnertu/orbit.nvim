@@ -54,6 +54,16 @@ local function check(completion, messages)
   local job, request = 0, 0
   ---@type string[]
   local stderr = {}
+  ---@type {label: string, command: string, selected: string, index: integer, visible: boolean, items: string[], mapping: {callback: boolean, expr: integer, rhs: string, desc: string}}[]
+  local navigation = {}
+
+  ---@param label string
+  ---@param state Orbit.LiveCmdlineSnapshot
+  local function record(label, state)
+    navigation[#navigation + 1] = { label = label, command = state.command,
+      selected = state.selected, index = state.selected_index, visible = state.visible,
+      items = state.items, mapping = state.next_mapping }
+  end
 
   ---@param code string
   ---@return Orbit.LiveCmdlineSnapshot|boolean
@@ -186,12 +196,25 @@ end)
           and window_with(s, "blink-cmp-menu", "OrbitCmdlineAlpha") ~= nil
       end, "real command candidates with no preselection")
       assert(menu.command == "OrbitCmdline" and #menu.executed == #before.executed)
+      record("candidates", menu)
+      -- Observe selection, preview text, and menu redraw before the next key.
+      ---@param index integer
+      ---@param label string
+      local function selected(index, label)
+        local state = await(function(s)
+          return s.mode == "c" and s.selected_index == index and s.selected == menu.items[index]
+            and s.command == menu.items[index] and s.visible
+            and window_with(s, "blink-cmp-menu", menu.items[index]) ~= nil
+            and vim.deep_equal(s.items, menu.items)
+        end, label)
+        record(label, state)
+      end
       input("<C-j>")
-      await(function(s) return s.selected_index == 1 and s.selected == menu.items[1] end, "mapped command select next")
+      selected(1, "mapped command select next")
       input("<C-j>")
-      await(function(s) return s.selected_index == 2 and s.selected == menu.items[2] end, "mapped command select second")
+      selected(2, "mapped command select second")
       input("<C-k>")
-      await(function(s) return s.selected_index == 1 and s.selected == menu.items[1] end, "mapped command select previous")
+      selected(1, "mapped command select previous")
       input("<C-y>")
       local accepted = await(function(s)
         return #s.accepts == #before.accepts + 1 and not s.visible and not window_with(s, "blink-cmp-menu")
@@ -250,6 +273,7 @@ end)
       local before = snapshot()
       exec("require('orbit.tests.live_cmdline_completion').repeat_setup(); return true")
       assert(vim.deep_equal(snapshot().loaded, before.loaded), "setup reactivated commandline plugins")
+      assert(vim.deep_equal(snapshot().next_mapping, before.next_mapping), "setup changed the commandline mapping")
       completion_cycle()
     else
       enter("OrbitCmdlineAlpha")
@@ -276,7 +300,8 @@ end)
     if exit == -1 then vim.fn.jobstop(job); vim.fn.jobwait({ job }, 2000) end
     if ok then assert(exit == 0, "child shutdown failed") end
   end
-  assert(ok, "FAIL " .. kind .. "\n" .. tostring(err) .. "\n" .. table.concat(stderr, "\n"))
+  assert(ok, "FAIL " .. kind .. "\n" .. tostring(err) .. "\nNavigation: " .. vim.inspect(navigation)
+    .. "\n" .. table.concat(stderr, "\n"))
 end
 
 local ok, err = xpcall(function()
