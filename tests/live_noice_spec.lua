@@ -121,7 +121,7 @@ local ok, err = xpcall(function()
   assert(reopened and reopened.winid and vim.api.nvim_win_is_valid(reopened.winid),
     "formatter progress did not reopen after dismiss")
   local resumed = table.concat(vim.api.nvim_buf_get_lines(
-    reopened.bufnr, 0, -1, false), "\\n")
+    reopened.bufnr, 0, -1, false), "\n")
   assert(resumed:find(resumed_text, 1, true)
     and resumed:find("+", 1, true)
     and not resumed:find(progress_text, 1, true),
