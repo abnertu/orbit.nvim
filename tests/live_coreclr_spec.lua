@@ -41,7 +41,8 @@ local ok, err = xpcall(function()
     vim.opt.rtp:prepend(directory)
   end
 
-  local project_dir = vim.fs.joinpath(workspace, "Orbit Console")
+  -- Resolve 8.3 short names: the compiled PDB records the long path.
+  local project_dir = vim.fs.joinpath(vim.fs.normalize(vim.uv.fs_realpath(workspace)), "Orbit Console")
   run({ "dotnet", "new", "console", "--name", "OrbitConsole", "--output", project_dir,
     "--framework", "net" .. run({ "dotnet", "--version" }):match("^(%d+%.%d+)") })
   local program = vim.fs.joinpath(project_dir, "Program.cs")
@@ -62,8 +63,10 @@ local ok, err = xpcall(function()
 
   -- Native paths come from :edit; forward slashes come from pickers and
   -- vim.fs.normalize. Windows debuggers must accept both buffer names.
-  local spellings = { native = vim.fn.fnamemodify(program, ":p") }
-  if windows then spellings.forward = spellings.native:gsub("\\", "/") end
+  local spellings = { native = program }
+  if windows then
+    spellings = { native = (program:gsub("/", "\\")), forward = (program:gsub("\\", "/")) }
+  end
   for label, path in pairs(spellings) do
     for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
       if vim.api.nvim_buf_get_name(buffer):lower():find("program.cs", 1, true) then
