@@ -35,6 +35,7 @@
 ---@field current_window integer
 ---@field lines string[]
 ---@field cursor integer[]
+---@field next_mapping {callback: boolean, expr: integer, rhs: string, desc: string}
 
 ---@param opts Orbit.LiveCmdlineOptions
 return function(opts)
@@ -133,6 +134,7 @@ return function(opts)
       local noice = package.loaded.noice
       local config = package.loaded["noice.config"]
       local selected = type(cmp) == "table" and cmp.get_selected_item()
+      local next_mapping = vim.fn.maparg("<C-j>", "c", false, true)
       local items = {}
       if type(cmp) == "table" then
         for _, item in ipairs(cmp.get_items()) do items[#items + 1] = item.label end
@@ -159,6 +161,8 @@ return function(opts)
         current_window = vim.api.nvim_get_current_win(),
         lines = vim.api.nvim_buf_get_lines(buffer, 0, -1, false),
         cursor = vim.api.nvim_win_get_cursor(editor),
+        next_mapping = { callback = type(next_mapping.callback) == "function",
+          expr = next_mapping.expr or 0, rhs = next_mapping.rhs or "", desc = next_mapping.desc or "" },
       }
     end,
   }
