@@ -155,3 +155,8 @@ jobs:
         run: |
           nvim --headless -u NONE -l tests/live_harpoon_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Real Harpoon integration failed' }
+
+      - name: Run pinned real native dashboard and explorer startup
+        run: |
+          nvim --headless -u NONE -l tests/live_startup_ui_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Real dashboard/explorer startup integration failed' }
