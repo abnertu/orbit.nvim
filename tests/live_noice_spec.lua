@@ -74,14 +74,14 @@ local ok, err = xpcall(function()
     "real Noice command was not registered")
   print("PASS pinned upstream Noice and NUI checkout")
   print("PASS real Noice Lazy activation and command")
-  -- Only explicitly tagged formatter messages may use the dedicated view.
-  -- Ordinary notifications and explicit false must retain upstream routing.
+  -- Formatter routing is based on the presence of the tag, not truthiness.
+  -- The legacy contract deliberately accepts an explicit false value.
   local formatter_filter = config.routes[1].filter.cond
   assert(not formatter_filter({ opts = {} }),
     "ordinary notification unexpectedly matched formatter progress")
-  assert(not formatter_filter({ opts = { orbit_formatter = false } }),
-    "explicitly disabled formatter notification matched progress")
-  print("PASS real Noice formatter route excludes untagged notifications")
+  assert(formatter_filter({ opts = { orbit_formatter = false } }),
+    "explicit false formatter tag lost its legacy route")
+  print("PASS real Noice formatter route preserves explicit false tags")
   print("PASS real Noice merged formatter progress route")
 
   -- Exercise the real notify -> router -> NUI rendering path, not just
@@ -136,6 +136,31 @@ local ok, err = xpcall(function()
     "reopened formatter popup contains stale or missing content: "
       .. vim.inspect(resumed))
   print("PASS real Noice formatter popup dismisses and reopens without stale content")
+
+  -- False is an explicit formatter tag. Exercise the actual notify/router/NUI
+  -- path to guard the legacy contract, not only the route predicate.
+  router.dismiss()
+  assert(vim.wait(2000, function()
+    return not vim.api.nvim_win_is_valid(reopened.winid)
+  end, 20), "resumed formatter popup remained open after dismiss")
+  local false_tag_text = "Orbit live formatter false tag"
+  vim.notify(false_tag_text, vim.log.levels.INFO, {
+    orbit_formatter = false,
+    orbit_formatter_icon = "!",
+  })
+  router.update()
+  local false_tag_popup = formatter_view.view and formatter_view.view._nui
+  assert(false_tag_popup and false_tag_popup.winid
+    and vim.api.nvim_win_is_valid(false_tag_popup.winid),
+    "explicit false formatter tag did not open the real NUI popup")
+  local false_tag_rendered = table.concat(vim.api.nvim_buf_get_lines(
+    false_tag_popup.bufnr, 0, -1, false), "\n")
+  assert(false_tag_rendered:find(false_tag_text, 1, true)
+    and false_tag_rendered:find("!", 1, true)
+    and not false_tag_rendered:find(resumed_text, 1, true),
+    "false-tag formatter popup lost content or retained stale text: "
+      .. vim.inspect(false_tag_rendered))
+  print("PASS real Noice false formatter tag renders without stale content")
 
   router.dismiss()
   require("noice").disable()
