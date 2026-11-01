@@ -51,8 +51,11 @@ return function(opts)
   vim.opt.packpath = { opts.site, vim.env.VIMRUNTIME }
   vim.cmd.packadd("orbit.nvim")
   local orbit = require("orbit")
-  assert(debug.getinfo(orbit.setup, "S").source:find(opts.installed, 1, true),
-    "native package loaded a different Orbit checkout")
+  local source = vim.fs.normalize(debug.getinfo(orbit.setup, "S").source:sub(2))
+  local installed = vim.fs.normalize(opts.installed)
+  if vim.fn.has("win32") == 1 then source, installed = source:lower(), installed:lower() end
+  assert(source:sub(1, #installed + 1) == installed .. "/",
+    "native package loaded a different Orbit checkout: " .. source)
 
   ---@type Orbit.LiveStartupEvent[]
   local journal = {}
