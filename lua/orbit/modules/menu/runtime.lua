@@ -1,19 +1,6 @@
 -- Bound compatibility fixes for the upstream mouse-menu lifetime.
 local M = {}
 local installed = false
-local processing_click = false
----@type (fun())[]
-local after_click = {}
-
----Start actions after native mouse processing has returned, including reentrant callbacks.
----@param action fun()
-function M.defer(action)
-  if processing_click then
-    after_click[#after_click + 1] = action
-  else
-    vim.schedule(action)
-  end
-end
 
 ---@class Orbit.MenuMapping
 ---@field lhs string
@@ -135,13 +122,7 @@ local function own_input()
     return "<Esc>"
   end
   local function click()
-    processing_click = true
-    local ok, err = pcall(vim.cmd.exec, '"normal! \\<LeftMouse>"')
-    processing_click = false
-    local actions = after_click
-    after_click = {}
-    for _, action in ipairs(actions) do vim.schedule(action) end
-    if not ok then error(err, 0) end
+    vim.cmd.exec('"normal! \\<LeftMouse>"')
     local mouse = vim.fn.getmousepos()
     if active == session and (mouse.winid == 0
       or not vim.api.nvim_win_is_valid(mouse.winid)

@@ -47,6 +47,7 @@
 ---@field lines string[]
 ---@field mouse Orbit.LiveMenuMouse
 ---@field journal string[]
+---@field picker {win: integer, key: string}[]
 
 ---@class Orbit.LiveMenuOriginal
 ---@field mode string
@@ -102,9 +103,6 @@ return function(opts)
   vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter" }, {
     group = group, callback = function(event)
       mark(event.event)
-      if event.event == "WinEnter" and vim.bo.filetype == "NvimTree" then
-        journal[#journal + 1] = debug.traceback("tree focus")
-      end
     end,
   })
   vim.api.nvim_create_autocmd("User", { group = group, pattern = "LazyLoad", callback = function(event)
@@ -241,7 +239,12 @@ return function(opts)
         preserved = preserved and found
       end
       local windows = {}
-      for _, win in ipairs(vim.api.nvim_list_wins()) do windows[#windows + 1] = win end
+      local picker = {}
+      for _, win in ipairs(vim.api.nvim_list_wins()) do
+        windows[#windows + 1] = win
+        local key = vim.wo[win].statusline:match("^%%=([A-Z])%%=$")
+        if key then picker[#picker + 1] = { win = win, key = key } end
+      end
       return {
         menus = menus, loaded = loaded, errors = errors, errmsg = vim.v.errmsg,
         menu_loaded = package.loaded.menu ~= nil, tree_loaded = package.loaded["nvim-tree.api"] ~= nil,
@@ -249,6 +252,7 @@ return function(opts)
         current = vim.api.nvim_get_current_buf(), win = vim.api.nvim_get_current_win(), mode = vim.fn.mode(),
         cursor = vim.api.nvim_win_get_cursor(0), windows = windows, preserved = preserved, calls = calls,
         lines = vim.api.nvim_buf_get_lines(0, 0, -1, false), mouse = vim.fn.getmousepos(), journal = journal,
+        picker = picker,
       }
     end,
   }
