@@ -202,6 +202,49 @@ check("an actual Neovim subprocess starts in a terminal buffer", function()
   assert(ok, err)
 end)
 
+check("exited saved PTY is replaced on reopen, not reused", function()
+  local previous_spawn, previous_argv = term.spawn, term.shell_argv
+  local origin = vim.api.nvim_get_current_win()
+  local buffers = {}
+  term.spawn = actual_spawn
+  term.shell_argv = function()
+    return { vim.v.progpath, "--version" }
+  end
+
+  local ok, err = xpcall(function()
+    assert(term.toggle("vsp", "exited-pty"))
+    local first = vim.api.nvim_get_current_buf()
+    buffers[#buffers + 1] = first
+    local first_job = vim.b[first].terminal_job_id
+    assert(vim.bo[first].buftype == "terminal" and first_job > 0)
+    assert(vim.wait(10000, function()
+      return vim.fn.jobwait({ first_job }, 0)[1] ~= -1
+    end, 20), "short-lived terminal command did not exit")
+
+    assert(term.toggle("vsp", "exited-pty"))
+    assert(vim.api.nvim_get_current_win() == origin)
+    assert(term.toggle("vsp", "exited-pty"))
+    local second = vim.api.nvim_get_current_buf()
+    buffers[#buffers + 1] = second
+    assert(second ~= first, "exited terminal buffer was incorrectly reused")
+    assert(vim.bo[second].buftype == "terminal")
+    assert(type(vim.b[second].terminal_job_id) == "number"
+      and vim.b[second].terminal_job_id ~= first_job,
+      "reopening an exited session must start a new PTY")
+  end, debug.traceback)
+
+  term.spawn, term.shell_argv = previous_spawn, previous_argv
+  if vim.api.nvim_get_current_win() ~= origin then
+    pcall(vim.api.nvim_win_close, vim.api.nvim_get_current_win(), true)
+  end
+  for _, buffer in ipairs(buffers) do
+    if vim.api.nvim_buf_is_valid(buffer) then
+      pcall(vim.api.nvim_buf_delete, buffer, { force = true })
+    end
+  end
+  assert(ok, err)
+end)
+
 check("leader and mode mappings survive injected failure and disable", function()
   local accepted = orbit.get_config()
   local original = commands.setup
