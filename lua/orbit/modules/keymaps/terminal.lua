@@ -101,6 +101,14 @@ function M.open(pos, id)
   local buffer = reuse
     and vim.api.nvim_buf_is_valid(reuse)
     and reuse or nil
+  if buffer and vim.bo[buffer].buftype == "terminal" then
+    -- A terminal buffer remains valid after its PTY exits. Reopening it
+    -- cannot restart the shell, so allocate a fresh buffer and job instead.
+    local job = vim.b[buffer].terminal_job_id
+    if type(job) ~= "number" or vim.fn.jobwait({ job }, 0)[1] ~= -1 then
+      buffer = nil
+    end
+  end
   if not buffer then buffer = vim.api.nvim_create_buf(false, true) end
   local created = not (reuse and buffer == reuse)
   local origin = vim.api.nvim_get_current_win()
