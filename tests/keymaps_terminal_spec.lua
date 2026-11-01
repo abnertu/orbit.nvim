@@ -173,7 +173,9 @@ check("shell arguments are an argv vector and match the host platform", function
   vim.o.shell = vim.fn.has("win32") == 1 and "pwsh.exe" or "/bin/sh"
   local args = term.shell_argv()
   if vim.fn.has("win32") == 1 then
-    assert(vim.deep_equal(args, { "pwsh.exe", "-NoLogo" }))
+    assert(vim.deep_equal(args, { "pwsh.exe", "-NoLogo", "-NoExit" }))
+    vim.o.shell = "cmd.exe"
+    assert(vim.deep_equal(term.shell_argv(), { "cmd.exe", "/K" }))
   else
     assert(vim.deep_equal(args, { "/bin/sh" }))
   end
