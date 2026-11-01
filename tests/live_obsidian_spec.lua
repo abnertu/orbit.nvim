@@ -306,7 +306,7 @@ local ok, err = xpcall(function()
     "following existing links unexpectedly created a note")
   assert(vim.deep_equal(vim.fn.readfile(navigation_path), navigation_lines),
     "following links rewrote the source note")
-  assert(table.concat(vim.fn.readfile(note_path), "\\n") == rewritten,
+  assert(table.concat(vim.fn.readfile(note_path), "\n") == rewritten,
     "following links modified the destination note")
   print("PASS real Obsidian wiki/Markdown follow_link navigation preserves notes")
 end, debug.traceback)
