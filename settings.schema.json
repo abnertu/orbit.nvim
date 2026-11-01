@@ -237,6 +237,26 @@
           },
           "type": "object"
         },
+        "dotnet": {
+          "additionalProperties": false,
+          "description": "dotnet-cli and Comet .NET project commands.",
+          "properties": {
+            "enabled": {
+              "default": true,
+              "description": "Include the dotnet-cli plugin spec.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "manager_key": {
+              "default": "<leader>ud",
+              "description": "Open the .NET manager.",
+              "minLength": 1,
+              "type": "string",
+              "x-orbit-restart": true
+            }
+          },
+          "type": "object"
+        },
         "editor": {
           "additionalProperties": false,
           "description": "Core editor options applied on startup.",

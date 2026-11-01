@@ -23,6 +23,7 @@
     "markdown",
     "navigation",
     "lsp",
+    "dotnet",
     "dap",
     "hangar",
     "completion",
