@@ -5,6 +5,7 @@
 ---@field dependencies table<string, string>
 ---@field completion boolean
 ---@field messages boolean
+---@field cmdline boolean
 
 ---@class Orbit.LiveCmdlineWindow
 ---@field id integer
@@ -17,6 +18,7 @@
 ---@field command string
 ---@field command_type string
 ---@field blink boolean
+---@field ready boolean
 ---@field noice boolean
 ---@field noice_running boolean
 ---@field visible boolean
@@ -99,7 +101,7 @@ return function(opts)
     vim.fs.joinpath(opts.installed, "lua/orbit/modules/manifest.json")), "\n"))
   local modules = {}
   for _, name in ipairs(manifest.order) do modules[name] = { enabled = false } end
-  modules.completion = { enabled = opts.completion }
+  modules.completion = { enabled = opts.completion, cmdline = opts.cmdline }
   modules.messages = { enabled = opts.messages }
   modules.plugins = { enabled = true, path = opts.dependencies["lazy.nvim"], import = "live_cmdline_paths" }
   local options = { modules = modules }
@@ -131,6 +133,7 @@ return function(opts)
     ---@return Orbit.LiveCmdlineSnapshot
     snapshot = function()
       local cmp = package.loaded["blink.cmp"]
+      local trigger = package.loaded["blink.cmp.completion.trigger"]
       local noice = package.loaded.noice
       local config = package.loaded["noice.config"]
       local selected = type(cmp) == "table" and cmp.get_selected_item()
@@ -151,6 +154,7 @@ return function(opts)
         mode = vim.api.nvim_get_mode().mode,
         command = vim.fn.getcmdline(), command_type = vim.fn.getcmdtype(),
         blink = type(cmp) == "table", noice = type(noice) == "table",
+        ready = type(trigger) == "table" and trigger.cmdline_events ~= nil,
         noice_running = type(config) == "table" and config.is_running() or false,
         visible = type(cmp) == "table" and cmp.is_visible() or false,
         selected = selected and selected.label or "",
