@@ -280,13 +280,13 @@ end)
     -- Real mapped tree demand, real tree-specific menu, real node-open action.
     input("<C-n>")
     await(function(value) return value.tree_loaded end, "mapped tree demand failed")
-    exec([[
+    assert(exec([[
       local api=require('nvim-tree.api')
       for row,line in ipairs(vim.api.nvim_buf_get_lines(0,0,-1,false)) do
         if line:find('second file.txt',1,true) then vim.api.nvim_win_set_cursor(0,{row,0}); return true end
       end
       return false
-    ]])
+    ]]), "tree target did not render")
     local treepos = exec("local p=vim.fn.screenpos(0,vim.api.nvim_win_get_cursor(0)[1],1); return {row=p.row-1,col=p.col+5}")
     s = open(treepos.row, treepos.col)
     click(s, "Open")
