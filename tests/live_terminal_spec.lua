@@ -29,16 +29,18 @@ end
 
 -- Keep test cleanup deterministic even when an assertion fails.
 local function isolated(run)
+  io.stderr:write("live terminal: creating isolated PTY fixture\\n")
+  io.stderr:flush()
   -- A timed shell command has a deterministic lifetime in headless CI.
   -- Interactive cmd.exe may exit on EOF when no terminal UI is attached.
   -- Keep the production jobstart/PTY path; substitute only its argv input.
   local shell_argv = terminal.shell_argv
   local windows = vim.fn.has("win32") == 1
-  local shell = windows and "pwsh.exe" or "/bin/sh"
+  local shell = windows and "cmd.exe" or "/bin/sh"
   assert(vim.fn.executable(shell) == 1, "required host shell is unavailable")
   terminal.shell_argv = function()
     if windows then
-      return { shell, "-NoLogo", "-NoProfile", "-Command", "Start-Sleep -Seconds 60" }
+      return { shell, "/d", "/c", "ping -n 60 127.0.0.1 >nul" }
     end
     return { shell, "-c", "sleep 60" }
   end
@@ -82,6 +84,8 @@ check("real shell survives hiding and reopening the mapped vertical terminal", f
     assert(type(binding.callback) == "function", "vertical toggle key is missing")
     local original = vim.api.nvim_get_current_win()
     binding.callback()
+    io.stderr:write("live terminal: mapped job started\\n")
+    io.stderr:flush()
     local buffer, job = track()
     local terminal_window = vim.api.nvim_get_current_win()
     assert(vim.bo[buffer].filetype == "Term_vsp")
@@ -92,6 +96,8 @@ check("real shell survives hiding and reopening the mapped vertical terminal", f
       return not alive(job)
     end, 20), "timed shell command exited unexpectedly")
 
+    io.stderr:write("live terminal: sleeping command survived\\n")
+    io.stderr:flush()
     binding.callback()
     assert(not vim.api.nvim_win_is_valid(terminal_window), "toggle did not hide split")
     assert(vim.api.nvim_get_current_win() == original, "original window lost focus")
