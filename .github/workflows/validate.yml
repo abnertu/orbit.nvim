@@ -218,6 +218,11 @@ jobs:
           nvim --headless -u NONE -l tests/git_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'gitsigns feature specs failed' }
 
+      - name: Test dotnet-cli feature spec
+        run: |
+          nvim --headless -u NONE -l tests/dotnet_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'dotnet-cli feature spec failed' }
+
       - name: Test first-demand Lazy startup with locked local Git
         run: |
           nvim --headless -u NONE -l tests/plugins_integration_spec.lua
