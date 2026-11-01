@@ -46,6 +46,7 @@
 ---@field calls table<string, integer>
 ---@field lines string[]
 ---@field mouse Orbit.LiveMenuMouse
+---@field journal string[]
 
 ---@class Orbit.LiveMenuOriginal
 ---@field mode string
@@ -91,6 +92,16 @@ return function(opts)
     return original_notify(message, level, config)
   end
   local group = vim.api.nvim_create_augroup("OrbitLiveMenu", {})
+  ---@type string[]
+  local journal = {}
+  ---@param event string
+  local function mark(event)
+    journal[#journal + 1] = event .. ': ' .. vim.api.nvim_get_current_win()
+      .. ' ' .. vim.api.nvim_buf_get_name(0)
+  end
+  vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter" }, {
+    group = group, callback = function(event) mark(event.event) end,
+  })
   vim.api.nvim_create_autocmd("User", { group = group, pattern = "LazyLoad", callback = function(event)
     loaded[event.data] = (loaded[event.data] or 0) + 1
   end })
@@ -124,6 +135,7 @@ return function(opts)
   end
 
   package.loaded["orbit.tests.live_menu"] = {
+    mark = mark,
     ---@param first string
     ---@param second string
     ---@return boolean
@@ -231,7 +243,7 @@ return function(opts)
         runtime_loaded = package.loaded["orbit.modules.menu.runtime"] ~= nil,
         current = vim.api.nvim_get_current_buf(), win = vim.api.nvim_get_current_win(), mode = vim.fn.mode(),
         cursor = vim.api.nvim_win_get_cursor(0), windows = windows, preserved = preserved, calls = calls,
-        lines = vim.api.nvim_buf_get_lines(0, 0, -1, false), mouse = vim.fn.getmousepos(),
+        lines = vim.api.nvim_buf_get_lines(0, 0, -1, false), mouse = vim.fn.getmousepos(), journal = journal,
       }
     end,
   }
