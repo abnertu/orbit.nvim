@@ -3,8 +3,8 @@ local M = {}
 local owns_command = false
 
 ---@class Orbit.PythonToolsOptions # Python project maintenance commands.
----@field enabled boolean @default(true) # Enable Python project maintenance commands.
----@field recreate_stub boolean @default(true) # Register the guarded Pyright stub regeneration command.
+---@field enabled? boolean @default(true) # Enable Python project maintenance commands.
+---@field recreate_stub? boolean @default(true) # Register the guarded Pyright stub regeneration command.
 
 local function list_stubs(root)
   local parent = vim.fs.joinpath(root, "typings")

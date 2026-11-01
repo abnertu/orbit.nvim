@@ -3,14 +3,14 @@ local accepted
 local subscribed = false
 
 ---@class Orbit.NavigationOptions # Oil and nvim-tree file explorers.
----@field enabled boolean @default(true) @restart(true) # Enable explorer integrations.
----@field oil boolean @default(true) @restart(true) # Enable Oil floating explorer.
----@field tree boolean @default(true) @restart(true) # Enable nvim-tree.
----@field delete_to_trash boolean @default(true) @restart(true) # Move Oil deletions to trash.
----@field tree_width integer @default(40) @minimum(10) @maximum(200) @restart(true) # Tree window width.
----@field sync_root boolean @default(true) @restart(true) # Synchronize tree root with cwd.
----@field harpoon boolean @default(true) @restart(true) # Enable Harpoon buffer navigation.
----@field harpoon_short_path_length integer @default(8) @minimum(1) @maximum(128) @restart(true) # Harpoon display path segment limit.
+---@field enabled? boolean @default(true) @restart(true) # Enable explorer integrations.
+---@field oil? boolean @default(true) @restart(true) # Enable Oil floating explorer.
+---@field tree? boolean @default(true) @restart(true) # Enable nvim-tree.
+---@field delete_to_trash? boolean @default(true) @restart(true) # Move Oil deletions to trash.
+---@field tree_width? integer @default(40) @minimum(10) @maximum(200) @restart(true) # Tree window width.
+---@field sync_root? boolean @default(true) @restart(true) # Synchronize tree root with cwd.
+---@field harpoon? boolean @default(true) @restart(true) # Enable Harpoon buffer navigation.
+---@field harpoon_short_path_length? integer @default(8) @minimum(1) @maximum(128) @restart(true) # Harpoon display path segment limit.
 
 ---@return Orbit.NavigationOptions?
 function M.capture()

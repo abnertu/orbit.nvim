@@ -2,18 +2,18 @@ local M = {}
 local accepted
 
 ---@class Orbit.SnacksOptions # Snacks UI and picker integration.
----@field enabled boolean @default(true) @restart(true) # Include Snacks in Lazy specs.
----@field picker boolean @default(true) @restart(true) # Enable picker.
----@field dashboard boolean @default(true) @restart(true) # Enable dashboard.
----@field notifier boolean @default(true) @restart(true) # Enable notifier.
----@field statuscolumn boolean @default(true) @restart(true) # Enable status column.
----@field quickfile boolean @default(true) @restart(true) # Enable quickfile.
----@field scope boolean @default(true) @restart(true) # Enable scope detection.
----@field scroll boolean @default(true) @restart(true) # Enable smooth scroll.
----@field bigfile boolean @default(true) @restart(true) # Enable large-file handling.
----@field input boolean @default(true) @restart(true) # Enable input prompts.
----@field words boolean @default(true) @restart(true) # Enable word references.
----@field notify_timeout integer @default(3000) @minimum(0) @restart(true) # Notification timeout in milliseconds.
+---@field enabled? boolean @default(true) @restart(true) # Include Snacks in Lazy specs.
+---@field picker? boolean @default(true) @restart(true) # Enable picker.
+---@field dashboard? boolean @default(true) @restart(true) # Enable dashboard.
+---@field notifier? boolean @default(true) @restart(true) # Enable notifier.
+---@field statuscolumn? boolean @default(true) @restart(true) # Enable status column.
+---@field quickfile? boolean @default(true) @restart(true) # Enable quickfile.
+---@field scope? boolean @default(true) @restart(true) # Enable scope detection.
+---@field scroll? boolean @default(true) @restart(true) # Enable smooth scroll.
+---@field bigfile? boolean @default(true) @restart(true) # Enable large-file handling.
+---@field input? boolean @default(true) @restart(true) # Enable input prompts.
+---@field words? boolean @default(true) @restart(true) # Enable word references.
+---@field notify_timeout? integer @default(3000) @minimum(0) @restart(true) # Notification timeout in milliseconds.
 
 ---@return Orbit.SnacksOptions?
 function M.capture()

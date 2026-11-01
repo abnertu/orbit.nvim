@@ -117,6 +117,24 @@ check("required class and field metadata are validated", function()
   end)
 end)
 
+check("optional LuaDoc field markers keep generated schema keys stable", function()
+  fixture({ order = { "sample" } }, { sample = sample("sample", {
+    "---@field enabled? boolean @default(true) # Enable this module.",
+    "---@field title? string @default(\"default\") # Optional title.",
+  }) }, function(temp)
+    local built = schema.build(temp)
+    local properties = built.properties.modules.properties.sample.properties
+    assert(properties.enabled and properties.enabled.default == true)
+    assert(properties.title and properties.title.default == "default")
+    assert(properties["enabled?"] == nil and properties["title?"] == nil)
+    local options = require("orbit.config").resolve_against({ modules = {
+      sample = { title = "custom" },
+    } }, built)
+    assert(options.modules.sample.enabled == true)
+    assert(options.modules.sample.title == "custom")
+  end)
+end)
+
 check("LuaDoc primitive metadata and literal unions become schema", function()
   fixture({ order = { "sample" } }, {
     sample = sample("sample", {

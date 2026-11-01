@@ -2,16 +2,16 @@ local M = {}
 local accepted
 
 ---@class Orbit.MessagesOptions # Optional Noice commandline and LSP message integration.
----@field enabled boolean @default(true) @restart(true) # Include Noice and its message routes.
----@field cmdline boolean @default(true) @restart(true) # Show the commandline popup.
----@field messages boolean @default(true) @restart(true) # Display Neovim messages through Noice.
----@field popupmenu boolean @default(true) @restart(true) # Use the NUI commandline completion popup.
----@field hover boolean @default(true) @restart(true) # Present LSP hover documentation.
----@field signature boolean @default(true) @restart(true) # Present LSP signature help.
----@field progress boolean @default(true) @restart(true) # Display LSP progress updates.
----@field lsp_message boolean @default(false) @restart(true) # Let Noice display LSP showMessage notifications.
----@field doc_max_width integer @default(80) @minimum(10) @maximum(200) @restart(true) # Maximum documentation popup columns.
----@field doc_max_height integer @default(20) @minimum(3) @maximum(100) @restart(true) # Maximum documentation popup rows.
+---@field enabled? boolean @default(true) @restart(true) # Include Noice and its message routes.
+---@field cmdline? boolean @default(true) @restart(true) # Show the commandline popup.
+---@field messages? boolean @default(true) @restart(true) # Display Neovim messages through Noice.
+---@field popupmenu? boolean @default(true) @restart(true) # Use the NUI commandline completion popup.
+---@field hover? boolean @default(true) @restart(true) # Present LSP hover documentation.
+---@field signature? boolean @default(true) @restart(true) # Present LSP signature help.
+---@field progress? boolean @default(true) @restart(true) # Display LSP progress updates.
+---@field lsp_message? boolean @default(false) @restart(true) # Let Noice display LSP showMessage notifications.
+---@field doc_max_width? integer @default(80) @minimum(10) @maximum(200) @restart(true) # Maximum documentation popup columns.
+---@field doc_max_height? integer @default(20) @minimum(3) @maximum(100) @restart(true) # Maximum documentation popup rows.
 
 ---@return Orbit.MessagesOptions?
 function M.capture()

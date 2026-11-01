@@ -2,12 +2,12 @@ local M = {}
 local accepted
 
 ---@class Orbit.DapOptions # Debug adapters and DAP UI integrations.
----@field enabled boolean @default(true) @restart(true) # Enable debug plugins.
----@field python boolean @default(true) @restart(true) # Enable Python debugpy adapter.
----@field coreclr boolean @default(true) @restart(true) # Enable dotnet-cli debug adapter.
----@field ui boolean @default(true) @restart(true) # Enable DAP UI.
----@field python_host string @default("127.0.0.1") @minLength(1) @restart(true) # Python attach host.
----@field python_port string @default("8001") @minLength(1) @restart(true) # Python attach port.
+---@field enabled? boolean @default(true) @restart(true) # Enable debug plugins.
+---@field python? boolean @default(true) @restart(true) # Enable Python debugpy adapter.
+---@field coreclr? boolean @default(true) @restart(true) # Enable dotnet-cli debug adapter.
+---@field ui? boolean @default(true) @restart(true) # Enable DAP UI.
+---@field python_host? string @default("127.0.0.1") @minLength(1) @restart(true) # Python attach host.
+---@field python_port? string @default("8001") @minLength(1) @restart(true) # Python attach port.
 
 ---@return Orbit.DapOptions?
 function M.capture()

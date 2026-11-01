@@ -3,9 +3,9 @@ local M = {}
 local accepted
 
 ---@class Orbit.KeyguideOptions # Discoverable leader-key groups through which-key.
----@field enabled boolean @default(true) @restart(true) # Contribute the which-key Lazy specification.
----@field preset 'classic'|'modern'|'helix' @default("helix") @restart(true) # Which-key popup layout.
----@field border 'none'|'single'|'double'|'rounded'|'solid'|'shadow' @default("rounded") @restart(true) # Popup window border.
+---@field enabled? boolean @default(true) @restart(true) # Contribute the which-key Lazy specification.
+---@field preset? 'classic'|'modern'|'helix' @default("helix") @restart(true) # Which-key popup layout.
+---@field border? 'none'|'single'|'double'|'rounded'|'solid'|'shadow' @default("rounded") @restart(true) # Popup window border.
 
 local groups = {
   { "<leader>b", group = "buffer" },

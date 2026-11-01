@@ -2,13 +2,13 @@ local M = {}
 local accepted
 
 ---@class Orbit.CompletionOptions # Blink, LuaSnip, autopairs and Lua developer completion.
----@field enabled boolean @default(true) @restart(true) # Enable completion plugins.
----@field preset 'enter'|'default'|'super-tab' @default("enter") @restart(true) # Blink keymap preset.
----@field documentation_auto_show boolean @default(true) @restart(true) # Automatically display completion documentation.
----@field documentation_delay integer @default(200) @minimum(0) @maximum(5000) @restart(true) # Documentation delay in milliseconds.
----@field ghost_text boolean @default(false) @restart(true) # Display in-buffer completion ghost text.
----@field cmdline boolean @default(true) @restart(true) # Complete command line input.
----@field snippet_history boolean @default(true) @restart(true) # Keep LuaSnip jump history.
+---@field enabled? boolean @default(true) @restart(true) # Enable completion plugins.
+---@field preset? 'enter'|'default'|'super-tab' @default("enter") @restart(true) # Blink keymap preset.
+---@field documentation_auto_show? boolean @default(true) @restart(true) # Automatically display completion documentation.
+---@field documentation_delay? integer @default(200) @minimum(0) @maximum(5000) @restart(true) # Documentation delay in milliseconds.
+---@field ghost_text? boolean @default(false) @restart(true) # Display in-buffer completion ghost text.
+---@field cmdline? boolean @default(true) @restart(true) # Complete command line input.
+---@field snippet_history? boolean @default(true) @restart(true) # Keep LuaSnip jump history.
 
 ---@return Orbit.CompletionOptions?
 function M.capture()

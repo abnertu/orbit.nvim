@@ -2,13 +2,13 @@ local M = {}
 local accepted
 
 ---@class Orbit.MasonOptions # Lazy Mason package manager integration.
----@field enabled boolean @default(true) @restart(true) # Enable Mason commands.
----@field path_mode 'skip'|'prepend'|'append' @default("skip") @restart(true) # Mason PATH handling policy.
----@field max_concurrent_installers integer @default(10) @minimum(1) @maximum(64) @restart(true) # Concurrent package installation limit.
----@field registry string @default("github:mason-org/mason-registry") @minLength(1) @restart(true) # Primary Mason registry.
----@field pending_icon string @default(" ") @restart(true) # Pending package icon.
----@field installed_icon string @default(" ") @restart(true) # Installed package icon.
----@field uninstalled_icon string @default(" ") @restart(true) # Uninstalled package icon.
+---@field enabled? boolean @default(true) @restart(true) # Enable Mason commands.
+---@field path_mode? 'skip'|'prepend'|'append' @default("skip") @restart(true) # Mason PATH handling policy.
+---@field max_concurrent_installers? integer @default(10) @minimum(1) @maximum(64) @restart(true) # Concurrent package installation limit.
+---@field registry? string @default("github:mason-org/mason-registry") @minLength(1) @restart(true) # Primary Mason registry.
+---@field pending_icon? string @default(" ") @restart(true) # Pending package icon.
+---@field installed_icon? string @default(" ") @restart(true) # Installed package icon.
+---@field uninstalled_icon? string @default(" ") @restart(true) # Uninstalled package icon.
 
 ---@return Orbit.MasonOptions?
 function M.capture()

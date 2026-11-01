@@ -2,12 +2,12 @@ local M = {}
 local owned = {}
 
 ---@class Orbit.CorekeysOptions # Core file and window navigation mappings.
----@field enabled boolean @default(true) # Register the core mappings.
----@field save string @default("<C-s>") @minLength(1) # Save the current buffer.
----@field window_left string @default("<C-h>") @minLength(1) # Focus the left window.
----@field window_right string @default("<C-l>") @minLength(1) # Focus the right window.
----@field window_up string @default("<C-k>") @minLength(1) # Focus the upper window.
----@field window_down string @default("<C-j>") @minLength(1) # Focus the lower window.
+---@field enabled? boolean @default(true) # Register the core mappings.
+---@field save? string @default("<C-s>") @minLength(1) # Save the current buffer.
+---@field window_left? string @default("<C-h>") @minLength(1) # Focus the left window.
+---@field window_right? string @default("<C-l>") @minLength(1) # Focus the right window.
+---@field window_up? string @default("<C-k>") @minLength(1) # Focus the upper window.
+---@field window_down? string @default("<C-j>") @minLength(1) # Focus the lower window.
 
 -- Preserve the selected range and visual selection when moving lines.
 local function move_visual(direction)

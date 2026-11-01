@@ -2,9 +2,9 @@ local M = {}
 local owned = {}
 
 ---@class Orbit.KeymapsOptions # Minimal key mappings owned by orbit.nvim.
----@field enabled boolean @default(true) # Register the module mappings.
----@field leader string @default(" ") @minLength(1) # Leader key set before module mappings.
----@field save string @default("<leader>w") @minLength(1) # Normal-mode mapping that writes the current buffer.
+---@field enabled? boolean @default(true) # Register the module mappings.
+---@field leader? string @default(" ") @minLength(1) # Leader key set before module mappings.
+---@field save? string @default("<leader>w") @minLength(1) # Normal-mode mapping that writes the current buffer.
 
 -- Store physical keys, not <leader> aliases, so reconfiguration restores the
 -- previous mappings even after mapleader changes.

@@ -3,8 +3,8 @@ local M = {}
 local owns_command = false
 
 ---@class Orbit.SystemOptions # Platform-specific recovery commands.
----@field enabled boolean @default(true) # Enable platform recovery commands.
----@field clear_shada boolean @default(true) # Offer a Windows ShaDa temporary-file cleanup command.
+---@field enabled? boolean @default(true) # Enable platform recovery commands.
+---@field clear_shada? boolean @default(true) # Offer a Windows ShaDa temporary-file cleanup command.
 
 local function command_exists()
   return vim.api.nvim_get_commands({}).ClearShada ~= nil

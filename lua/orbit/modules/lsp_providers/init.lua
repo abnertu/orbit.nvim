@@ -2,12 +2,12 @@ local M = {}
 local accepted
 
 ---@class Orbit.LspProvidersOptions # Specialist Roslyn and TypeScript LSP providers.
----@field enabled boolean @default(true) @restart(true) # Contribute specialist LSP providers.
----@field roslyn boolean @default(true) @restart(true) # Enable the .NET Roslyn provider.
----@field typescript_tools boolean @default(true) @restart(true) # Enable TypeScript tools provider.
----@field roslyn_filewatching string @default("roslyn") @minLength(1) @restart(true) # Roslyn file-watching policy.
----@field tsserver_path string @default("") @restart(true) # Optional explicit tsserver.js path.
----@field ts_inlay_hints boolean @default(true) @restart(true) # Enable safe TypeScript inlay hints.
+---@field enabled? boolean @default(true) @restart(true) # Contribute specialist LSP providers.
+---@field roslyn? boolean @default(true) @restart(true) # Enable the .NET Roslyn provider.
+---@field typescript_tools? boolean @default(true) @restart(true) # Enable TypeScript tools provider.
+---@field roslyn_filewatching? string @default("roslyn") @minLength(1) @restart(true) # Roslyn file-watching policy.
+---@field tsserver_path? string @default("") @restart(true) # Optional explicit tsserver.js path.
+---@field ts_inlay_hints? boolean @default(true) @restart(true) # Enable safe TypeScript inlay hints.
 
 ---@return Orbit.LspProvidersOptions?
 function M.capture()

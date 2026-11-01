@@ -2,11 +2,11 @@ local M = {}
 local accepted
 
 ---@class Orbit.HangarOptions # Managed development tools and persistent state.
----@field enabled boolean @default(true) @restart(true) # Include Hangar during Lazy startup.
----@field command string @default("Hangar") @minLength(1) @restart(true) # Command for the Hangar UI.
----@field key string @default("<leader>us") @minLength(1) @restart(true) # Mapping for the Hangar UI.
----@field state_file string @default("") @restart(true) # Optional state JSON path override.
----@field border 'rounded'|'single'|'double'|'solid'|'shadow'|'none' @default("rounded") @restart(true) # Hangar window border.
+---@field enabled? boolean @default(true) @restart(true) # Include Hangar during Lazy startup.
+---@field command? string @default("Hangar") @minLength(1) @restart(true) # Command for the Hangar UI.
+---@field key? string @default("<leader>us") @minLength(1) @restart(true) # Mapping for the Hangar UI.
+---@field state_file? string @default("") @restart(true) # Optional state JSON path override.
+---@field border? 'rounded'|'single'|'double'|'solid'|'shadow'|'none' @default("rounded") @restart(true) # Hangar window border.
 
 ---@return Orbit.HangarOptions?
 function M.capture()

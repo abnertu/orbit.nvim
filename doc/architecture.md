@@ -4,7 +4,7 @@ The public entry point is `require("orbit").setup(opts)`. It validates all decla
 
 ## Module contract
 
-A module lives in `lua/orbit/modules/<name>/`. Its `init.lua` exports `setup(opts)` and documents the options with LuaDoc. The LuaDoc includes types, defaults, bounds and descriptions. The schema generator reads source comments without evaluating the module.
+A module lives in `lua/orbit/modules/<name>/`. Its `init.lua` exports `setup(opts)` and documents the options with LuaDoc. The LuaDoc includes types, defaults, bounds and descriptions. Defaulted fields use `---@field name? type`; the generator strips `?` from JSON property keys. The schema generator reads source comments without evaluating the module.
 
 The explicit `manifest.json` orders module activation. Both the runtime and the schema generator read this manifest. No second module inventory is maintained.
 

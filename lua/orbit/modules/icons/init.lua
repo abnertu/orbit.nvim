@@ -2,8 +2,8 @@ local M = {}
 local accepted
 
 ---@class Orbit.IconsOptions # Optional mini.icons integration.
----@field enabled boolean @default(true) @restart(true) # Include mini.icons in the Lazy specification.
----@field mock_devicons boolean @default(true) @restart(true) # Provide an nvim-web-devicons compatibility adapter.
+---@field enabled? boolean @default(true) @restart(true) # Include mini.icons in the Lazy specification.
+---@field mock_devicons? boolean @default(true) @restart(true) # Provide an nvim-web-devicons compatibility adapter.
 
 ---Capture settings without loading or installing plugins.
 ---@return Orbit.IconsOptions?

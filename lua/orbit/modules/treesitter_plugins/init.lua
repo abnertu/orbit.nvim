@@ -2,23 +2,23 @@ local M = {}
 local accepted
 
 ---@class Orbit.TreesitterPluginsOptions # Tree-sitter parser and companion plugins.
----@field enabled boolean @default(true) @restart(true) # Include Tree-sitter plugin specs.
----@field core boolean @default(true) @restart(true) # Install the main parser manager.
----@field context boolean @default(true) @restart(true) # Enable Tree-sitter context view.
----@field autotag boolean @default(true) @restart(true) # Enable HTML/XML auto tags.
----@field context_lines integer @default(3) @minimum(0) @maximum(50) @restart(true) # Context line limit.
----@field autotag_close boolean @default(true) @restart(true) # Insert closing tags.
----@field autotag_rename boolean @default(true) @restart(true) # Rename matching tags.
----@field autotag_close_slash boolean @default(false) @restart(true) # Close tags after slash.
----@field install_dir string @default("") @restart(true) # Optional parser installation directory.
----@field sql_injections Orbit.TreesitterSqlInjections @default({}) @restart(true) # SQL injection controls.
----@field sql_dialect string @default("tsql") @minLength(1) @restart(true) # Default SQL dialect for fallback syntax.
----@field sql_syntax_fallback boolean @default(true) @restart(true) # Apply T-SQL syntax after Tree-sitter starts.
----@field sql_markdown_fenced_fallback boolean @default(true) @restart(true) # Highlight SQL inside Markdown code fences.
+---@field enabled? boolean @default(true) @restart(true) # Include Tree-sitter plugin specs.
+---@field core? boolean @default(true) @restart(true) # Install the main parser manager.
+---@field context? boolean @default(true) @restart(true) # Enable Tree-sitter context view.
+---@field autotag? boolean @default(true) @restart(true) # Enable HTML/XML auto tags.
+---@field context_lines? integer @default(3) @minimum(0) @maximum(50) @restart(true) # Context line limit.
+---@field autotag_close? boolean @default(true) @restart(true) # Insert closing tags.
+---@field autotag_rename? boolean @default(true) @restart(true) # Rename matching tags.
+---@field autotag_close_slash? boolean @default(false) @restart(true) # Close tags after slash.
+---@field install_dir? string @default("") @restart(true) # Optional parser installation directory.
+---@field sql_injections? Orbit.TreesitterSqlInjections @default({}) @restart(true) # SQL injection controls.
+---@field sql_dialect? string @default("tsql") @minLength(1) @restart(true) # Default SQL dialect for fallback syntax.
+---@field sql_syntax_fallback? boolean @default(true) @restart(true) # Apply T-SQL syntax after Tree-sitter starts.
+---@field sql_markdown_fenced_fallback? boolean @default(true) @restart(true) # Highlight SQL inside Markdown code fences.
 
 ---@class Orbit.TreesitterSqlInjections # C# SQL injection selection.
----@field comment boolean @default(true) # Parse SQL after language=sql comments.
----@field auto boolean @default(true) # Parse SQL assigned to sql-prefixed variables.
+---@field comment? boolean @default(true) # Parse SQL after language=sql comments.
+---@field auto? boolean @default(true) # Parse SQL assigned to sql-prefixed variables.
 
 ---@return Orbit.TreesitterPluginsOptions?
 function M.capture()

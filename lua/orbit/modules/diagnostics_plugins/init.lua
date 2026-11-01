@@ -2,13 +2,13 @@ local M = {}
 local accepted
 
 ---@class Orbit.DiagnosticsPluginsOptions # Trouble and todo-comments integrations.
----@field enabled boolean @default(true) @restart(true) # Contribute diagnostic plugin specifications.
----@field trouble boolean @default(true) @restart(true) # Enable Trouble diagnostics views.
----@field todo boolean @default(true) @restart(true) # Enable todo-comments integration.
----@field preview_border 'rounded'|'single'|'double'|'solid'|'shadow'|'none' @default("rounded") @restart(true) # Diagnostic preview border.
----@field preview_width_percent integer @default(30) @minimum(1) @maximum(100) @restart(true) # Diagnostic preview width percentage.
----@field preview_height_percent integer @default(30) @minimum(1) @maximum(100) @restart(true) # Diagnostic preview height percentage.
----@field todo_icon string @default(" ") @minLength(1) @restart(true) # WORKAROUND marker icon.
+---@field enabled? boolean @default(true) @restart(true) # Contribute diagnostic plugin specifications.
+---@field trouble? boolean @default(true) @restart(true) # Enable Trouble diagnostics views.
+---@field todo? boolean @default(true) @restart(true) # Enable todo-comments integration.
+---@field preview_border? 'rounded'|'single'|'double'|'solid'|'shadow'|'none' @default("rounded") @restart(true) # Diagnostic preview border.
+---@field preview_width_percent? integer @default(30) @minimum(1) @maximum(100) @restart(true) # Diagnostic preview width percentage.
+---@field preview_height_percent? integer @default(30) @minimum(1) @maximum(100) @restart(true) # Diagnostic preview height percentage.
+---@field todo_icon? string @default(" ") @minLength(1) @restart(true) # WORKAROUND marker icon.
 
 ---@return Orbit.DiagnosticsPluginsOptions?
 function M.capture()

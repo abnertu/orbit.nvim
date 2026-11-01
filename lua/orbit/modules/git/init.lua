@@ -2,24 +2,24 @@ local M = {}
 local accepted
 
 ---@class Orbit.GitMarks # Marker text for unstaged changes.
----@field add string @default("▎") # Added line marker.
----@field change string @default("▎") # Changed line marker.
----@field delete string @default("") # Deleted line marker.
----@field topdelete string @default("") # Top-deleted line marker.
----@field changedelete string @default("▎") # Changed-and-deleted marker.
----@field untracked string @default("▎") # Untracked line marker.
+---@field add? string @default("▎") # Added line marker.
+---@field change? string @default("▎") # Changed line marker.
+---@field delete? string @default("") # Deleted line marker.
+---@field topdelete? string @default("") # Top-deleted line marker.
+---@field changedelete? string @default("▎") # Changed-and-deleted marker.
+---@field untracked? string @default("▎") # Untracked line marker.
 
 ---@class Orbit.GitStaged # Marker text for staged changes.
----@field add string @default(" ") # Staged addition marker.
----@field change string @default(" ") # Staged modification marker.
----@field delete string @default(" ") # Staged deletion marker.
----@field topdelete string @default("") # Staged top-deletion marker.
----@field changedelete string @default("▎") # Staged changed-and-deleted marker.
+---@field add? string @default(" ") # Staged addition marker.
+---@field change? string @default(" ") # Staged modification marker.
+---@field delete? string @default(" ") # Staged deletion marker.
+---@field topdelete? string @default("") # Staged top-deletion marker.
+---@field changedelete? string @default("▎") # Staged changed-and-deleted marker.
 
 ---@class Orbit.GitOptions # Lazy gitsigns integration.
----@field enabled boolean @default(true) @restart(true) # Include gitsigns in the plugin specs.
----@field marks Orbit.GitMarks @default({}) @restart(true) # Unstaged change markers.
----@field staged Orbit.GitStaged @default({}) @restart(true) # Staged change markers.
+---@field enabled? boolean @default(true) @restart(true) # Include gitsigns in the plugin specs.
+---@field marks? Orbit.GitMarks @default({}) @restart(true) # Unstaged change markers.
+---@field staged? Orbit.GitStaged @default({}) @restart(true) # Staged change markers.
 
 ---@return Orbit.GitOptions?
 function M.capture()
