@@ -76,6 +76,34 @@ local ok, err = xpcall(function()
   print("PASS real Noice Lazy activation and command")
   print("PASS real Noice merged formatter progress route")
 
+  -- Exercise the real notify -> router -> NUI rendering path, not just
+  -- the configured route predicate. The formatter route must display
+  -- a floating mini view containing the actual notification text.
+  local router = require("noice.message.router")
+  local formatter_view = assert(router._routes[1] and router._routes[1].view,
+    "real formatter progress view was not registered")
+  local progress_text = "Orbit live formatter progress"
+  vim.notify(progress_text, vim.log.levels.INFO, {
+    orbit_formatter = true,
+    orbit_formatter_icon = "*",
+  })
+  router.update()
+  local popup = formatter_view.view and formatter_view.view._nui
+  assert(popup and popup.winid and vim.api.nvim_win_is_valid(popup.winid),
+    "formatter progress did not open a real NUI window")
+  assert(vim.api.nvim_win_get_buf(popup.winid) == popup.bufnr,
+    "formatter progress popup did not own its rendered buffer")
+  assert(vim.api.nvim_win_get_config(popup.winid).relative ~= "",
+    "formatter progress rendered in a normal window")
+  local rendered = table.concat(vim.api.nvim_buf_get_lines(
+    popup.bufnr, 0, -1, false), "\n")
+  assert(rendered:find(progress_text, 1, true)
+    and rendered:find("*", 1, true),
+    "real formatter progress popup lost its message or icon: "
+      .. vim.inspect(rendered))
+  print("PASS real Noice formatter notification renders in a floating NUI popup")
+
+  router.dismiss()
   require("noice").disable()
 end, debug.traceback)
 
