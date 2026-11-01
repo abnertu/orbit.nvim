@@ -62,8 +62,11 @@ local function isolated(run)
         -- Kill only the child process tree, never the hosting CI console.
         local pid = vim.fn.jobpid(job)
         assert(pid > 0, "terminal job has no OS process ID")
-        vim.system({ "taskkill.exe", "/F", "/T", "/PID", tostring(pid) },
-          { text = true, timeout = 15000 }):wait()
+        local stopped = vim.system({
+          "taskkill.exe", "/F", "/T", "/PID", tostring(pid),
+        }, { text = true, timeout = 15000 }):wait()
+        assert(stopped.code == 0 or not alive(job),
+          "failed to stop terminal process: " .. tostring(stopped.stderr))
       else
         pcall(vim.fn.jobstop, job)
         vim.fn.jobwait({ job }, 3000)
