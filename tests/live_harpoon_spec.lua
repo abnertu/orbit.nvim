@@ -73,7 +73,7 @@ local ok, err = xpcall(function()
   vim.api.nvim_win_set_cursor(0, { 2, 3 })
 
   -- Redirect upstream Harpoon persistence to the isolated live fixture.
-  -- This avoids modifying a developer\'s real Harpoon data when run locally.
+  -- This avoids modifying a developer's real Harpoon data when run locally.
   local persistence_path = vim.fs.joinpath(workspace, "harpoon-state.json")
   require("harpoon.data").test.set_fullpath(function()
     return persistence_path
