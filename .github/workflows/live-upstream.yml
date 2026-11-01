@@ -160,3 +160,8 @@ jobs:
         run: |
           nvim --headless -u NONE -l tests/live_startup_ui_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Real dashboard/explorer startup integration failed' }
+
+      - name: Run pinned real completion input and Escape cleanup
+        run: |
+          nvim --headless -u NONE -l tests/live_completion_escape_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Real completion/Escape integration failed' }
