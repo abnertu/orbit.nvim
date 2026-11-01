@@ -1432,6 +1432,30 @@
           },
           "type": "object"
         },
+        "theme": {
+          "additionalProperties": false,
+          "description": "Colorscheme, highlight overrides and saved theme selection.",
+          "properties": {
+            "colorscheme": {
+              "default": "tokyonight-night",
+              "description": "Colorscheme applied at startup and on change.",
+              "minLength": 1,
+              "type": "string"
+            },
+            "enabled": {
+              "default": true,
+              "description": "Include the colorscheme plugin and highlight owner.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "highlights": {
+              "default": true,
+              "description": "Apply Orbit highlight overrides after each colorscheme.",
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
         "treesitter_plugins": {
           "additionalProperties": false,
           "description": "Tree-sitter parser and companion plugins.",

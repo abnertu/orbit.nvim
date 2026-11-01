@@ -115,6 +115,8 @@ require("orbit").setup({
 })
 ```
 
+The `theme` module loads tokyonight at startup and applies `modules.theme.colorscheme` (default `tokyonight-night`). After each colorscheme, Orbit applies its float, diagnostic, Noice, Snacks and Hangar highlight overrides; set `highlights = false` to keep the scheme's own. A colorscheme chosen with `<leader>ut` is saved to an existing settings file. Without a settings file, the choice applies to the current session only.
+
 The editor module exposes configurable statusline, clipboard, mouse, signcolumn, undo and file-format defaults.
 
 The corekeys module owns `<C-s>` for save, `<C-h/j/k/l>` for window navigation, tab-local `<Tab>` / `<S-Tab>` buffer cycling through the `orbit.buffers` order owner, and the legacy visual `J/K` line-move callbacks. Its fixed editing mappings restore previous user bindings when disabled.

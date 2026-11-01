@@ -228,6 +228,11 @@ jobs:
           nvim --headless -u NONE -l tests/layout_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Edgy layout owner tests failed' }
 
+      - name: Test theme owner and saved selection
+        run: |
+          nvim --headless -u NONE -l tests/theme_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Theme owner tests failed' }
+
       - name: Test first-demand Lazy startup with locked local Git
         run: |
           nvim --headless -u NONE -l tests/plugins_integration_spec.lua

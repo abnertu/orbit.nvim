@@ -49,6 +49,66 @@ function M.read(path)
   return values, nil, raw
 end
 
+---Set one value in an existing settings file after validating the result.
+---The file is replaced atomically. A missing file is not created, and any
+---failure leaves the file and the accepted configuration unchanged.
+---@param path string
+---@param keys string[]
+---@param value any
+---@return boolean, string?
+function M.update(path, keys, value)
+  local filename = M.path(path)
+  local stat = vim.uv.fs_stat(filename)
+  if not stat or stat.type ~= "file" then
+    return false, "settings file does not exist; open settings to create it: " .. filename
+  end
+  local file, open_error = io.open(filename, "rb")
+  if not file then
+    return false, "cannot open settings " .. filename .. ": " .. tostring(open_error)
+  end
+  local source = file:read("*a")
+  file:close()
+  local decoded, raw = pcall(vim.json.decode, source)
+  if not decoded or type(raw) ~= "table" then
+    return false, "invalid JSON in " .. filename .. ": " .. tostring(raw)
+  end
+
+  local node = raw
+  for index = 1, #keys - 1 do
+    local key = keys[index]
+    if node[key] == nil then node[key] = vim.empty_dict() end
+    if type(node[key]) ~= "table" then
+      return false, "settings key is not an object: " .. table.concat(keys, ".", 1, index)
+    end
+    node = node[key]
+  end
+  node[keys[#keys]] = value
+  local valid, err = pcall(require("orbit.config").resolve, raw)
+  if not valid then
+    return false, tostring(err)
+  end
+
+  local content = vim.json.encode(raw, { indent = "  ", sort_keys = true }) .. "\n"
+  local temporary = filename .. ".orbit-" .. vim.uv.os_getpid() .. ".tmp"
+  local handle, create_error = vim.uv.fs_open(temporary, "wx", stat.mode)
+  if not handle then
+    return false, "cannot write settings: " .. tostring(create_error)
+  end
+  local written, write_error = vim.uv.fs_write(handle, content, 0)
+  local synced = written == #content and vim.uv.fs_fsync(handle)
+  vim.uv.fs_close(handle)
+  if written ~= #content or not synced then
+    vim.uv.fs_unlink(temporary)
+    return false, "cannot write settings: " .. tostring(write_error or "short write")
+  end
+  local renamed, rename_error = vim.uv.fs_rename(temporary, filename)
+  if not renamed then
+    vim.uv.fs_unlink(temporary)
+    return false, "cannot replace settings: " .. tostring(rename_error)
+  end
+  return true
+end
+
 local watch_group = "OrbitSettingsWatch"
 
 ---Watch the selected file only. Repeated calls replace the old observer.

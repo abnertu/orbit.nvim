@@ -66,6 +66,8 @@ The diagnostics_plugins owner contributes Trouble and todo-comments. Its LSP-ref
 
 The layout owner contributes Edgy at `VeryLazy`. Each side has one Trouble view filtered by Trouble's window position, split type and editor-relative placement; previews stay unmanaged. A pinned Linux/Windows test drives real Edgy and Trouble.
 
+The theme owner declares tokyonight with high priority. Its Lazy config starts the theme runtime, which applies the configured colorscheme and one `OrbitTheme` ColorScheme observer. Override colors come from standard highlight groups, so other colorschemes keep working. Rollback restores the previous scheme. `orbit.settings.update` saves a selection only to an existing file through an atomic replace after validation.
+
 The independent editor_plugins owner contributes vim-matchup and indent-blankline. Its init callback owns the matchup globals, and its indent hook is registered only at Lazy config time. Existing theme highlights remain a separate migration requirement.
 
 The icons and git owners produce Lazy declarations without loading external code. The git owner preserves the original staged and unstaged glyph defaults and uses the one-shot FilePost event.
