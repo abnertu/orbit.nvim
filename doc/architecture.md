@@ -79,6 +79,8 @@ The events module owns core Neovim events and the legacy one-shot `User FilePost
 
 The events module owns only standalone core events. It registers callbacks once and disables them through state instead of destroying an event group needed for rollback.
 
+The startup integration test attaches an embedded Neovim UI and observes native startup events. It covers empty, startup-interface, existing-file, new-file, and directory arguments. A local Git fixture verifies optional Lazy activation and read-observer counts. Real EditorConfig replay restores project indentation after FileType callbacks. Directory startup currently consumes FilePost before its argument buffer is removed. The fixture disables netrw to isolate Orbit's directory owner; it does not verify explorer or dashboard integration.
+
 The commands module owns the settings command and restores its registration after failed activation. It does not replace other commands.
 
 The filetypes module owns only Compose YAML and JSX detection. It captures the existing Neovim registry entries before registration and restores them on rollback or disable.
