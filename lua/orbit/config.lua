@@ -5,6 +5,7 @@ local M = {}
 ---@field filetypes? Orbit.FiletypesOptions
 ---@field keymaps? Orbit.KeymapsOptions
 ---@field keyguide? Orbit.KeyguideOptions
+---@field menu? Orbit.MenuOptions
 ---@field events? Orbit.EventsOptions
 ---@field system? Orbit.SystemOptions
 ---@field python_tools? Orbit.PythonToolsOptions
