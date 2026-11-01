@@ -52,6 +52,9 @@ local ok, err = xpcall(function()
     "Obsidian vault path was not normalized consistently: "
       .. vim.inspect({ opts.workspaces[1].path, vault }))
   assert(opts.legacy_commands == false)
+  -- Lazy's ft=markdown handler activates Obsidian while a note is current.
+  vim.cmd.edit(vim.fn.fnameescape(vault .. "/orbit demand note.md"))
+  vim.bo.filetype = "markdown"
   specs[1].config(specs[1], opts)
   local obsidian = require("obsidian")
   assert(obsidian.get_client() ~= nil, "upstream Obsidian setup did not finish")
