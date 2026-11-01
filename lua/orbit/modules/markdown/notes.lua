@@ -47,10 +47,56 @@ function M.options(vault)
   }
 end
 
+local group
+
+-- The upstream query conceals code fences. Replace it so fences and their
+-- language labels stay visible at conceallevel=2. A query that fails to
+-- parse, such as without an installed parser, leaves the upstream query.
+---@return boolean
+function M.apply_highlights()
+  local path = vim.api.nvim_get_runtime_file("lua/orbit/modules/markdown/highlights.scm", false)[1]
+  if not path then return false end
+  local text = table.concat(vim.fn.readfile(path), "\n")
+  local ok, err = pcall(vim.treesitter.query.parse, "markdown", text)
+  if not ok then
+    vim.notify("Markdown highlights unchanged: " .. tostring(err),
+      vim.log.levels.WARN, { title = "orbit.nvim notes" })
+    return false
+  end
+  vim.treesitter.query.set("markdown", "highlights", text)
+  -- Existing highlighters keep their parsed query until restarted.
+  for buffer, _ in pairs(vim.treesitter.highlighter.active) do
+    if vim.api.nvim_buf_is_valid(buffer) and vim.bo[buffer].filetype == "markdown" then
+      vim.treesitter.stop(buffer)
+      pcall(vim.treesitter.start, buffer, "markdown")
+    end
+  end
+  return true
+end
+
+-- Conceal is window-local per buffer, so other buffers shown later in the
+-- same window keep their own value.
+local function conceal_markdown(buffer)
+  if vim.bo[buffer].filetype == "markdown" and vim.api.nvim_get_current_buf() == buffer then
+    vim.opt_local.conceallevel = 2
+  end
+end
+
 ---@param opts Orbit.ObsidianOptions
-function M.setup(opts)
+---@param highlights? boolean
+function M.setup(opts, highlights)
   require("obsidian").setup(opts)
-  vim.opt_local.conceallevel = 2
+  -- Lazy activation is restart-only; the group is created once.
+  if not group then
+    group = vim.api.nvim_create_augroup("OrbitMarkdownNotes", { clear = true })
+    vim.api.nvim_create_autocmd({ "FileType", "BufWinEnter" }, {
+      group = group,
+      callback = function(args) conceal_markdown(args.buf) end,
+      desc = "Conceal Markdown markup in note windows",
+    })
+  end
+  conceal_markdown(vim.api.nvim_get_current_buf())
+  if highlights ~= false then M.apply_highlights() end
 end
 
 return M

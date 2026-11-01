@@ -8,6 +8,7 @@ local accepted
 ---@field build_timeout? integer @default(120000) @minimum(1000) @maximum(300000) @restart(true) # Preview installer timeout in milliseconds.
 ---@field notes? boolean @default(true) @restart(true) # Enable Obsidian vault integration.
 ---@field vault? string @default("") @restart(true) # Optional Obsidian vault directory.
+---@field note_highlights? boolean @default(true) @restart(true) # Keep Markdown code fences visible in notes.
 
 ---@return Orbit.MarkdownOptions?
 function M.capture()
@@ -54,7 +55,7 @@ function M.spec()
         return require("orbit.modules.markdown.notes").options(c.vault)
       end,
       config = function(_, opts)
-        require("orbit.modules.markdown.notes").setup(opts)
+        require("orbit.modules.markdown.notes").setup(opts, c.note_highlights)
       end,
     }
   end
