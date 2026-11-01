@@ -1,4 +1,9 @@
 local M = {}
+
+---@alias Orbit.CorekeysBinding table<string, any>|false
+---@alias Orbit.CorekeysOwned {mode: string, lhs: string, original: Orbit.CorekeysBinding}
+---@alias Orbit.CorekeysAffected {mode: string, lhs: string, current: Orbit.CorekeysBinding}
+---@alias Orbit.CorekeysSnapshot {owned: table<string, Orbit.CorekeysOwned>, affected: table<string, Orbit.CorekeysAffected>}
 local owned = {}
 
 ---@class Orbit.CorekeysOptions # Core file and window navigation mappings.
@@ -112,7 +117,7 @@ end
 
 ---Capture effective bindings at both existing and proposed key sequences.
 ---@param opts Orbit.CorekeysOptions
----@return table
+---@return Orbit.CorekeysSnapshot
 function M.capture(opts)
   local affected = {}
   for key, previous in pairs(owned) do
@@ -134,7 +139,7 @@ function M.capture(opts)
   return { owned = vim.deepcopy(owned), affected = affected }
 end
 
----@param snapshot table
+---@param snapshot Orbit.CorekeysSnapshot
 function M.restore(snapshot)
   for _, previous in pairs(owned) do
     pcall(vim.keymap.del, previous.mode, previous.lhs)

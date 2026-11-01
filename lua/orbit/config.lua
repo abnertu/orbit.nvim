@@ -171,8 +171,8 @@ end
 ---On first setup, there is no active configuration to preserve.
 ---@param current? Orbit.Config
 ---@param requested Orbit.Config
----@param supplied_schema? table
----@return Orbit.Config, table
+---@param supplied_schema? Orbit.SchemaNode
+---@return Orbit.Config, table<string, any>
 function M.defer_restart(current, requested, supplied_schema)
   if not current then
     return vim.deepcopy(requested), {}
@@ -185,17 +185,17 @@ end
 
 ---Resolve a supplied schema without activating any modules.
 ---Used to validate generated schema fixtures before publishing them.
----@param opts table?
----@param supplied_schema table
----@return table
+---@param opts? table<string, any><string, any>
+---@param supplied_schema Orbit.SchemaNode
+---@return table<string, any>
 function M.resolve_against(opts, supplied_schema)
   return resolve(vim.deepcopy(opts or {}), supplied_schema, "orbit")
 end
 
 ---Validate a module when users call its setup function directly.
 ---@param name string
----@param opts? table
----@return table
+---@param opts? table<string, any>
+---@return table<string, any>
 function M.resolve_module(name, opts)
   local modules = get_schema().properties.modules.properties
   local node = assert(modules[name], "unknown orbit.nvim module: " .. name)

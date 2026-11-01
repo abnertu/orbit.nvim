@@ -1,5 +1,7 @@
 -- Windows-only recovery command for stale ShaDa temporary files.
 local M = {}
+
+---@alias Orbit.CommandOwnerSnapshot {owns_command: boolean}
 local owns_command = false
 
 ---@class Orbit.SystemOptions # Platform-specific recovery commands.
@@ -26,12 +28,12 @@ local function register()
   owns_command = true
 end
 
----@return table
+---@return Orbit.CommandOwnerSnapshot
 function M.capture()
   return { owns_command = owns_command }
 end
 
----@param snapshot table
+---@param snapshot Orbit.CommandOwnerSnapshot
 function M.restore(snapshot)
   if owns_command then
     pcall(vim.api.nvim_del_user_command, "ClearShada")

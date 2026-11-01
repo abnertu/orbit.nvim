@@ -1,4 +1,6 @@
 local M = {}
+
+---@alias Orbit.CommandsSnapshot {name?: string, path?: string}
 local owned_name
 local owned_path
 
@@ -105,12 +107,12 @@ local function register(name)
 end
 
 ---Capture this module's registration, not unrelated user commands.
----@return table
+---@return Orbit.CommandsSnapshot
 function M.capture()
   return { name = owned_name, path = owned_path }
 end
 
----@param snapshot table
+---@param snapshot Orbit.CommandsSnapshot
 function M.restore(snapshot)
   if owned_name then
     pcall(vim.api.nvim_del_user_command, owned_name)

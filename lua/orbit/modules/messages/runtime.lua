@@ -1,6 +1,8 @@
 -- Noice options are constructed only at its Lazy activation boundary.
 local M = {}
 
+---@alias Orbit.NoiceOptions {routes: table<string, any>[], cmdline: table<string, any>, messages: table<string, boolean>, popupmenu: table<string, any>, lsp: table<string, any>, presets: table<string, boolean>, views: table<string, any>}
+
 local ignored_messages = {
   "; after #%d+", "; before #%d+",
   "%d+L, %d+B", "%d+ fewer lines", "%d+ more lines",
@@ -27,7 +29,7 @@ local function docs_size(c)
 end
 
 ---@param c Orbit.MessagesOptions
----@return table
+---@return Orbit.NoiceOptions
 function M.options(c)
   local documentation_window = { border = "single", size = docs_size(c) }
   return {

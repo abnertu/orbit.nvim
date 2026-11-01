@@ -1,5 +1,8 @@
 local M = {}
 
+---@alias Orbit.DemandEvent {event: string, buf?: integer}
+---@alias Orbit.PluginsSnapshot {group?: integer, searcher?: function, options?: Orbit.PluginsOptions, state: string, failure?: string, original_loadplugins?: boolean, current_loadplugins: boolean}
+
 ---@class Orbit.PluginsOptions # On-demand Lazy plugin initialization.
 ---@field enabled? boolean @default(false) @restart(true) # Enable plugin initialization for this session.
 ---@field path? string @default("") @restart(true) # Optional existing lazy.nvim installation directory.
@@ -46,7 +49,7 @@ function M.status()
 end
 
 ---Activate installed Lazy once, and replay only observers registered by Lazy.
----@param event? table
+---@param event? Orbit.DemandEvent
 function M.activate(event)
   if state == "loading" or state == "loaded" then
     return
@@ -133,7 +136,7 @@ local function install()
 end
 
 ---Capture pending state. Actual plugin activation cannot be rolled back.
----@return table
+---@return Orbit.PluginsSnapshot
 function M.capture()
   return {
     group = group,
@@ -146,7 +149,7 @@ function M.capture()
   }
 end
 
----@param snapshot table
+---@param snapshot Orbit.PluginsSnapshot
 function M.restore(snapshot)
   assert(state ~= "loaded" or snapshot.state == "loaded",
     "loaded plugins cannot be rolled back; restart Neovim")

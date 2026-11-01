@@ -12,7 +12,7 @@ end
 ---Read and validate a complete configuration before any activation occurs.
 ---Missing input uses declared defaults. A malformed file is never rewritten.
 ---@param path? string
----@return Orbit.Config?, string?, table?
+---@return Orbit.Config?, string?, table<string, any>?
 function M.read(path)
   local ok, filename = pcall(M.path, path)
   if not ok then

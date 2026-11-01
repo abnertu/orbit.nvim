@@ -1,4 +1,8 @@
 local M = {}
+
+---@alias Orbit.FiletypeRule string|false|fun():string?
+---@alias Orbit.FiletypeRegistry {filename: table<string, Orbit.FiletypeRule>, extension: table<string, Orbit.FiletypeRule>}
+---@alias Orbit.FiletypesSnapshot {registered: boolean, original?: Orbit.FiletypeRegistry, current: Orbit.FiletypeRegistry}
 local original
 local registered = false
 
@@ -47,7 +51,7 @@ local function restore_registry(previous)
 end
 
 ---Capture registry entries so failed activation can restore previous owners.
----@return table
+---@return Orbit.FiletypesSnapshot
 function M.capture()
   return {
     registered = registered,
@@ -56,7 +60,7 @@ function M.capture()
   }
 end
 
----@param previous table
+---@param previous Orbit.FiletypesSnapshot
 function M.restore(previous)
   restore_registry(previous.current)
   original = previous.original
