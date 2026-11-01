@@ -14,6 +14,7 @@
     "git",
     "editor_plugins",
     "diagnostics_plugins",
+    "layout",
     "messages",
     "snacks",
     "mason",
