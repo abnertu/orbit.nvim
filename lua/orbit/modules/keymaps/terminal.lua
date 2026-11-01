@@ -9,9 +9,13 @@ local kinds = { sp = true, vsp = true, float = true }
 function M.shell_argv()
   local shell = vim.o.shell
   local name = vim.fn.fnamemodify(shell, ":t"):lower():gsub("%.exe$", "")
-  if vim.fn.has("win32") == 1
-    and (name == "powershell" or name == "pwsh") then
-    return { shell, "-NoLogo" }
+  if vim.fn.has("win32") == 1 then
+    if name == "powershell" or name == "pwsh" then
+      return { shell, "-NoLogo", "-NoExit" }
+    end
+    if name == "cmd" then
+      return { shell, "/K" }
+    end
   end
   return { shell }
 end
