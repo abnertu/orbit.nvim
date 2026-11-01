@@ -1,10 +1,12 @@
----@alias ToolCategory "lsp"|"dap"|"linter"|"formatter"|"parser"|"package"
----@class Tool.Definition
----@field ft string[]?
----@field mason string?
----@field runtime_name string?
----@field note string?
----@field source string?
+---@alias Orbit.ToolCategory 'lsp'|'dap'|'linter'|'formatter'|'parser'|'package'
+
+---@class Orbit.ToolDefinition
+---@field ft? string[]
+---@field mason? string
+---@field runtime_name? string
+---@field note? string
+---@field source? 'mason'|'external'|'treesitter'
+---@field role? 'dependency'
 local M = {}
 
 -- This is the canonical tool inventory. Consumers must derive their own lists.
@@ -13,6 +15,7 @@ local M = {}
 -- installer dependencies, and Treesitter parsers.
 
 -- LSP: lsp_config_name -> { mason, ft }
+---@type table<string, Orbit.ToolDefinition>
 M.lsp = {
   pyright = { mason = "pyright", ft = { "python" } },
   ruff = { mason = "ruff", ft = { "python" } },
@@ -45,6 +48,7 @@ M.lsp = {
 }
 
 -- DAP: adapter type name (as used in dap.adapters) -> { mason?, ft, note? }
+---@type table<string, Orbit.ToolDefinition>
 M.dap = {
   python = {
     mason = nil,
@@ -55,6 +59,7 @@ M.dap = {
 }
 
 -- LINTER: individual linter ID (as used in nvim-lint) -> { mason, ft }
+---@type table<string, Orbit.ToolDefinition>
 M.linter = {
   eslint_d = {
     mason = "eslint_d",
@@ -78,6 +83,7 @@ M.linter = {
 
 -- FORMATTER: individual formatter ID (as used in conform.nvim) -> { mason, ft, note? }
 -- ruff_* variants all map to the same "ruff" mason package
+---@type table<string, Orbit.ToolDefinition>
 M.formatter = {
   stylua = { mason = "stylua", ft = { "lua" } },
   ruff_fix = { mason = "ruff", ft = { "python" } },
@@ -131,6 +137,7 @@ M.formatter = {
 
 -- PARSER: Treesitter parser name -> { ft }
 -- Parser names and Neovim filetypes are intentionally mapped explicitly.
+---@type table<string, Orbit.ToolDefinition>
 M.parser = {
   lua = { ft = { "lua" } },
   luadoc = { ft = { "lua" } },
@@ -162,6 +169,7 @@ end
 
 -- Mason packages needed by configuration code but not represented by a
 -- directly toggleable runtime tool.
+---@type table<string, Orbit.ToolDefinition>
 M.package = {
   ["typescript-language-server"] = {
     source = "mason",
@@ -171,6 +179,7 @@ M.package = {
 }
 
 -- Default formatter order per ft where more than one formatter applies.
+---@type table<string, string[]>
 M.formatter_defaults = {
   python = { "ruff_fix", "ruff_organize_imports", "ruff_format" },
   markdown = { "markdownlint-cli2", "markdown-toc" },
@@ -178,6 +187,7 @@ M.formatter_defaults = {
 }
 
 -- Canonical default linter order per ft
+---@type table<string, string[]>
 M.linter_defaults = {}
 
 for _, category in ipairs({ "lsp", "dap", "linter", "formatter" }) do
