@@ -155,6 +155,23 @@ check("configured shortcuts and current leaders dispatch after disposal", functi
   assert(sent[2] == ",fm")
 end)
 
+check("queued shortcuts execute in the clicked source after another window gains focus", function()
+  vim.api.nvim_set_current_win(source)
+  open()
+  local save = find(entries, "Save File")
+  vim.cmd.vnew()
+  local other = vim.api.nvim_get_current_win()
+  local other_buffer = vim.api.nvim_get_current_buf()
+  local observed
+  vim.keymap.set("n", "<F6>", function() observed = vim.api.nvim_get_current_buf() end)
+  save.cmd()
+  vim.wait(50, function() return false end, 10)
+  vim.api.nvim_feedkeys("", "x", false)
+  assert(observed == buffer, "queued shortcut ran in the wrong buffer")
+  vim.api.nvim_win_close(other, true)
+  vim.api.nvim_buf_delete(other_buffer, { force = true })
+end)
+
 check("tree actions capture the node and reject nil rather than falling back", function()
   local current = { name = "original", absolute_path = "/original", type = "file" }
   local received
@@ -171,7 +188,7 @@ check("tree actions capture the node and reject nil rather than falling back", f
   current = { name = "later", absolute_path = "/later", type = "file" }
   entries[1].cmd()
   assert(vim.wait(1000, function() return received ~= nil end, 10))
-  assert(received == captured)
+  assert(received == captured, "tree action lost the node captured at opening")
   current, received = nil, nil
   open()
   current = captured
@@ -189,6 +206,9 @@ check("invalid mouse sources and deferred disposed sources execute no action", f
   mouse.winid = 0
   runtime.open()
   assert(#state.bufids == 0)
+  mouse.winid = 999999
+  runtime.open()
+  assert(#state.bufids == 0)
   mouse.winid = source
   open()
   local save = find(entries, "Save File")
@@ -201,6 +221,44 @@ check("invalid mouse sources and deferred disposed sources execute no action", f
   assert(not ran)
   vim.api.nvim_win_set_buf(source, buffer)
   vim.api.nvim_buf_delete(replacement, { force = true })
+end)
+
+check("opening and action failures report errors and release temporary ownership", function()
+  local notify, menu_open = vim.notify, package.loaded.menu.open
+  local errors = {}
+  vim.notify = function(message) errors[#errors + 1] = tostring(message) end
+  package.loaded.menu.open = function(items)
+    menu_open(items)
+    error("menu open failure")
+  end
+  runtime.open()
+  package.loaded.menu.open = menu_open
+  assert(#state.bufids == 0 and errors[1]:find("menu open failure", 1, true))
+  assert(vim.fn.maparg("<LeftMouse>", "n", false, true).desc == "replacement")
+  local partial
+  package.loaded.menu.open = function()
+    partial = vim.api.nvim_create_buf(false, true)
+    state.bufids = { partial }
+    error("partial render failure")
+  end
+  runtime.open()
+  package.loaded.menu.open = menu_open
+  assert(not vim.api.nvim_buf_is_valid(partial) and #state.bufids == 0,
+    "partial render left an orphan menu buffer")
+  assert(errors[2]:find("partial render failure", 1, true))
+  open()
+  runtime.close()
+  vim.bo[buffer].filetype = "NvimTree"
+  local api = package.loaded["nvim-tree.api"]
+  local action = api.tree.reload
+  api.tree.reload = function() error("tree action failure") end
+  open()
+  find(find(entries, "Tree").items, "Refresh").cmd()
+  assert(vim.wait(1000, function() return #errors == 3 end, 10))
+  assert(errors[3]:find("tree action failure", 1, true) and #state.bufids == 0)
+  api.tree.reload = action
+  vim.bo[buffer].filetype = ""
+  vim.notify = notify
 end)
 
 vim.fn.getmousepos = original_mouse
