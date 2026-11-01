@@ -69,6 +69,8 @@ The `messages` module contributes a VeryLazy Noice spec for commandline, notific
 
 Plugin specifications are not evaluated during normal startup when the Lazy owner is disabled. More legacy features still require migration.
 
+Pinned upstream startup tests cover native package loading, dashboard rendering, file and directory arguments, and mapped Oil/nvim-tree windows. Directory arguments set cwd without automatically opening an explorer. Dashboard artwork, themes, and broader explorer workflows remain unverified.
+
 The Markdown module contributes command- and filetype-lazy markdown-preview.nvim. Its build adapter checks the installed executable version before running the upstream platform installer. The preview toggle and installer timeout are restart-only LuaDoc settings. CI uses local process fixtures; upstream browser rendering is not yet verified.
 
 The Markdown module also supports an optional Obsidian vault. Set `modules.markdown.vault` to a directory to expose the filetype-lazy Obsidian spec. The vault path and enablement are restart-only. Frontmatter preserves legacy metadata and updates the modified timestamp. Pinned real Obsidian vault setup, Markdown buffer attachment and frontmatter save are now tested on Linux and Windows. Other vault workflows and custom Markdown highlight queries remain unverified.

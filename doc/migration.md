@@ -39,13 +39,14 @@ The module manifest orders runtime setup and Lazy specs. LuaDoc in each owning `
 - A real nvim-dap client performs an attach and breakpoint handshake against a pure-Lua TCP adapter. Real TypeScript diagnostics and C#/SQL Tree-sitter grammar injections also have cross-platform integration coverage. Backend debuggee and Roslyn sessions remain unverified.
 - Native `packadd` installation and root initialization have an isolated local-checkout acceptance test.
 - Native startup with an attached embedded UI covers empty, startup-interface, existing-file, new-file, and directory arguments. The hermetic test observes real EditorConfig replay and local-fixture Lazy activation.
+- Pinned native-package startup tests combine real Lazy, Snacks, Oil, and nvim-tree. They cover dashboard rendering, file arguments, directory cleanup, mapped explorers, and runtimepath retention.
 
 ## Outstanding legacy contracts
 
 - Verify Escape/menu/snippet cleanup against real completion UI and plugin sessions.
 - Verify long-running terminal processes and window restoration with real Windows shell sessions.
 - Verify theme reload integration, dashboard artwork, and remaining highlight ownership.
-- Verify directory startup with explorer plugins and dashboard integration. Core startup and built-in EditorConfig replay have actual-process coverage.
+- Verify broader explorer workflows and dashboard artwork. Native explorer/dashboard startup and built-in EditorConfig replay have actual-process coverage.
 - Verify custom snippet collections, SQLFluff commands, and language-specific integrations.
 - Extend actual Tree-sitter grammar injection cases and live plugin sessions; verify Roslyn and backend DAP sessions on both platforms.
 - Audit renamed commands, persisted state, public keys, README installation steps, performance, and release rules.
