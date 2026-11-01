@@ -143,7 +143,8 @@ return function(opts)
     ---@param second string
     ---@return boolean
     same_path = function(first, second)
-      first, second = vim.fs.normalize(first), vim.fs.normalize(second)
+      first = vim.fs.normalize(vim.uv.fs_realpath(first) or first)
+      second = vim.fs.normalize(vim.uv.fs_realpath(second) or second)
       if vim.fn.has("win32") == 1 then first, second = first:lower(), second:lower() end
       return first == second
     end,
