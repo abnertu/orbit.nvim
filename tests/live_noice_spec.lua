@@ -139,9 +139,10 @@ local ok, err = xpcall(function()
 
   -- False is an explicit formatter tag. Exercise the actual notify/router/NUI
   -- path to guard the legacy contract, not only the route predicate.
+  local resumed_window = reopened.winid
   router.dismiss()
   assert(vim.wait(2000, function()
-    return not vim.api.nvim_win_is_valid(reopened.winid)
+    return not vim.api.nvim_win_is_valid(resumed_window)
   end, 20), "resumed formatter popup remained open after dismiss")
   local false_tag_text = "Orbit live formatter false tag"
   vim.notify(false_tag_text, vim.log.levels.INFO, {
