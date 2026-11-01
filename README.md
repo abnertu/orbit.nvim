@@ -117,7 +117,7 @@ require("orbit").setup({
 
 The editor module exposes configurable statusline, clipboard, mouse, signcolumn, undo and file-format defaults.
 
-The corekeys module owns `<C-s>` for save, `<C-h/j/k/l>` for window navigation, tab-local `<Tab>` / `<S-Tab>` buffer cycling, and the legacy visual `J/K` line-move callbacks. Its fixed editing mappings restore previous user bindings when disabled.
+The corekeys module owns `<C-s>` for save, `<C-h/j/k/l>` for window navigation, tab-local `<Tab>` / `<S-Tab>` buffer cycling through the `orbit.buffers` order owner, and the legacy visual `J/K` line-move callbacks. Its fixed editing mappings restore previous user bindings when disabled.
 
 The keymaps module owns `<leader>bn` for a new buffer, `<leader>fd` for project-root navigation, `<leader>tf` for diagnostics, `<leader>uc` for the current settings command, and `<leader>/` for native Normal/Visual comments. `<leader>fu` converts DOS line endings to Unix, and `<leader>fi` reloads Big5 content and writes UTF-8. Conversion shortcuts modify files only when invoked. Leader changes and disabled modules restore user-owned physical mappings.
 

@@ -107,131 +107,92 @@ check("visual J/K callbacks preserve selection and move in opposite directions",
   }))
 end)
 
-check("buffer cycling uses tab-local order and is lazy-loaded", function()
+local function tab_key(lhs)
+  return vim.fn.maparg(lhs, "n", false, true).callback
+end
+
+local function delete_buffers(buffers)
+  for _, buffer in ipairs(buffers) do
+    if vim.api.nvim_buf_is_valid(buffer) then
+      vim.api.nvim_buf_delete(buffer, { force = true })
+    end
+  end
+end
+
+check("buffer cycling follows the tracked order and is lazy-loaded", function()
   assert(package.loaded["orbit.modules.corekeys.buffers"] == nil)
-  local next_key = vim.fn.maparg("<Tab>", "n", false, true)
-  local prev_key = vim.fn.maparg("<S-Tab>", "n", false, true)
-  assert(type(next_key.callback) == "function")
-  assert(type(prev_key.callback) == "function")
-  local current, saved = vim.api.nvim_get_current_buf(), vim.t.bufs
+  assert(type(tab_key("<Tab>")) == "function")
+  assert(type(tab_key("<S-Tab>")) == "function")
+  local current = vim.api.nvim_get_current_buf()
   local first = vim.api.nvim_create_buf(true, false)
   local second = vim.api.nvim_create_buf(true, false)
   local third = vim.api.nvim_create_buf(true, false)
-  vim.t.bufs = { first, second, third }
   vim.api.nvim_set_current_buf(first)
 
-  next_key.callback()
+  tab_key("<Tab>")()
   assert(vim.api.nvim_get_current_buf() == second)
-  next_key.callback()
+  tab_key("<Tab>")()
   assert(vim.api.nvim_get_current_buf() == third)
-  next_key.callback()
+  tab_key("<S-Tab>")()
+  tab_key("<S-Tab>")()
   assert(vim.api.nvim_get_current_buf() == first)
-  prev_key.callback()
-  assert(vim.api.nvim_get_current_buf() == third)
 
   vim.api.nvim_set_current_buf(current)
-  vim.t.bufs = saved
-  for _, buffer in ipairs({ first, second, third }) do
-    vim.api.nvim_buf_delete(buffer, { force = true })
-  end
+  delete_buffers({ first, second, third })
 end)
 
-check("buffer cycling skips stale tab entries", function()
-  local current, saved = vim.api.nvim_get_current_buf(), vim.t.bufs
+check("buffer cycling ignores tab variables from other owners", function()
+  local current = vim.api.nvim_get_current_buf()
   local first = vim.api.nvim_create_buf(true, false)
   local second = vim.api.nvim_create_buf(true, false)
-  local stale = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_delete(stale, { force = true })
-  vim.t.bufs = { first, stale, second }
+  local third = vim.api.nvim_create_buf(true, false)
+  vim.t.bufs = { first, third, second }
   vim.api.nvim_set_current_buf(first)
 
-  vim.fn.maparg("<Tab>", "n", false, true).callback()
-  assert(vim.api.nvim_get_current_buf() == second)
-  vim.fn.maparg("<Tab>", "n", false, true).callback()
-  assert(vim.api.nvim_get_current_buf() == first)
+  tab_key("<Tab>")()
+  assert(vim.api.nvim_get_current_buf() == second, "vim.t.bufs must not reorder cycling")
 
+  vim.t.bufs = nil
   vim.api.nvim_set_current_buf(current)
-  vim.t.bufs = saved
-  vim.api.nvim_buf_delete(first, { force = true })
-  vim.api.nvim_buf_delete(second, { force = true })
+  delete_buffers({ first, second, third })
 end)
 
-check("tab-local cycling skips unloaded buffers", function()
-  local current, saved = vim.api.nvim_get_current_buf(), vim.t.bufs
+check("buffer cycling stays within the current tab", function()
+  local outer = vim.api.nvim_create_buf(true, false)
+  vim.cmd("tabnew")
+  local tab_first = vim.api.nvim_get_current_buf()
+  local tab_second = vim.api.nvim_create_buf(true, false)
+  vim.api.nvim_set_current_buf(tab_second)
+
+  tab_key("<Tab>")()
+  assert(vim.api.nvim_get_current_buf() == tab_first,
+    "next must wrap within the tab: " .. vim.inspect(require("orbit.buffers").list()))
+  tab_key("<S-Tab>")()
+  assert(vim.api.nvim_get_current_buf() == tab_second)
+  assert(not vim.list_contains(require("orbit.buffers").list(), outer))
+
+  vim.cmd("tabclose!")
+  delete_buffers({ tab_first, tab_second, outer })
+end)
+
+check("buffer cycling skips unloaded and unlisted buffers", function()
+  local current = vim.api.nvim_get_current_buf()
   local first = vim.api.nvim_create_buf(true, false)
   local unloaded = vim.api.nvim_create_buf(true, false)
+  local unlisted = vim.api.nvim_create_buf(true, false)
   local second = vim.api.nvim_create_buf(true, false)
   vim.api.nvim_buf_delete(unloaded, { unload = true })
-  assert(vim.api.nvim_buf_is_valid(unloaded))
-  assert(not vim.api.nvim_buf_is_loaded(unloaded))
-  vim.t.bufs = { first, unloaded, second }
+  assert(vim.api.nvim_buf_is_valid(unloaded) and not vim.api.nvim_buf_is_loaded(unloaded))
+  vim.bo[unlisted].buflisted = false
   vim.api.nvim_set_current_buf(first)
 
-  vim.fn.maparg("<Tab>", "n", false, true).callback()
-  assert(vim.api.nvim_get_current_buf() == second,
-    "next must skip an unloaded tab-local buffer")
-  vim.fn.maparg("<S-Tab>", "n", false, true).callback()
+  tab_key("<Tab>")()
+  assert(vim.api.nvim_get_current_buf() == second, "next must skip ineligible buffers")
+  tab_key("<S-Tab>")()
   assert(vim.api.nvim_get_current_buf() == first)
 
   vim.api.nvim_set_current_buf(current)
-  vim.t.bufs = saved
-  for _, buffer in ipairs({ first, unloaded, second }) do
-    vim.api.nvim_buf_delete(buffer, { force = true })
-  end
-end)
-
-check("tab-local cycling skips unlisted buffers", function()
-  local current, saved = vim.api.nvim_get_current_buf(), vim.t.bufs
-  local first = vim.api.nvim_create_buf(true, false)
-  local unlisted = vim.api.nvim_create_buf(false, true)
-  local second = vim.api.nvim_create_buf(true, false)
-  assert(vim.api.nvim_buf_is_loaded(unlisted))
-  assert(not vim.bo[unlisted].buflisted)
-  vim.t.bufs = { first, unlisted, second }
-  vim.api.nvim_set_current_buf(first)
-
-  vim.fn.maparg("<Tab>", "n", false, true).callback()
-  assert(vim.api.nvim_get_current_buf() == second,
-    "next must skip an unlisted tab-local buffer")
-  vim.fn.maparg("<S-Tab>", "n", false, true).callback()
-  assert(vim.api.nvim_get_current_buf() == first)
-
-  vim.api.nvim_set_current_buf(current)
-  vim.t.bufs = saved
-  for _, buffer in ipairs({ first, unlisted, second }) do
-    vim.api.nvim_buf_delete(buffer, { force = true })
-  end
-end)
-
-check("buffer cycling falls back to loaded listed buffers", function()
-  local current, saved = vim.api.nvim_get_current_buf(), vim.t.bufs
-  local first = vim.api.nvim_create_buf(true, false)
-  local second = vim.api.nvim_create_buf(true, false)
-  vim.api.nvim_set_current_buf(second)
-  vim.api.nvim_set_current_buf(first)
-  local listed = {}
-  for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
-    if buffer ~= first and buffer ~= second then
-      listed[buffer] = vim.bo[buffer].buflisted
-      vim.bo[buffer].buflisted = false
-    end
-  end
-  vim.t.bufs = nil
-
-  vim.fn.maparg("<Tab>", "n", false, true).callback()
-  assert(vim.api.nvim_get_current_buf() == second)
-  vim.fn.maparg("<S-Tab>", "n", false, true).callback()
-  assert(vim.api.nvim_get_current_buf() == first)
-
-  vim.api.nvim_set_current_buf(current)
-  vim.t.bufs = saved
-  for buffer, was_listed in pairs(listed) do
-    if vim.api.nvim_buf_is_valid(buffer) then
-      vim.bo[buffer].buflisted = was_listed
-    end
-  end
-  vim.api.nvim_buf_delete(first, { force = true })
-  vim.api.nvim_buf_delete(second, { force = true })
+  delete_buffers({ first, unloaded, unlisted, second })
 end)
 
 check("changing the save key restores the original user binding", function()
@@ -300,10 +261,19 @@ end)
 check("disabling restores original buffer cycling keys", function()
   assert(rhs("<Tab>") == previous_next)
   assert(rhs("<S-Tab>") == previous_prev)
+  assert(not require("orbit.buffers").attached("corekeys"))
+  assert(not pcall(vim.api.nvim_get_autocmds, { group = "OrbitBufferOrder" }),
+    "disabling must remove the buffer-order group")
 end)
 
 check("reenabling does not stack mappings", function()
   orbit.setup()
+  assert(require("orbit.buffers").attached("corekeys"))
+  local groups = vim.api.nvim_get_autocmds({ group = "OrbitBufferOrder" })
+  orbit.setup({ modules = { corekeys = { save = "<F10>" } } })
+  orbit.setup()
+  assert(#vim.api.nvim_get_autocmds({ group = "OrbitBufferOrder" }) == #groups,
+    "repeated setup must not duplicate buffer-order handlers")
   assert(rhs("<C-s>"):lower():find("write", 1, true))
   assert(rhs("<C-h>"):lower() == "<c-w>h")
 end)

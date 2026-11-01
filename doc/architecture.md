@@ -24,6 +24,7 @@ An omitted option takes its declared default. An unknown option or invalid type 
 | `lua/orbit/modules/manifest.json` | Module inventory and activation order |
 | `lua/orbit/modules/*/init.lua` LuaDoc | Per-module settings contract and type hints |
 | `lua/orbit/modules/*/init.lua` | Module activation and runtime owner |
+| `lua/orbit/buffers.lua` | Tab-local order of loaded listed buffers for cycling and tab lines |
 | `lua/orbit/tooling/schema.lua` and `scripts/generate_schema.lua` | Deterministic bundle generation |
 | `settings.schema.json` | Generated editor-facing schema, not an editable source |
 
@@ -80,6 +81,8 @@ Keep plugin loading with Lazy until a separate benchmark and compatibility plan 
 The editor module owns core statusline, clipboard, mouse, indentation and signcolumn defaults. Its schema declares every migrated scalar option.
 
 The corekeys module owns configurable save/window keys and fixed plugin-independent editing shortcuts. It restores overwritten user mappings during reconfiguration, disable and rollback. Buffer-local LSP mappings can override its global `K` reservation. The Normal/Insert/Select Escape maps are expression callbacks: when a loaded menu is active they schedule cleanup, otherwise they clear search highlights and stop an active LuaSnip or native snippet. Escape does not load completion/UI plugins solely to handle a keypress.
+
+The `orbit.buffers` owner records loaded listed buffers per tab in first-entry order. Consumers attach and detach by name, and the last detach removes its autocommand group. Corekeys attaches while its cycling mappings are active. Unloaded, unlisted and wiped buffers are skipped.
 
 The keymaps module owns leader-based save, new-buffer, project-root, diagnostic, settings and native comment actions. It stores mode-qualified physical mappings across leader changes and restores user bindings during rollback. Project roots prefer the current buffer's LSP before the legacy repository and language markers. Settings shortcuts resolve the configured command at invocation. DOS-to-Unix and Big5-to-UTF-8 conversion keys reload and write only when invoked; their Lua helper refuses unnamed buffers. The `<leader>bD` and `<leader>x` buffer actions replace the legacy `%bd|e#` / tabufline dependency. Bulk cleanup preflights every listed, normal candidate and refuses modified buffers before deleting any; the current buffer is preserved. Single-buffer close rejects unsaved or special buffers. This is intentionally safer than the legacy force-prone bulk command and does not require NvChad.
 
