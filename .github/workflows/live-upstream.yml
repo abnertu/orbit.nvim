@@ -165,3 +165,8 @@ jobs:
         run: |
           nvim --headless -u NONE -l tests/live_completion_escape_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Real completion/Escape integration failed' }
+
+      - name: Run pinned real commandline completion and Noice ownership
+        run: |
+          nvim --headless -u NONE -l tests/live_cmdline_completion_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Real commandline completion integration failed' }
