@@ -113,6 +113,11 @@ jobs:
           nvim --headless -u NONE -l tests/keyguide_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Which-key guide tests failed' }
 
+      - name: Test mouse context-menu owner
+        run: |
+          nvim --headless -u NONE -l tests/menu_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Context-menu owner tests failed' }
+
       - name: Test transactional Pyright stub regeneration
         run: |
           nvim --headless -u NONE -l tests/python_tools_spec.lua
