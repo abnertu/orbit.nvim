@@ -248,6 +248,34 @@ local ok, err = xpcall(function()
   assert(table.concat(vim.fn.readfile(note_path), "\n") == rewritten,
     "opening an external URI modified the previously saved note")
   print("PASS real Obsidian open command encodes standard and advanced vault URIs")
+
+  -- Audit the real vault without a picker or desktop application.
+  -- The URI fixture intentionally lacks frontmatter and must be reported.
+  local notifications = {}
+  local previous_notify = vim.notify
+  vim.notify = function(message, level)
+    notifications[#notifications + 1] = { message = tostring(message), level = level }
+  end
+  local check_ok, check_err = pcall(vim.cmd, "Obsidian check")
+  vim.notify = previous_notify
+  assert(check_ok, "real Obsidian vault check failed: " .. tostring(check_err))
+  local warning
+  for _, notification in ipairs(notifications) do
+    if notification.message:find("uri note with spaces.md", 1, true)
+      and notification.message:find("missing frontmatter", 1, true) then
+      warning = notification
+      break
+    end
+  end
+  assert(warning and warning.level == vim.log.levels.WARN
+    and warning.message:find("Checked ", 1, true),
+    "real vault check did not report the missing frontmatter: "
+      .. vim.inspect(notifications))
+  assert(table.concat(vim.fn.readfile(uri_note), "\n") == "# URI note\nSecond line.",
+    "vault check modified the note without frontmatter")
+  assert(table.concat(vim.fn.readfile(note_path), "\n") == rewritten,
+    "vault check modified a previously saved note")
+  print("PASS real Obsidian vault audit warns without changing notes")
 end, debug.traceback)
 
 vim.wo.conceallevel = initial_conceal
