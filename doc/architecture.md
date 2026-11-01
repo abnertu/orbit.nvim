@@ -47,7 +47,7 @@ The native LSP module uses LuaDoc-owned server flags and a single registration b
 
 The Mason module owns only the command-lazy package manager declaration and its settings. It does not register or enable LSP servers, which require a separate runtime lifecycle.
 
-The messages module owns Noice's commandline, notification, and LSP presentation settings. It constructs routes and popup layouts only at the Lazy callback boundary. It does not import Noice during root setup. Real upstream UI integration and theme parity remain separate verification work.
+The messages module owns Noice's commandline, notification, and LSP presentation settings. It constructs routes and popup layouts only at the Lazy callback boundary. It does not import Noice during root setup. Pinned Linux/Windows tests verify formatter notifications render in a real NUI popup. The popup dismissal and reopen lifecycle has dedicated coverage. Commandline, popupmenu, LSP presentation, and theme parity remain unverified.
 
 The Snacks module owns the legacy picker shortcuts and the narrow invalid-window redraw guard. Theme, dashboard art and extended picker layout migration remain separate.
 
