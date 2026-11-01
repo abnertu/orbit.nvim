@@ -39,6 +39,12 @@ Blink registers commandline listeners after asynchronous matcher initialization.
 
 The `orbit.plugins` spec import scans the module manifest. Modules that implement `spec()` contribute Lazy declarations without a second feature inventory. `lua/plugins/init.lua` is only a compatibility import shim. The navigation module owns Oil and nvim-tree specs, Windows watcher settings and one FileCreated-to-CreateFile observer. Harpoon integration is a separate owner.
 
+The menu module contributes restart-only mouse mappings for menu and Volt. Root setup and spec collection import neither plugin. General actions use current shortcuts; tree actions capture the clicked node. Deferred actions validate the source buffer and window before selecting that source. Delegated actions retain their resulting focus.
+
+The menu lifetime temporarily owns source Normal/Visual Escape and global or pre-existing buffer-local LeftMouse slots. Cleanup restores original mappings and preserves user replacements. A scoped adapter replaces upstream mouse interception and observes menu disposal through one autocommand group. Partial rendering failures dispose allocated menu buffers and permit reopening. Activated right-click slots and shared Volt hooks remain restart-only.
+
+Pinned native-package input tests drive real Lazy, menu, Volt, and nvim-tree. They verify mouse demand, rendered groups, saved file contents, nested actions, tree opening, Visual selection behavior, and cleanup. Separate controls disable corekeys or the menu. These checks do not establish terminal frontend transport, every delegated provider, or theme parity.
+
 The nvim-lint module debounces triggers per buffer, skips SQLFluff while editing, and cancels pending timers on buffer wipe. Pinned upstream Linux/Windows tests verify actual process output, diagnostic publication, edit-event suppression and buffer cancellation. Production SQLFluff binaries, Windows tool arguments and Hangar ordering remain separate integration tasks.
 
 The shared SQLFluff adapter resolves project configuration, process roots and stdin arguments for Conform and nvim-lint. It uses a bundled T-SQL fallback only when no project SQLFluff section exists.
