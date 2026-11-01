@@ -103,6 +103,32 @@ local ok, err = xpcall(function()
       .. vim.inspect(rendered))
   print("PASS real Noice formatter notification renders in a floating NUI popup")
 
+  -- Dismissal must unmount the real popup, not only clear router state.
+  local old_window = popup.winid
+  router.dismiss()
+  assert(vim.wait(2000, function()
+    return not vim.api.nvim_win_is_valid(old_window)
+  end, 20), "formatter popup remained open after dismiss")
+
+  -- A later notification must reopen a popup without stale message text.
+  local resumed_text = "Orbit live formatter resumed"
+  vim.notify(resumed_text, vim.log.levels.INFO, {
+    orbit_formatter = true,
+    orbit_formatter_icon = "+",
+  })
+  router.update()
+  local reopened = formatter_view.view and formatter_view.view._nui
+  assert(reopened and reopened.winid and vim.api.nvim_win_is_valid(reopened.winid),
+    "formatter progress did not reopen after dismiss")
+  local resumed = table.concat(vim.api.nvim_buf_get_lines(
+    reopened.bufnr, 0, -1, false), "\\n")
+  assert(resumed:find(resumed_text, 1, true)
+    and resumed:find("+", 1, true)
+    and not resumed:find(progress_text, 1, true),
+    "reopened formatter popup contains stale or missing content: "
+      .. vim.inspect(resumed))
+  print("PASS real Noice formatter popup dismisses and reopens without stale content")
+
   router.dismiss()
   require("noice").disable()
 end, debug.traceback)
