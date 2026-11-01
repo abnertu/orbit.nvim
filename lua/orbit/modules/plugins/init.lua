@@ -78,9 +78,13 @@ function M.activate(event)
       vim.opt.rtp:prepend(path)
     end
     vim.go.loadplugins = true
+    -- Lazy resets runtimepath, including native pack/start installations.
+    -- Keep Orbit's manifest, deferred helpers, and after queries discoverable.
+    local runtime = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h:h:h:h")
     require("lazy").setup({ { import = options.import } }, {
       defaults = { lazy = true },
       rocks = { enabled = false, herorocks = false },
+      performance = { rtp = { paths = { runtime, vim.fs.joinpath(runtime, "after") } } },
     })
   end, debug.traceback)
   if not ok then
