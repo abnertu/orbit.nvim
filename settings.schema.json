@@ -1425,6 +1425,12 @@
               "type": "boolean",
               "x-orbit-restart": true
             },
+            "install_all": {
+              "default": true,
+              "description": "Add TSInstallAll for every registry parser.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
             "install_dir": {
               "default": "",
               "description": "Optional parser installation directory.",
