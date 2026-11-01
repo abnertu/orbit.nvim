@@ -7,10 +7,12 @@ local accepted
 ---@field lint_on_change boolean @default(true) @restart(true) # Trigger lint on TextChanged.
 ---@field skip_sql_on_change boolean @default(true) @restart(true) # Avoid SQLFluff while typing.
 
+---@return Orbit.LinterOptions?
 function M.capture()
   return accepted and vim.deepcopy(accepted) or nil
 end
 
+---@param snapshot Orbit.LinterOptions?
 function M.restore(snapshot)
   accepted = snapshot and vim.deepcopy(snapshot) or nil
 end
@@ -36,7 +38,7 @@ local function language_defaults()
   }
 end
 
----@return table[]
+---@return LazySpec
 function M.spec()
   if not accepted or not accepted.enabled then
     return {}

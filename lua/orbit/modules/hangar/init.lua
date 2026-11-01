@@ -8,10 +8,12 @@ local accepted
 ---@field state_file string @default("") @restart(true) # Optional state JSON path override.
 ---@field border 'rounded'|'single'|'double'|'solid'|'shadow'|'none' @default("rounded") @restart(true) # Hangar window border.
 
+---@return Orbit.HangarOptions?
 function M.capture()
   return accepted and vim.deepcopy(accepted) or nil
 end
 
+---@param snapshot Orbit.HangarOptions?
 function M.restore(snapshot)
   accepted = snapshot and vim.deepcopy(snapshot) or nil
 end
@@ -21,7 +23,7 @@ function M.setup(opts)
   accepted = require("orbit.config").resolve_module("hangar", opts)
 end
 
----@return table[]
+---@return LazySpec
 function M.spec()
   if not accepted or not accepted.enabled then
     return {}

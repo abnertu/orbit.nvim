@@ -12,10 +12,12 @@ local subscribed = false
 ---@field harpoon boolean @default(true) @restart(true) # Enable Harpoon buffer navigation.
 ---@field harpoon_short_path_length integer @default(8) @minimum(1) @maximum(128) @restart(true) # Harpoon display path segment limit.
 
+---@return Orbit.NavigationOptions?
 function M.capture()
   return accepted and vim.deepcopy(accepted) or nil
 end
 
+---@param snapshot Orbit.NavigationOptions?
 function M.restore(snapshot)
   accepted = snapshot and vim.deepcopy(snapshot) or nil
 end
@@ -88,7 +90,7 @@ local function setup_tree(opts)
   subscribed = true
 end
 
----@return table[]
+---@return LazySpec
 function M.spec()
   if not accepted or not accepted.enabled then return {} end
   local c = vim.deepcopy(accepted)

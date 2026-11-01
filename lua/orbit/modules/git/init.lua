@@ -21,12 +21,12 @@ local accepted
 ---@field marks Orbit.GitMarks @default({}) @restart(true) # Unstaged change markers.
 ---@field staged Orbit.GitStaged @default({}) @restart(true) # Staged change markers.
 
----@return table?
+---@return Orbit.GitOptions?
 function M.capture()
   return accepted and vim.deepcopy(accepted) or nil
 end
 
----@param snapshot table?
+---@param snapshot Orbit.GitOptions?
 function M.restore(snapshot)
   accepted = snapshot and vim.deepcopy(snapshot) or nil
 end
@@ -45,7 +45,7 @@ local function translate(marks)
 end
 
 ---Return only the Lazy declaration; do not load gitsigns during setup.
----@return table[]
+---@return LazySpec
 function M.spec()
   if not accepted or not accepted.enabled then
     return {}

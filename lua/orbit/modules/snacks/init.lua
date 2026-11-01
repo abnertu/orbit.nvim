@@ -15,10 +15,12 @@ local accepted
 ---@field words boolean @default(true) @restart(true) # Enable word references.
 ---@field notify_timeout integer @default(3000) @minimum(0) @restart(true) # Notification timeout in milliseconds.
 
+---@return Orbit.SnacksOptions?
 function M.capture()
   return accepted and vim.deepcopy(accepted) or nil
 end
 
+---@param snapshot Orbit.SnacksOptions?
 function M.restore(snapshot)
   accepted = snapshot and vim.deepcopy(snapshot) or nil
 end
@@ -79,7 +81,7 @@ local function options(c)
   }
 end
 
----@return table[]
+---@return LazySpec
 function M.spec()
   if not accepted or not accepted.enabled then
     return {}

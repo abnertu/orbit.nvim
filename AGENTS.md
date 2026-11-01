@@ -38,6 +38,10 @@
 - Keep JSON Schema and GitHub Actions YAML as declarative formats, not executable scripts.
 - Give every module a `setup(opts)` entry point and matching `capture(opts)` / `restore(snapshot)` lifecycle hooks.
 - Use explicit option types and validate settings before module activation.
+- Annotate Lazy plugin spec lists with `LazySpec`, including every module's `spec()` return.
+- Give snapshots, callback arguments and return values precise LuaDoc types; do not use generic `table` for known shapes.
+- Prefer `vim.tbl_extend` for shallow overlays and `vim.tbl_deep_extend` for nested option maps.
+- Preserve array replacement, explicit `false`, and lifecycle behavior when applying table merges.
 - Keep declarations separate from runtime side effects.
 - Keep cross-module dependencies explicit.
 - Use hermetic Lua and local Git fixtures for Lazy startup tests. Do not download plugins during CI.

@@ -8,6 +8,10 @@ A module lives in `lua/orbit/modules/<name>/`. Its `init.lua` exports `setup(opt
 
 The explicit `manifest.json` orders module activation. Both the runtime and the schema generator read this manifest. No second module inventory is maintained.
 
+Module `spec()` functions return `LazySpec`, the upstream Lazy specification type. They do not return an untyped `table[]`.
+
+Use `vim.tbl_extend("force", ...)` for validated object overlays. Use `vim.tbl_deep_extend("force", ...)` only for nested maps that support recursive overlays. Keep arrays as replacements.
+
 An omitted option takes its declared default. An unknown option or invalid type fails before any module activates. An explicit `false` is retained. Arrays replace earlier arrays when overrides are applied. Nested LuaDoc classes produce closed objects with derived defaults.
 
 ## Ownership

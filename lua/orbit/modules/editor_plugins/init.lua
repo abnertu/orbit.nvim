@@ -9,10 +9,12 @@ local accepted
 ---@field indent_char string @default("│") @minLength(1) @restart(true) # Indentation marker.
 ---@field scope_char string @default("│") @minLength(1) @restart(true) # Scope marker.
 
+---@return Orbit.EditorPluginsOptions?
 function M.capture()
   return accepted and vim.deepcopy(accepted) or nil
 end
 
+---@param snapshot Orbit.EditorPluginsOptions?
 function M.restore(snapshot)
   accepted = snapshot and vim.deepcopy(snapshot) or nil
 end
@@ -23,7 +25,7 @@ function M.setup(opts)
 end
 
 ---Contribute plugin declarations without loading external code.
----@return table[]
+---@return LazySpec
 function M.spec()
   if not accepted or not accepted.enabled then
     return {}

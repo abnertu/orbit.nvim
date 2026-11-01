@@ -6,12 +6,12 @@ local accepted
 ---@field mock_devicons boolean @default(true) @restart(true) # Provide an nvim-web-devicons compatibility adapter.
 
 ---Capture settings without loading or installing plugins.
----@return table
+---@return Orbit.IconsOptions?
 function M.capture()
   return accepted and vim.deepcopy(accepted) or nil
 end
 
----@param snapshot table?
+---@param snapshot Orbit.IconsOptions?
 function M.restore(snapshot)
   accepted = snapshot and vim.deepcopy(snapshot) or nil
 end
@@ -22,7 +22,7 @@ function M.setup(opts)
 end
 
 ---Return a Lazy spec without requiring external plugin code.
----@return table[]
+---@return LazySpec
 function M.spec()
   if not accepted or not accepted.enabled then
     return {}

@@ -9,10 +9,12 @@ local accepted
 ---@field python_host string @default("127.0.0.1") @minLength(1) @restart(true) # Python attach host.
 ---@field python_port string @default("8001") @minLength(1) @restart(true) # Python attach port.
 
+---@return Orbit.DapOptions?
 function M.capture()
   return accepted and vim.deepcopy(accepted) or nil
 end
 
+---@param snapshot Orbit.DapOptions?
 function M.restore(snapshot)
   accepted = snapshot and vim.deepcopy(snapshot) or nil
 end
@@ -22,7 +24,7 @@ function M.setup(opts)
   accepted = require("orbit.config").resolve_module("dap", opts)
 end
 
----@return table[]
+---@return LazySpec
 function M.spec()
   if not accepted or not accepted.enabled then return {} end
   local opts = vim.deepcopy(accepted)

@@ -13,10 +13,12 @@ local accepted
 ---@field doc_max_width integer @default(80) @minimum(10) @maximum(200) @restart(true) # Maximum documentation popup columns.
 ---@field doc_max_height integer @default(20) @minimum(3) @maximum(100) @restart(true) # Maximum documentation popup rows.
 
+---@return Orbit.MessagesOptions?
 function M.capture()
   return accepted and vim.deepcopy(accepted) or nil
 end
 
+---@param snapshot Orbit.MessagesOptions?
 function M.restore(snapshot)
   accepted = snapshot and vim.deepcopy(snapshot) or nil
 end
@@ -26,7 +28,7 @@ function M.setup(opts)
   accepted = require("orbit.config").resolve_module("messages", opts)
 end
 
----@return table[]
+---@return LazySpec
 function M.spec()
   if not accepted or not accepted.enabled then return {} end
   local options = vim.deepcopy(accepted)

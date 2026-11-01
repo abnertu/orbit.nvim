@@ -9,10 +9,12 @@ local accepted
 ---@field notes boolean @default(true) @restart(true) # Enable Obsidian vault integration.
 ---@field vault string @default("") @restart(true) # Optional Obsidian vault directory.
 
+---@return Orbit.MarkdownOptions?
 function M.capture()
   return accepted and vim.deepcopy(accepted) or nil
 end
 
+---@param snapshot Orbit.MarkdownOptions?
 function M.restore(snapshot)
   accepted = snapshot and vim.deepcopy(snapshot) or nil
 end
@@ -22,7 +24,7 @@ function M.setup(opts)
   accepted = require("orbit.config").resolve_module("markdown", opts)
 end
 
----@return table[]
+---@return LazySpec
 function M.spec()
   if not accepted or not accepted.enabled then return {} end
   local c = vim.deepcopy(accepted)

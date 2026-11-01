@@ -171,6 +171,39 @@ check("minLength counts Unicode code points in defaults and overrides", function
   end)
 end)
 
+check("object overrides preserve false and replace arrays", function()
+  local module = sample("sample", {
+    "---@field enabled boolean @default(true) # Enable.",
+    "---@field panel Orbit.MergePanel @default({}) # Nested options.",
+    "---@field tags string[] @default([]) # Tagged names.",
+  }) .. "\n" .. table.concat({
+    "---@class Orbit.MergePanel # Nested fixture settings.",
+    "---@field visible boolean @default(true) # Show the panel.",
+    "---@field count integer @default(4) # Number of rows.",
+  }, "\n")
+  fixture({ order = { "sample" } }, { sample = module }, function(temp)
+    local node = schema.build(temp)
+    local config = require("orbit.config")
+    local input = { modules = { sample = {
+      enabled = false,
+      panel = { visible = false },
+      tags = { "one", "two" },
+    } } }
+    local resolved = config.resolve_against(input, node)
+    assert(resolved.modules.sample.enabled == false)
+    assert(resolved.modules.sample.panel.visible == false)
+    assert(resolved.modules.sample.panel.count == 4)
+    assert(vim.deep_equal(resolved.modules.sample.tags, { "one", "two" }))
+    assert(input.modules.sample.panel.count == nil, "input must remain unchanged")
+    local replaced = config.resolve_against({ modules = { sample = {
+      tags = { "only" },
+    } } }, node)
+    assert(vim.deep_equal(replaced.modules.sample.tags, { "only" }))
+    assert(replaced.modules.sample.panel.visible == true)
+    assert(replaced.modules.sample.panel.count == 4)
+  end)
+end)
+
 check("restart-only metadata defers nested fields and array changes", function()
   local module = sample("sample", {
     "---@field enabled boolean @default(true) # Enable.",
