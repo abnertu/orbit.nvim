@@ -3,7 +3,7 @@ local M = {}
 ---@alias Orbit.CorekeysBinding table<string, any>|false
 ---@alias Orbit.CorekeysOwned {mode: string, lhs: string, original: Orbit.CorekeysBinding}
 ---@alias Orbit.CorekeysAffected {mode: string, lhs: string, current: Orbit.CorekeysBinding}
----@alias Orbit.CorekeysSnapshot {owned: table<string, Orbit.CorekeysOwned>, affected: table<string, Orbit.CorekeysAffected>}
+---@alias Orbit.CorekeysSnapshot {owned: table<string, Orbit.CorekeysOwned>, affected: table<string, Orbit.CorekeysAffected>, order: boolean}
 local owned = {}
 
 ---@class Orbit.CorekeysOptions # Core file and window navigation mappings.
@@ -115,6 +115,14 @@ local function targets(opts)
   return result
 end
 
+-- Tab and Shift-Tab cycle the shared buffer order, so the tracker lives
+-- exactly as long as these mappings.
+---@param active boolean
+local function set_order(active)
+  local buffers = require("orbit.buffers")
+  if active then buffers.attach("corekeys") else buffers.detach("corekeys") end
+end
+
 ---Capture effective bindings at both existing and proposed key sequences.
 ---@param opts Orbit.CorekeysOptions
 ---@return Orbit.CorekeysSnapshot
@@ -136,7 +144,11 @@ function M.capture(opts)
       }
     end
   end
-  return { owned = vim.deepcopy(owned), affected = affected }
+  return {
+    owned = vim.deepcopy(owned),
+    affected = affected,
+    order = require("orbit.buffers").attached("corekeys"),
+  }
 end
 
 ---@param snapshot Orbit.CorekeysSnapshot
@@ -161,6 +173,7 @@ function M.restore(snapshot)
     restore_mapping(entry.mode, entry.lhs, entry.current)
   end
   owned = vim.deepcopy(snapshot.owned)
+  set_order(snapshot.order)
 end
 
 ---@param opts? Orbit.CorekeysOptions
@@ -197,6 +210,7 @@ function M.setup(opts)
   end
 
   owned = next_owned
+  set_order(opts.enabled)
 end
 
 return M
