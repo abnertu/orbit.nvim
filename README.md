@@ -79,6 +79,10 @@ The Markdown module also supports an optional Obsidian vault. Set `modules.markd
 
 The `keyguide` module restores the legacy which-key group labels, the `<leader>wK` listing and `<leader>wk` query. It loads `folke/which-key.nvim` through Lazy only when demanded, without Base46 cache dependencies. Its `preset` and `border` settings come from LuaDoc and require restart.
 
+The `menu` module loads mouse context menus through Lazy on right-click in Normal or Visual mode. Set `modules.menu.enabled = false` before activation to disable it. This setting requires restart. File and tree menus keep the existing action owners and configured save and format shortcuts.
+
+Closing a menu restores its temporary LeftMouse and Escape mappings. User replacements made while a menu is open survive cleanup. One Escape also closes a menu opened inside a Visual selection. Activated right-click mappings remain Lazy-owned until restart.
+
 ## Try the preview
 
 Run these commands from the extracted `orbit.nvim` directory:

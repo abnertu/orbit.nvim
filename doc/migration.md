@@ -44,10 +44,13 @@ The module manifest orders runtime setup and Lazy specs. LuaDoc in each owning `
 - Pinned Blink/Noice commandline tests verify colon demand, navigation, acceptance, execution, cancellation, search behavior, and independent owner disabling.
 - A Blink 1.x timeout guard preserves newer commandline previews when older suppression releases expire.
 - First batched commandline input recovers after Blink listener initialization. Real input tests cover immediate exit, replacement sessions, search-first activation, and disabling.
+- Context menus preserve legacy file and tree groups through a restart-only Lazy owner. Pinned input tests cover mouse actions and temporary mapping restoration.
+- One Escape closes a menu inside a retained Visual selection. Partial rendering failures recover without orphaned buffers.
 
 ## Outstanding legacy contracts
 
-- Verify legacy context-menu cleanup, terminal paste transports, native popupmenu rendering, Rust matcher distribution, and native snippet regex builds. Blink's Lua matcher and plain-placeholder cleanup have real input coverage.
+- Verify terminal paste transports, native popupmenu rendering, Rust matcher distribution, and native snippet regex builds. Blink's Lua matcher has real input coverage.
+- Verify every delegated context-menu provider and terminal frontend mouse transport. Embedded input covers bounded menu actions and cleanup.
 - Verify long-running terminal processes and window restoration with real Windows shell sessions.
 - Verify theme reload integration, dashboard artwork, and remaining highlight ownership.
 - Verify broader explorer workflows and dashboard artwork. Native explorer/dashboard startup and built-in EditorConfig replay have actual-process coverage.
