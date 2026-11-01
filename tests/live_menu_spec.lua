@@ -93,9 +93,9 @@ end)
     vim.rpcnotify(job, "nvim_input_mouse", "move", "", "", 0, row, col)
     exec("return true")
     vim.rpcnotify(job, "nvim_input_mouse", button, "press", modifier or "", 0, row, col)
-    exec("return true")
+    exec("require('orbit.tests.live_menu').mark('after-press'); return true")
     vim.rpcnotify(job, "nvim_input_mouse", button, "release", modifier or "", 0, row, col)
-    exec("return true")
+    exec("require('orbit.tests.live_menu').mark('after-release'); return true")
   end
   ---@param row? integer
   ---@param col? integer

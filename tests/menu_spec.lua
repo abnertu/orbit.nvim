@@ -246,6 +246,33 @@ check("closing a partial nested render disposes every allocated buffer and windo
   runtime.close()
 end)
 
+check("upstream Escape after partial nested rendering also disposes orphan buffers", function()
+  open()
+  local root_buffer = state.bufids[1]
+  vim.api.nvim_open_win(root_buffer, false, {
+    relative = "editor", row = 4, col = 1, width = 10, height = 2,
+  })
+  local partial = vim.api.nvim_create_buf(false, true)
+  local window = vim.api.nvim_open_win(partial, false, {
+    relative = "editor", row = 1, col = 1, width = 10, height = 2,
+  })
+  state.bufids[#state.bufids + 1] = partial
+  local upstream_close = function()
+    vim.api.nvim_buf_delete(root_buffer, { force = true })
+    state.bufids = {}
+  end
+  vim.keymap.set("n", "<Esc>", upstream_close, { buffer = root_buffer })
+  vim.api.nvim_buf_call(root_buffer, function()
+    vim.fn.maparg("<Esc>", "n", false, true).callback()
+  end)
+  assert(vim.wait(1000, function()
+    return not vim.api.nvim_buf_is_valid(partial) and not vim.api.nvim_win_is_valid(window)
+  end, 10), "upstream Escape left a partial nested menu behind")
+  assert(#state.bufids == 0)
+  open()
+  runtime.close()
+end)
+
 check("opening and action failures report errors and release temporary ownership", function()
   local notify, menu_open = vim.notify, package.loaded.menu.open
   local errors = {}

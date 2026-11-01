@@ -22,6 +22,7 @@ local installed = false
 
 ---@class Orbit.MenuSession: Orbit.MenuSource
 ---@field maps Orbit.MenuOwnedMap[]
+---@field buffers table<integer, boolean>
 
 ---@type Orbit.MenuSession?
 local active
@@ -61,6 +62,11 @@ end
 function M.close()
   local state = package.loaded["menu.state"]
   local buffers = vim.deepcopy(state and state.bufids or {})
+  if active then
+    for id in pairs(active.buffers) do
+      if not vim.tbl_contains(buffers, id) then buffers[#buffers + 1] = id end
+    end
+  end
   local buffer = buffers[1]
   local closed = false
   if buffer and vim.api.nvim_buf_is_valid(buffer) then
@@ -150,10 +156,12 @@ function M.install()
     callback = function()
       local session = active
       if not session then return end
+      local before = package.loaded["menu.state"]
+      for _, id in ipairs(before and before.bufids or {}) do session.buffers[id] = true end
       vim.schedule(function()
         if active ~= session then return end
         local state = package.loaded["menu.state"]
-        if not state or #state.bufids == 0 then release() end
+        if not state or #state.bufids == 0 then M.close() end
       end)
     end,
   })
@@ -169,7 +177,7 @@ function M.open()
   local buffer = vim.api.nvim_win_get_buf(mouse.winid)
   if vim.bo[buffer].filetype == "NvMenu" then return end
   vim.api.nvim_set_current_win(mouse.winid)
-  active = { win = mouse.winid, buf = buffer, maps = {} }
+  active = { win = mouse.winid, buf = buffer, maps = {}, buffers = {} }
   local ok, err = xpcall(function()
     local items = require("orbit.modules.menu.items")
     local entries = vim.bo[buffer].filetype == "NvimTree" and items.tree(active) or items.general(active)
