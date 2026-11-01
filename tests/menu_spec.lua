@@ -172,6 +172,34 @@ check("queued shortcuts execute in the clicked source after another window gains
   vim.api.nvim_buf_delete(other_buffer, { force = true })
 end)
 
+check("menu actions wait for reentrant native mouse processing to finish", function()
+  vim.api.nvim_set_current_win(source)
+  open()
+  local save = find(entries, "Save File")
+  local click = vim.fn.maparg("<LeftMouse>", "n", false, true).callback
+  vim.cmd.vnew()
+  local other, other_buffer = vim.api.nvim_get_current_win(), vim.api.nvim_get_current_buf()
+  vim.api.nvim_set_current_win(source)
+  local observed
+  vim.keymap.set("n", "<F6>", function() observed = vim.api.nvim_get_current_buf() end)
+  local native = vim.cmd.exec
+  vim.cmd.exec = function()
+    save.cmd()
+    vim.wait(30, function() return false end, 10)
+    vim.api.nvim_feedkeys("", "x", false)
+    assert(observed == nil, "menu action ran before native mouse processing returned")
+    vim.api.nvim_set_current_win(other)
+  end
+  local ok, err = xpcall(click, debug.traceback)
+  vim.cmd.exec = native
+  assert(ok, err)
+  vim.wait(50, function() return false end, 10)
+  vim.api.nvim_feedkeys("", "x", false)
+  assert(observed == buffer, "native mouse processing overwrote action focus")
+  vim.api.nvim_win_close(other, true)
+  vim.api.nvim_buf_delete(other_buffer, { force = true })
+end)
+
 check("tree actions capture the node and reject nil rather than falling back", function()
   local current = { name = "original", absolute_path = "/original", type = "file" }
   local received
