@@ -1,8 +1,23 @@
 -- Obsidian's optional vault is configured only at the Lazy callback boundary.
 local M = {}
 
----@param note table
----@return table
+---@class Orbit.ObsidianNote
+---@field id string
+---@field aliases? string[]
+---@field tags? string[]
+---@field metadata? table<string, any>
+
+---@class Orbit.ObsidianFrontmatter
+---@field id? string
+---@field aliases? string[]
+---@field tags? string[]
+---@field created? string
+---@field modified? string
+
+---@alias Orbit.ObsidianOptions {legacy_commands: boolean, workspaces: {name: string, path: string}[], frontmatter: {func: fun(note: Orbit.ObsidianNote): Orbit.ObsidianFrontmatter}}
+
+---@param note Orbit.ObsidianNote
+---@return Orbit.ObsidianFrontmatter
 function M.frontmatter(note)
   if note.id == "AGENTS" or note.id == "CLAUDE" or note.id == "SKILL" then
     return {}
@@ -10,26 +25,20 @@ function M.frontmatter(note)
 
   -- Keep the legacy portable local-time format (no POSIX-only strftime tokens).
   local now = os.date("%Y-%m-%d %H:%M:%S")
-  local result = {
+  -- Preserve arbitrary frontmatter metadata. The refreshed timestamp must
+  -- win even when the note supplied an earlier modified value.
+  return vim.tbl_extend("force", {
     id = note.id,
     aliases = note.aliases,
     tags = note.tags,
     created = now,
+  }, type(note.metadata) == "table" and note.metadata or {}, {
     modified = now,
-  }
-  if type(note.metadata) == "table" then
-    for key, value in pairs(note.metadata) do
-      result[key] = value
-    end
-    if note.metadata.modified ~= nil then
-      result.modified = now
-    end
-  end
-  return result
+  })
 end
 
 ---@param vault string
----@return table
+---@return Orbit.ObsidianOptions
 function M.options(vault)
   return {
     legacy_commands = false,
@@ -38,7 +47,7 @@ function M.options(vault)
   }
 end
 
----@param opts table
+---@param opts Orbit.ObsidianOptions
 function M.setup(opts)
   require("obsidian").setup(opts)
   vim.opt_local.conceallevel = 2
