@@ -217,6 +217,36 @@ local ok, err = xpcall(function()
   assert(table.concat(vim.fn.readfile(note_path), "\n") == rewritten,
     "dated daily-note command modified an unrelated vault note")
   print("PASS real Obsidian dated daily-note creation and idempotent reopening")
+
+  -- Route the real :Obsidian open command through a captured desktop opener.
+  -- No browser is launched, but the upstream command must encode vault paths.
+  local uri_note = vim.fs.joinpath(vault, "uri note with spaces.md")
+  assert(vim.fn.writefile({ "# URI note", "Second line." }, uri_note) == 0)
+  vim.cmd("edit " .. vim.fn.fnameescape(uri_note))
+  assert(vim.b.obsidian_buffer == true,
+    "URI note did not attach to the real vault lifecycle")
+  local opened = {}
+  local original_opener = Obsidian.opts.open.func
+  Obsidian.opts.open.func = function(uri)
+    opened[#opened + 1] = uri
+  end
+  vim.cmd("Obsidian open")
+  assert(opened[1] == "obsidian://open?vault=vault%20with%20spaces"
+      .. "&file=uri%20note%20with%20spaces.md",
+    "real Obsidian open command emitted an invalid vault URI: "
+      .. vim.inspect(opened))
+
+  Obsidian.opts.open.use_advanced_uri = true
+  vim.api.nvim_win_set_cursor(0, { 2, 0 })
+  vim.cmd("Obsidian open")
+  assert(opened[2] == "obsidian://advanced-uri?vault=vault%20with%20spaces"
+      .. "&filepath=uri%20note%20with%20spaces.md&line=2",
+    "real Obsidian advanced URI lost the note path or cursor line: "
+      .. vim.inspect(opened))
+  Obsidian.opts.open.func = original_opener
+  assert(table.concat(vim.fn.readfile(note_path), "\\n") == rewritten,
+    "opening an external URI modified the previously saved note")
+  print("PASS real Obsidian open command encodes standard and advanced vault URIs")
 end, debug.traceback)
 
 vim.wo.conceallevel = initial_conceal
