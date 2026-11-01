@@ -100,7 +100,12 @@ return function(opts)
       .. ' ' .. vim.api.nvim_buf_get_name(0)
   end
   vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter" }, {
-    group = group, callback = function(event) mark(event.event) end,
+    group = group, callback = function(event)
+      mark(event.event)
+      if event.event == "WinEnter" and vim.bo.filetype == "NvimTree" then
+        journal[#journal + 1] = debug.traceback("tree focus")
+      end
+    end,
   })
   vim.api.nvim_create_autocmd("User", { group = group, pattern = "LazyLoad", callback = function(event)
     loaded[event.data] = (loaded[event.data] or 0) + 1
