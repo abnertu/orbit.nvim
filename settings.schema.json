@@ -1004,6 +1004,12 @@
               "type": "boolean",
               "x-orbit-restart": true
             },
+            "note_highlights": {
+              "default": true,
+              "description": "Keep Markdown code fences visible in notes.",
+              "type": "boolean",
+              "x-orbit-restart": true
+            },
             "notes": {
               "default": true,
               "description": "Enable Obsidian vault integration.",

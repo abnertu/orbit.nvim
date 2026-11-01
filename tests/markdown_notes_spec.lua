@@ -47,21 +47,66 @@ check("configured vault is gated by directory existence at Lazy demand", functio
   vim.fn.mkdir(vault, "p")
 end)
 
-check("Obsidian setup is deferred and sets Markdown conceal after success", function()
-  local calls = 0
+local function conceals_fences()
+  local query = vim.treesitter.query.get("markdown", "highlights")
+  for _, directives in pairs(query.info.patterns) do
+    for _, directive in ipairs(directives) do
+      if directive[2] == "conceal" then return true end
+    end
+  end
+  return false
+end
+
+local function obsidian_stub(counter)
   package.preload.obsidian = function()
     return { setup = function(opts)
       assert(opts.workspaces[1].path == vault)
       assert(opts.frontmatter.func == notes.frontmatter)
-      calls = calls + 1
+      counter.calls = counter.calls + 1
     end }
   end
-  local original = vim.wo.conceallevel
-  vim.wo.conceallevel = 0
+end
+
+check("Obsidian setup keeps fences visible and conceals only Markdown windows", function()
+  assert(conceals_fences(), "fixture expects the upstream query to conceal fences")
+  local counter = { calls = 0 }
+  obsidian_stub(counter)
+  vim.o.conceallevel = 0
+  local note = vim.api.nvim_create_buf(true, false)
+  vim.bo[note].filetype = "markdown"
+  vim.api.nvim_set_current_buf(note)
   local item = feature.spec()[2]
   item.config(nil, item.opts())
-  assert(calls == 1 and vim.wo.conceallevel == 2)
-  vim.wo.conceallevel = original
+  assert(counter.calls == 1 and vim.wo.conceallevel == 2)
+  assert(not conceals_fences(), "notes must replace the fence-concealing query")
+
+  local code = vim.api.nvim_create_buf(true, false)
+  vim.bo[code].filetype = "lua"
+  vim.api.nvim_set_current_buf(code)
+  assert(vim.wo.conceallevel == 0, "conceal must not leak to other buffers")
+  vim.cmd("vsplit")
+  local other = vim.api.nvim_create_buf(true, false)
+  vim.api.nvim_set_current_buf(other)
+  vim.bo[other].filetype = "markdown"
+  assert(vim.wo.conceallevel == 2, "later Markdown windows must conceal")
+  vim.cmd("close")
+  package.loaded.obsidian, package.preload.obsidian = nil, nil
+  vim.treesitter.query.set("markdown", "highlights", nil)
+end)
+
+check("note highlights can be disabled and invalid queries leave upstream", function()
+  local counter = { calls = 0 }
+  obsidian_stub(counter)
+  notes.setup(notes.options(vault), false)
+  assert(counter.calls == 1 and conceals_fences(), "disabled highlights must keep upstream")
+
+  local parse, notify, warned = vim.treesitter.query.parse, vim.notify, nil
+  vim.treesitter.query.parse = function() error("missing parser") end
+  vim.notify = function(message) warned = message end
+  local applied = notes.apply_highlights()
+  vim.treesitter.query.parse, vim.notify = parse, notify
+  assert(not applied and warned:find("missing parser", 1, true))
+  assert(conceals_fences(), "failed parse must leave the upstream query")
   package.loaded.obsidian, package.preload.obsidian = nil, nil
 end)
 
