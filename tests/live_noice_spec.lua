@@ -74,6 +74,14 @@ local ok, err = xpcall(function()
     "real Noice command was not registered")
   print("PASS pinned upstream Noice and NUI checkout")
   print("PASS real Noice Lazy activation and command")
+  -- Only explicitly tagged formatter messages may use the dedicated view.
+  -- Ordinary notifications and explicit false must retain upstream routing.
+  local formatter_filter = config.routes[1].filter.cond
+  assert(not formatter_filter({ opts = {} }),
+    "ordinary notification unexpectedly matched formatter progress")
+  assert(not formatter_filter({ opts = { orbit_formatter = false } }),
+    "explicitly disabled formatter notification matched progress")
+  print("PASS real Noice formatter route excludes untagged notifications")
   print("PASS real Noice merged formatter progress route")
 
   -- Exercise the real notify -> router -> NUI rendering path, not just
