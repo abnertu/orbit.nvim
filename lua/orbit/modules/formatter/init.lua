@@ -2,11 +2,11 @@ local M = {}
 local accepted
 
 ---@class Orbit.FormatterOptions # Conform formatting integration.
----@field enabled boolean @default(true) @restart(true) # Enable Conform formatting.
----@field key string @default("<leader>fm") @minLength(1) @restart(true) # Manual format mapping.
----@field format_on_save boolean @default(false) @restart(true) # Format automatically when writing.
----@field timeout_ms integer @default(5000) @minimum(100) @maximum(60000) @restart(true) # Formatter timeout in milliseconds.
----@field lsp_format 'fallback'|'never'|'first'|'last' @default("fallback") @restart(true) # LSP formatting fallback strategy.
+---@field enabled? boolean @default(true) @restart(true) # Enable Conform formatting.
+---@field key? string @default("<leader>fm") @minLength(1) @restart(true) # Manual format mapping.
+---@field format_on_save? boolean @default(false) @restart(true) # Format automatically when writing.
+---@field timeout_ms? integer @default(5000) @minimum(100) @maximum(60000) @restart(true) # Formatter timeout in milliseconds.
+---@field lsp_format? 'fallback'|'never'|'first'|'last' @default("fallback") @restart(true) # LSP formatting fallback strategy.
 
 ---@return Orbit.FormatterOptions?
 function M.capture()

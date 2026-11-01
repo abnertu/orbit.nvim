@@ -2,10 +2,10 @@ local M = {}
 local accepted
 
 ---@class Orbit.LinterOptions # nvim-lint configuration and event scheduling.
----@field enabled boolean @default(true) @restart(true) # Enable lint integration.
----@field debounce_ms integer @default(200) @minimum(0) @maximum(5000) @restart(true) # Delay before lint execution.
----@field lint_on_change boolean @default(true) @restart(true) # Trigger lint on TextChanged.
----@field skip_sql_on_change boolean @default(true) @restart(true) # Avoid SQLFluff while typing.
+---@field enabled? boolean @default(true) @restart(true) # Enable lint integration.
+---@field debounce_ms? integer @default(200) @minimum(0) @maximum(5000) @restart(true) # Delay before lint execution.
+---@field lint_on_change? boolean @default(true) @restart(true) # Trigger lint on TextChanged.
+---@field skip_sql_on_change? boolean @default(true) @restart(true) # Avoid SQLFluff while typing.
 
 ---@return Orbit.LinterOptions?
 function M.capture()

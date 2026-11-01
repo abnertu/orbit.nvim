@@ -183,10 +183,12 @@ function M.parse_module(path, name)
         active = classes[annotated_class]
       end
     elseif active and line:match("^%s*%-%-%-@field") then
-      local field, type_name, rest =
-        line:match("^%s*%-%-%-@field%s+([%w_]+)%s+(%S+)%s+(.+)$")
+      local declaration, type_name, rest =
+        line:match("^%s*%-%-%-@field%s+([%w_?]+)%s+(%S+)%s+(.+)$")
+      local field = declaration and declaration:gsub("%?$", "")
       local location = path .. ":" .. number
-      assert(field and field:match("^[a-z][a-z0-9_]*$"),
+      assert(field and field:match("^[a-z][a-z0-9_]*$") and
+        (declaration == field or declaration == field .. "?"),
         location .. ": malformed LuaDoc field")
       assert(not active.names[field], location .. ": duplicate field " .. field)
 

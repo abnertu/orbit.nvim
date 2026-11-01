@@ -2,12 +2,12 @@ local M = {}
 local accepted
 
 ---@class Orbit.EditorPluginsOptions # Optional editor visual integrations.
----@field enabled boolean @default(true) @restart(true) # Contribute editor plugin specifications.
----@field matchup boolean @default(true) @restart(true) # Enable vim-matchup.
----@field indent_guides boolean @default(true) @restart(true) # Enable indent-blankline.
----@field matchup_stopline integer @default(500) @minimum(0) @restart(true) # Matchup syntax scan limit.
----@field indent_char string @default("│") @minLength(1) @restart(true) # Indentation marker.
----@field scope_char string @default("│") @minLength(1) @restart(true) # Scope marker.
+---@field enabled? boolean @default(true) @restart(true) # Contribute editor plugin specifications.
+---@field matchup? boolean @default(true) @restart(true) # Enable vim-matchup.
+---@field indent_guides? boolean @default(true) @restart(true) # Enable indent-blankline.
+---@field matchup_stopline? integer @default(500) @minimum(0) @restart(true) # Matchup syntax scan limit.
+---@field indent_char? string @default("│") @minLength(1) @restart(true) # Indentation marker.
+---@field scope_char? string @default("│") @minLength(1) @restart(true) # Scope marker.
 
 ---@return Orbit.EditorPluginsOptions?
 function M.capture()

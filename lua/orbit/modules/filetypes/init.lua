@@ -3,9 +3,9 @@ local original
 local registered = false
 
 ---@class Orbit.FiletypesOptions # Filename and extension detection rules.
----@field compose string @default("yaml.docker-compose") @minLength(1) # Filetype for Compose YAML filenames.
----@field enabled boolean @default(true) # Register custom filetype detections.
----@field jsx string @default("jsx") @minLength(1) # Filetype for JSX extensions.
+---@field compose? string @default("yaml.docker-compose") @minLength(1) # Filetype for Compose YAML filenames.
+---@field enabled? boolean @default(true) # Register custom filetype detections.
+---@field jsx? string @default("jsx") @minLength(1) # Filetype for JSX extensions.
 
 local compose_files = {
   "compose.yaml",

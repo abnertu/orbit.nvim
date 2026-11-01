@@ -3,9 +3,9 @@ local owned_name
 local owned_path
 
 ---@class Orbit.CommandsOptions # Settings command integration.
----@field enabled boolean @default(true) # Register the settings command.
----@field name string @default("OrbitSettings") @minLength(1) # Command name.
----@field path string @default("") # Optional settings path override.
+---@field enabled? boolean @default(true) # Register the settings command.
+---@field name? string @default("OrbitSettings") @minLength(1) # Command name.
+---@field path? string @default("") # Optional settings path override.
 
 local function current_path()
   return require("orbit.settings").path(owned_path ~= "" and owned_path or nil)

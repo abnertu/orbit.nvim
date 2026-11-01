@@ -58,6 +58,7 @@
 - Treat completion and snippet callback setup as restart-only; preserve SQL and JSX snippets without eager imports.
 - Do not hardcode the total number of registered features in shared integration fixtures.
 - Declare module types, defaults, bounds and descriptions only in the owning `init.lua` LuaDoc.
+- Mark defaulted LuaDoc options as optional (`---@field name? type`); keep generated JSON property names unchanged.
 - Generate `settings.schema.json` from LuaDoc annotations. Do not author module `schema.json` files.
 - Use local LuaDoc classes for nested objects and typed arrays. Reject recursive class schemas.
 - Preserve global, buffer-local and window-local option scope during migrations.

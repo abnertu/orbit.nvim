@@ -6,11 +6,11 @@ local filepost_emitted = false
 local filepost_id
 
 ---@class Orbit.EventsOptions # Standalone core Neovim events.
----@field enabled boolean @default(true) # Enable core event behavior.
----@field diagnostics_redraw boolean @default(true) # Redraw the statusline when diagnostics change.
----@field startup_buffer boolean @default(true) @restart(true) # Keep a listed unnamed buffer behind startup interfaces.
----@field directory_argument boolean @default(true) @restart(true) # Change directory for a directory startup argument.
----@field filepost boolean @default(true) @restart(true) # Emit a one-shot FilePost event when a normal file is ready.
+---@field enabled? boolean @default(true) # Enable core event behavior.
+---@field diagnostics_redraw? boolean @default(true) # Redraw the statusline when diagnostics change.
+---@field startup_buffer? boolean @default(true) @restart(true) # Keep a listed unnamed buffer behind startup interfaces.
+---@field directory_argument? boolean @default(true) @restart(true) # Change directory for a directory startup argument.
+---@field filepost? boolean @default(true) @restart(true) # Emit a one-shot FilePost event when a normal file is ready.
 
 local function is_active(name)
   return active and active.enabled and active[name]

@@ -1,12 +1,12 @@
 local M = {}
 
 ---@class Orbit.PluginsOptions # On-demand Lazy plugin initialization.
----@field enabled boolean @default(false) @restart(true) # Enable plugin initialization for this session.
----@field path string @default("") @restart(true) # Optional existing lazy.nvim installation directory.
----@field import string @default("plugins") @minLength(1) @restart(true) # Lazy plugin spec import module.
----@field bootstrap boolean @default(false) @restart(true) # Clone Lazy on first demand when missing.
----@field source string @default("https://github.com/folke/lazy.nvim.git") @minLength(1) @restart(true) # Git source for Lazy bootstrap.
----@field lockfile string @default("") @restart(true) # Optional locked revision file.
+---@field enabled? boolean @default(false) @restart(true) # Enable plugin initialization for this session.
+---@field path? string @default("") @restart(true) # Optional existing lazy.nvim installation directory.
+---@field import? string @default("plugins") @minLength(1) @restart(true) # Lazy plugin spec import module.
+---@field bootstrap? boolean @default(false) @restart(true) # Clone Lazy on first demand when missing.
+---@field source? string @default("https://github.com/folke/lazy.nvim.git") @minLength(1) @restart(true) # Git source for Lazy bootstrap.
+---@field lockfile? string @default("") @restart(true) # Optional locked revision file.
 
 local group
 local searcher

@@ -2,12 +2,12 @@ local M = {}
 local accepted
 
 ---@class Orbit.MarkdownOptions # Markdown preview integration.
----@field enabled boolean @default(true) @restart(true) # Enable Markdown integration.
----@field preview boolean @default(true) @restart(true) # Include Markdown preview plugin.
----@field preview_key string @default("<leader>mp") @minLength(1) @restart(true) # Preview toggle mapping.
----@field build_timeout integer @default(120000) @minimum(1000) @maximum(300000) @restart(true) # Preview installer timeout in milliseconds.
----@field notes boolean @default(true) @restart(true) # Enable Obsidian vault integration.
----@field vault string @default("") @restart(true) # Optional Obsidian vault directory.
+---@field enabled? boolean @default(true) @restart(true) # Enable Markdown integration.
+---@field preview? boolean @default(true) @restart(true) # Include Markdown preview plugin.
+---@field preview_key? string @default("<leader>mp") @minLength(1) @restart(true) # Preview toggle mapping.
+---@field build_timeout? integer @default(120000) @minimum(1000) @maximum(300000) @restart(true) # Preview installer timeout in milliseconds.
+---@field notes? boolean @default(true) @restart(true) # Enable Obsidian vault integration.
+---@field vault? string @default("") @restart(true) # Optional Obsidian vault directory.
 
 ---@return Orbit.MarkdownOptions?
 function M.capture()
