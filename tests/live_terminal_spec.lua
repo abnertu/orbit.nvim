@@ -57,10 +57,21 @@ local function isolated(run)
     run(track)
   end, debug.traceback)
 
+  io.stderr:write("live terminal: teardown, passed=" .. tostring(ok) .. " error=" .. tostring(err) .. "\\n")
+  io.stderr:flush()
   for _, job in ipairs(jobs) do
     if alive(job) then
-      pcall(vim.fn.jobstop, job)
-      vim.fn.jobwait({ job }, 3000)
+      if windows then
+        -- jobstop() sends CTRL_C_EVENT to a Windows console process group.
+        -- Kill only the child process tree, never the hosting CI console.
+        local pid = vim.fn.jobpid(job)
+        assert(pid > 0, "terminal job has no OS process ID")
+        vim.system({ "taskkill.exe", "/F", "/T", "/PID", tostring(pid) },
+          { text = true, timeout = 15000 }):wait()
+      else
+        pcall(vim.fn.jobstop, job)
+        vim.fn.jobwait({ job }, 3000)
+      end
     end
   end
   if vim.api.nvim_tabpage_is_valid(tab) then
@@ -99,12 +110,16 @@ check("real shell survives hiding and reopening the mapped vertical terminal", f
     io.stderr:write("live terminal: sleeping command survived\\n")
     io.stderr:flush()
     binding.callback()
+    io.stderr:write("live terminal: toggle hide returned\\n")
+    io.stderr:flush()
     assert(not vim.api.nvim_win_is_valid(terminal_window), "toggle did not hide split")
     assert(vim.api.nvim_get_current_win() == original, "original window lost focus")
     assert(vim.api.nvim_buf_is_valid(buffer) and alive(job),
       "hiding the split terminated the shell")
 
     binding.callback()
+    io.stderr:write("live terminal: toggle reopen returned\\n")
+    io.stderr:flush()
     assert(vim.api.nvim_get_current_buf() == buffer, "toggle lost saved terminal buffer")
     assert(vim.b[buffer].terminal_job_id == job and alive(job),
       "reopening started another process or lost the original shell")
