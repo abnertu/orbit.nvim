@@ -25,7 +25,7 @@ local function deferred(source, action)
   return function()
     local runtime = require("orbit.modules.menu.runtime")
     runtime.close()
-    runtime.defer(function()
+    vim.schedule(function()
       if not vim.api.nvim_win_is_valid(source.win)
         or not vim.api.nvim_buf_is_valid(source.buf)
         or vim.api.nvim_win_get_buf(source.win) ~= source.buf then return end

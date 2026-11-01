@@ -23,6 +23,7 @@ local function check(kind)
   local project = vim.fs.joinpath(base, "project with spaces")
   local first = vim.fs.joinpath(project, "first file.txt")
   local second = vim.fs.joinpath(project, "second file.txt")
+  local tree_file = vim.fs.joinpath(project, "tree target.txt")
   local site = vim.fs.joinpath(base, "site")
   local installed = vim.fs.joinpath(site, "pack/orbit/start/orbit.nvim")
   local config = vim.fs.joinpath(base, "config")
@@ -149,6 +150,7 @@ end)
     end
     vim.fn.writefile({ "alpha source line", "second source line", "third source line", "fourth source line" }, first)
     vim.fn.writefile({ "tree target" }, second)
+    vim.fn.writefile({ "previously unopened tree target" }, tree_file)
     local opts = { site = site, installed = installed, dependencies = paths,
       enabled = kind ~= "disabled", corekeys = kind ~= "no-corekeys" }
     vim.fn.writefile(vim.split(string.format("dofile(%q)(%s)",
@@ -283,7 +285,7 @@ end)
     assert(exec([[
       local api=require('nvim-tree.api')
       for row,line in ipairs(vim.api.nvim_buf_get_lines(0,0,-1,false)) do
-        if line:find('second file.txt',1,true) then vim.api.nvim_win_set_cursor(0,{row,0}); return true end
+        if line:find('tree target.txt',1,true) then vim.api.nvim_win_set_cursor(0,{row,0}); return true end
       end
       return false
     ]]), "tree target did not render")
@@ -291,10 +293,21 @@ end)
     s = open(treepos.row, treepos.col)
     click(s, "Open")
     closed()
+    -- A new file with several available windows uses the production picker.
+    s = await(function(value)
+      return #value.picker > 0 or exec(string.format(
+        "return require('orbit.tests.live_menu').same_path(vim.api.nvim_buf_get_name(0), %q)", tree_file))
+    end, "tree menu did not open a file or request a target window")
+    assert(#s.picker > 0, "tree target selection did not render")
+    local choice
+    for _, candidate in ipairs(s.picker) do if candidate.win == target.win then choice = candidate end end
+    assert(choice, "tree picker did not offer the existing file window")
+    input(choice.key)
     await(function() return exec(string.format(
-      "return require('orbit.tests.live_menu').same_path(vim.api.nvim_buf_get_name(0), %q)", second)) end,
+      "return require('orbit.tests.live_menu').same_path(vim.api.nvim_buf_get_name(0), %q)", tree_file)) end,
       "tree menu did not open clicked node")
     assert(vim.deep_equal(vim.fn.readfile(second), { "tree target" }))
+    assert(vim.deep_equal(vim.fn.readfile(tree_file), { "previously unopened tree target" }))
   end, debug.traceback)
 
   if job > 0 then
