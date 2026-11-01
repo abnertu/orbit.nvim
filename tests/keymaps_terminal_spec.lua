@@ -38,6 +38,10 @@ end)
 
 local term = require("orbit.modules.keymaps.terminal")
 local actual_spawn, actual_start_insert = term.spawn, term.start_insert
+local actual_is_live_terminal = term.is_live_terminal
+-- Mapping tests stub spawn(), so no real PTY exists in their buffers.
+-- The dedicated real-terminal suite exercises the production liveness check.
+term.is_live_terminal = function() return true end
 local spawns, inserts = 0, 0
 term.spawn = function()
   spawns = spawns + 1
@@ -169,13 +173,14 @@ check("terminal toggle preserves the last normal window beside a foreign float",
 end)
 
 check("repurposed saved buffer is never reused as a terminal", function()
+  local previous_check = term.is_live_terminal
+  term.is_live_terminal = actual_is_live_terminal
   local origin = vim.api.nvim_get_current_win()
   local before = spawns
   local first = term.open("vsp", "repurposed-session")
-  local first_win = vim.api.nvim_get_current_win()
-  vim.api.nvim_win_close(first_win, true)
-  -- Another owner can change a scratch buffer's type after it is saved.
-  vim.bo[first].buftype = "nofile"
+  vim.api.nvim_win_close(vim.api.nvim_get_current_win(), true)
+  -- The fake spawn does not create a PTY. The production check must
+  -- reject this saved buffer and allocate a fresh one on reopening.
   local second = term.open("vsp", "repurposed-session")
   assert(second ~= first, "reopening must not reuse a nonterminal buffer")
   assert(spawns == before + 2, "repurposed session did not spawn again")
@@ -183,6 +188,7 @@ check("repurposed saved buffer is never reused as a terminal", function()
   assert(vim.api.nvim_get_current_win() == origin)
   vim.api.nvim_buf_delete(second, { force = true })
   vim.api.nvim_buf_delete(first, { force = true })
+  term.is_live_terminal = previous_check
 end)
 
 check("shell arguments are an argv vector and match the host platform", function()
