@@ -243,6 +243,11 @@ jobs:
           nvim --headless -u NONE -l tests/tabline_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Tab line tests failed' }
 
+      - name: Test color preview owner
+        run: |
+          nvim --headless -u NONE -l tests/colors_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Color preview tests failed' }
+
       - name: Test first-demand Lazy startup with locked local Git
         run: |
           nvim --headless -u NONE -l tests/plugins_integration_spec.lua

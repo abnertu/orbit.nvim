@@ -119,6 +119,8 @@ The `theme` module loads tokyonight at startup and applies `modules.theme.colors
 
 The `statusline` module draws one status line with mode, file, Git branch and changes, diagnostics, LSP clients, the working directory and cursor position. The `tabline` module shows the current tab's buffers from `orbit.buffers`, an nvim-tree offset and tab numbers. Click a buffer to select it, or click its close mark to close it while keeping the window. Modified buffers are never closed. Disabling either module restores the previous option value.
 
+The `colors` module draws a swatch before `#RGB`, `#RRGGBB` and `#RRGGBBAA` codes in visible lines of normal buffers. It also shows LSP document colors with the same swatch. Set `hex` or `lsp` to `false` to turn either one off. Disabling the module restores the previous LSP color state.
+
 The editor module exposes configurable statusline, clipboard, mouse, signcolumn, undo and file-format defaults.
 
 The corekeys module owns `<C-s>` for save, `<C-h/j/k/l>` for window navigation, tab-local `<Tab>` / `<S-Tab>` buffer cycling through the `orbit.buffers` order owner, and the legacy visual `J/K` line-move callbacks. Its fixed editing mappings restore previous user bindings when disabled.

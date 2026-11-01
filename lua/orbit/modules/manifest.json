@@ -3,6 +3,7 @@
     "editor",
     "statusline",
     "tabline",
+    "colors",
     "filetypes",
     "theme",
     "keymaps",
