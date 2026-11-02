@@ -184,9 +184,11 @@ end)
     ---@return Orbit.LiveCmdlineSnapshot
     local function enter(text)
       if scenario == "typing" then
-        commandline(":")
-        await(function(s) return s.mode == "c" and s.command_type == ":" and (not completion or s.ready) end,
-          "CmdlineEnter demand before typing command")
+        commandline(";")
+        await(function(s)
+          return s.mode == "c" and s.command_type == ":" and (not completion or s.ready)
+            and (not messages or window_with(s, "noice") ~= nil)
+        end, "semicolon must display the commandline popup before typing command text")
         input(text)
       else
         commandline(":" .. text)
