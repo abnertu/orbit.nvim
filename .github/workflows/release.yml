@@ -1,0 +1,67 @@
+name: Release
+
+on:
+  push:
+    tags: ['[0-9]+.[0-9]+.[0-9]+']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Verify the release tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the tag with full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check the tag format, main ancestry and changelog
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -eu
+          [[ "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::$TAG is not MAJOR.MINOR.PATCH"; exit 1; }
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main || { echo "::error::$TAG is not on main"; exit 1; }
+          grep -q "^## \[$TAG\] - " CHANGELOG.md || { echo "::error::CHANGELOG.md has no $TAG section"; exit 1; }
+
+  validate:
+    name: Validate
+    needs: verify
+    uses: ./.github/workflows/validate.yml
+
+  live:
+    name: Live
+    needs: verify
+    uses: ./.github/workflows/live-upstream.yml
+
+  publish:
+    name: Publish the GitHub release
+    needs: [validate, live]
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: write
+    steps:
+      - name: Check out the tag
+        uses: actions/checkout@v4
+
+      - name: Create the release from the changelog section
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -eu
+          awk -v tag="$TAG" '
+            $0 ~ "^## \\[" tag "\\]" { found = 1; next }
+            found && /^## \[/ { exit }
+            found && /^\[[^]]+\]: / { exit }
+            found { print }
+          ' CHANGELOG.md > notes.md
+          test -s notes.md
+          gh release create "$TAG" --verify-tag --title "orbit.nvim $TAG" --notes-file notes.md
