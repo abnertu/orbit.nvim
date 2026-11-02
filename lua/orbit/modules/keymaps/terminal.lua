@@ -8,11 +8,29 @@ local kinds = { sp = true, vsp = true, float = true }
 ---@return string[]
 function M.shell_argv()
   local shell = vim.o.shell
-  local name = vim.fn.fnamemodify(shell, ":t"):lower():gsub("%.exe$", "")
-  if vim.fn.has("win32") == 1 and (name == "powershell" or name == "pwsh") then
-    return { shell, "-NoLogo" }
+  local args = { shell }
+  -- Preserve executable paths with spaces. Otherwise, parse shell flags and quoted paths like nv-ui.
+  if vim.fn.executable(shell) ~= 1 then
+    args = {}
+    local pos = 1
+    while true do
+      local _, last, argument = shell:find('^%s*"([^"]*)"', pos)
+      if not last then
+        _, last, argument = shell:find("^%s*(%S+)", pos)
+      end
+      if not last then
+        break
+      end
+      args[#args + 1] = argument
+      pos = last + 1
+    end
   end
-  return { shell }
+  local name = (args[1] or ""):match("[^/\\]+$") or ""
+  name = name:lower():gsub("%.exe$", "")
+  if #args == 1 and vim.fn.has("win32") == 1 and (name == "powershell" or name == "pwsh") then
+    args[#args + 1] = "-NoLogo"
+  end
+  return args
 end
 
 ---@return integer
@@ -53,7 +71,7 @@ local function display(buffer, pos, on_open)
   if pos == "float" then
     win = vim.api.nvim_open_win(buffer, true, float_options())
   else
-    vim.cmd(pos == "sp" and "split" or "vsplit")
+    vim.cmd(pos == "sp" and "belowright split" or "belowright vsplit")
     win = vim.api.nvim_get_current_win()
   end
   -- Record ownership before later window setup can throw or switch focus.

@@ -27,7 +27,8 @@ vim.fn.mkdir(workspace, "p")
 local init = workspace .. "/init.lua"
 vim.fn.writefile({
   "vim.opt.rtp:prepend(" .. vim.inspect(root) .. ")",
-  "vim.o.shell = " .. vim.inspect(vim.fn.exepath(shell)),
+  "vim.o.shell = "
+    .. vim.inspect('"' .. vim.fn.exepath(shell) .. '" ' .. (windows and "-NoLogo" or "-i")),
   "require('orbit').setup()",
 }, init)
 local job = vim.fn.jobstart(

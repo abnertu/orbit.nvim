@@ -58,9 +58,54 @@ term.start_insert = function()
   inserts = inserts + 1
 end
 
+check("split terminals open below and right regardless of editor split preferences", function()
+  local splitbelow, splitright = vim.o.splitbelow, vim.o.splitright
+  local ok, err = xpcall(function()
+    for _, preference in ipairs({ false, true }) do
+      vim.o.splitbelow, vim.o.splitright = preference, preference
+      for _, direction in ipairs({
+        { key = "h", axis = 1 },
+        { key = "v", axis = 2 },
+      }) do
+        local origin = vim.api.nvim_get_current_win()
+        local function assert_position()
+          local source = vim.api.nvim_win_get_position(origin)
+          local opened = vim.api.nvim_win_get_position(0)
+          assert(
+            opened[direction.axis] > source[direction.axis],
+            direction.key == "h" and "horizontal terminal must open below"
+              or "vertical terminal must open right"
+          )
+          assert(vim.o.splitbelow == preference and vim.o.splitright == preference)
+        end
+
+        map("n", " " .. direction.key).callback()
+        assert_position()
+        local buffer = vim.api.nvim_get_current_buf()
+        vim.api.nvim_win_close(0, true)
+        vim.api.nvim_buf_delete(buffer, { force = true })
+
+        local toggle = "<M-" .. direction.key .. ">"
+        map("n", toggle).callback()
+        assert_position()
+        buffer = vim.api.nvim_get_current_buf()
+        map("t", toggle).callback()
+        map("n", toggle).callback()
+        assert_position()
+        assert(vim.api.nvim_get_current_buf() == buffer)
+        map("t", toggle).callback()
+        vim.api.nvim_buf_delete(buffer, { force = true })
+      end
+    end
+  end, debug.traceback)
+  vim.o.splitbelow, vim.o.splitright = splitbelow, splitright
+  assert(ok, err)
+end)
+
 check("horizontal terminal creates a split with window-local options", function()
   local origin = vim.api.nvim_get_current_win()
   local before = #vim.api.nvim_tabpage_list_wins(0)
+  local before_spawns, before_inserts = spawns, inserts
   map("n", " h").callback()
   local win = vim.api.nvim_get_current_win()
   local buffer = vim.api.nvim_get_current_buf()
@@ -69,7 +114,7 @@ check("horizontal terminal creates a split with window-local options", function(
   assert(vim.bo[buffer].filetype == "Term_sp")
   assert(vim.bo[buffer].buflisted == false)
   assert(not vim.wo[win].number and not vim.wo[win].relativenumber)
-  assert(spawns == 1 and inserts == 1)
+  assert(spawns == before_spawns + 1 and inserts == before_inserts + 1)
   vim.api.nvim_win_close(win, true)
   vim.api.nvim_buf_delete(buffer, { force = true })
 end)
@@ -227,13 +272,55 @@ check("shell arguments are an argv vector and match the host platform", function
   vim.o.shell = original
 end)
 
+check("Windows shells preserve quoted paths and explicit interactive flags", function()
+  local shell, has = vim.o.shell, vim.fn.has
+  vim.fn.has = function(name)
+    return name == "win32" and 1 or has(name)
+  end
+  local ok, err = xpcall(function()
+    for _, case in ipairs({
+      { shell = '"pwsh.exe"', args = { "pwsh.exe", "-NoLogo" } },
+      { shell = "powershell.exe", args = { "powershell.exe", "-NoLogo" } },
+      { shell = "pwsh.exe -NoLogo -NoProfile", args = { "pwsh.exe", "-NoLogo", "-NoProfile" } },
+      {
+        shell = '"C:\\Program Files\\PowerShell\\7\\pwsh.exe"',
+        args = { "C:\\Program Files\\PowerShell\\7\\pwsh.exe", "-NoLogo" },
+      },
+      {
+        shell = '"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -NoProfile',
+        args = { "C:\\Program Files\\PowerShell\\7\\pwsh.exe", "-NoProfile" },
+      },
+      { shell = "cmd.exe /d", args = { "cmd.exe", "/d" } },
+    }) do
+      vim.o.shell = case.shell
+      assert(vim.deep_equal(term.shell_argv(), case.args), "incorrect shell argv: " .. case.shell)
+    end
+  end, debug.traceback)
+  vim.o.shell, vim.fn.has = shell, has
+  assert(ok, err)
+end)
+
+check("an executable path containing spaces remains one argument", function()
+  local original = vim.o.shell
+  local executable = vim.fn.tempname() .. " shell with spaces.exe"
+  assert(vim.uv.fs_copyfile(vim.v.progpath, executable))
+  local ok, err = xpcall(function()
+    assert(vim.fn.executable(executable) == 1, "copied Neovim must be executable")
+    vim.o.shell = executable
+    assert(vim.deep_equal(term.shell_argv(), { executable }))
+    vim.o.shell = '"' .. executable .. '" --version'
+    assert(vim.deep_equal(term.shell_argv(), { executable, "--version" }))
+  end, debug.traceback)
+  vim.o.shell = original
+  vim.fn.delete(executable)
+  assert(ok, err)
+end)
+
 check("an actual Neovim subprocess starts in a terminal buffer", function()
   term.is_live_terminal = actual_is_live_terminal
   term.spawn = actual_spawn
-  local original_argv = term.shell_argv
-  term.shell_argv = function()
-    return { vim.v.progpath, "--version" }
-  end
+  local original_shell = vim.o.shell
+  vim.o.shell = '"' .. vim.v.progpath .. '" --version'
   local ok, err = xpcall(function()
     map("n", " v").callback()
     local win = vim.api.nvim_get_current_win()
@@ -245,7 +332,7 @@ check("an actual Neovim subprocess starts in a terminal buffer", function()
     vim.api.nvim_win_close(win, true)
     vim.api.nvim_buf_delete(buffer, { force = true })
   end, debug.traceback)
-  term.shell_argv = original_argv
+  vim.o.shell = original_shell
   term.spawn = function()
     spawns = spawns + 1
     return spawns

@@ -77,7 +77,8 @@ Keep plugin loading with Lazy and tool state with hangar.nvim.
 - Buffer-local LSP navigation follows client attachment and restores prior mappings after the last client detaches.
 - `keymaps` owns leader actions, conversions, comments, terminals and the theme picker. It keeps mode-qualified mappings across leader changes.
 - Buffer cleanup checks every candidate first and refuses modified buffers. It never runs `%bd|e#`.
-- Terminals start with argv vectors, reuse live jobs and replace exited jobs. Windows uses PowerShell with `-NoLogo`.
+- Terminals open horizontal splits below and vertical splits right. They reuse live jobs and replace exited jobs.
+- Terminal argv preserves quoted shell paths and explicit flags. Windows PowerShell defaults to `-NoLogo` when no flags exist.
 - `statusline` and `tabline` set only the global options through `%!` expressions and restore the previous values.
 - Trouble loads on `LspAttach` and supplies the statusline symbol path. The render loop never imports external plugins.
 - The theme owns bar and plugin highlights. [Appearance](appearance.md) records their sources and rendering contracts.
