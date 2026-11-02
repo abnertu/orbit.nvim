@@ -7,8 +7,10 @@ local directory = vim.fn.tempname() .. " live which key with spaces"
 
 local function run(argv)
   local result = vim.system(argv, { text = true, timeout = 120000 }):wait()
-  assert(result.code == 0, vim.inspect(argv) ..
-    " failed: " .. tostring(result.stderr or result.stdout))
+  assert(
+    result.code == 0,
+    vim.inspect(argv) .. " failed: " .. tostring(result.stderr or result.stdout)
+  )
   return result.stdout or ""
 end
 
@@ -35,15 +37,20 @@ local ok, err = xpcall(function()
   assert(cfg.options.preset == "helix")
   assert(cfg.options.win.border == "rounded")
   assert(#cfg.options.spec == 10)
-  assert(vim.api.nvim_get_commands({}).WhichKey ~= nil,
-    "real which-key command was not registered")
+  assert(vim.api.nvim_get_commands({}).WhichKey ~= nil, "real which-key command was not registered")
   -- The upstream config owns command parsing and mapping registration.
   vim.api.nvim_exec_autocmds("VimEnter", { modeline = false })
-  assert(vim.wait(5000, function() return cfg.loaded end, 20),
-    "real which-key startup did not finish")
+  assert(
+    vim.wait(5000, function()
+      return cfg.loaded
+    end, 20),
+    "real which-key startup did not finish"
+  )
   local registered = {}
   for _, mapping in ipairs(cfg.mappings) do
-    if mapping.group then registered[mapping.lhs] = mapping.group end
+    if mapping.group then
+      registered[mapping.lhs] = mapping.group
+    end
   end
   assert(next(registered) ~= nil, "which-key group mappings were not registered")
   print("PASS real which-key setup, group registration and Ex command")

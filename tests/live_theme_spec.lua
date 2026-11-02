@@ -8,8 +8,10 @@ local directory = vim.fn.tempname() .. " live theme with spaces"
 
 local function run(argv)
   local result = vim.system(argv, { text = true, timeout = 120000 }):wait()
-  assert(result.code == 0, vim.inspect(argv) ..
-    " failed: " .. tostring(result.stderr or result.stdout))
+  assert(
+    result.code == 0,
+    vim.inspect(argv) .. " failed: " .. tostring(result.stderr or result.stdout)
+  )
   return result.stdout or ""
 end
 
@@ -23,8 +25,10 @@ local ok, err = xpcall(function()
   run({ "git", "init", directory })
   run({ "git", "-C", directory, "fetch", "--depth", "1", upstream, pinned })
   run({ "git", "-C", directory, "checkout", "--detach", "FETCH_HEAD" })
-  assert(vim.trim(run({ "git", "-C", directory, "rev-parse", "HEAD" })) == pinned,
-    "upstream tokyonight revision mismatch")
+  assert(
+    vim.trim(run({ "git", "-C", directory, "rev-parse", "HEAD" })) == pinned,
+    "upstream tokyonight revision mismatch"
+  )
   vim.opt.rtp:prepend(directory)
   vim.o.termguicolors = true
 
@@ -34,7 +38,9 @@ local ok, err = xpcall(function()
   spec.config(spec, spec.opts)
   assert(vim.g.colors_name == "tokyonight-night", tostring(vim.g.colors_name))
   local palette = require("tokyonight.colors").setup({ style = "night" })
-  local function hex(value) return tonumber(value:sub(2), 16) end
+  local function hex(value)
+    return tonumber(value:sub(2), 16)
+  end
   assert(hl("FloatBorder").fg == hex(palette.blue), "FloatBorder must use tokyonight blue")
   assert(hl("DiagnosticVirtualTextError").fg == hl("DiagnosticError").fg)
   print("PASS real tokyonight starts with Orbit overrides")

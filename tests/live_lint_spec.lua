@@ -9,8 +9,10 @@ local directory = vim.fn.tempname() .. " live nvim lint with spaces"
 
 local function run(argv)
   local result = vim.system(argv, { text = true, timeout = 120000 }):wait()
-  assert(result.code == 0, vim.inspect(argv) .. " failed: "
-    .. tostring(result.stderr or result.stdout or result.code))
+  assert(
+    result.code == 0,
+    vim.inspect(argv) .. " failed: " .. tostring(result.stderr or result.stdout or result.code)
+  )
   return result.stdout or ""
 end
 
@@ -20,8 +22,10 @@ local ok, err = xpcall(function()
   run({ "git", "init", directory })
   run({ "git", "-C", directory, "fetch", "--depth", "1", source, pinned })
   run({ "git", "-C", directory, "checkout", "--detach", "FETCH_HEAD" })
-  assert(vim.trim(run({ "git", "-C", directory, "rev-parse", "HEAD" })) == pinned,
-    "nvim-lint checkout revision mismatch")
+  assert(
+    vim.trim(run({ "git", "-C", directory, "rev-parse", "HEAD" })) == pinned,
+    "nvim-lint checkout revision mismatch"
+  )
   vim.opt.rtp:prepend(directory)
 
   local orbit = require("orbit")
@@ -50,7 +54,9 @@ local ok, err = xpcall(function()
       parsed = parsed + 1
       return {
         {
-          lnum = 0, col = 0, severity = vim.diagnostic.severity.WARN,
+          lnum = 0,
+          col = 0,
+          severity = vim.diagnostic.severity.WARN,
           message = "live nvim-lint process output",
           source = "orbit-lint-live",
         },
@@ -71,31 +77,37 @@ local ok, err = xpcall(function()
   local runs = 0
   vim.api.nvim_create_autocmd("User", {
     pattern = "NvimLintRunPost",
-    callback = function() runs = runs + 1 end,
+    callback = function()
+      runs = runs + 1
+    end,
   })
   vim.api.nvim_exec_autocmds("TextChanged", { buffer = buffer, modeline = false })
-  vim.wait(250, function() return false end, 15)
-  assert(parsed == 0 and runs == 0,
-    "SQLFluff executed on the skipped TextChanged event")
+  vim.wait(250, function()
+    return false
+  end, 15)
+  assert(parsed == 0 and runs == 0, "SQLFluff executed on the skipped TextChanged event")
   assert(#vim.diagnostic.get(buffer, { namespace = ns }) == 0)
   print("PASS SQLFluff edit event does not start a real linter process")
 
   vim.api.nvim_exec_autocmds("BufWritePost", { buffer = buffer, modeline = false })
-  assert(vim.wait(10000, function()
-    local ds = vim.diagnostic.get(buffer, { namespace = ns })
-    return #ds == 1 and ds[1].message == "live nvim-lint process output"
-  end, 20), "real nvim-lint did not publish a parsed diagnostic")
-  assert(parsed == 1 and runs == 1,
-    "lint command and User event should run exactly once")
+  assert(
+    vim.wait(10000, function()
+      local ds = vim.diagnostic.get(buffer, { namespace = ns })
+      return #ds == 1 and ds[1].message == "live nvim-lint process output"
+    end, 20),
+    "real nvim-lint did not publish a parsed diagnostic"
+  )
+  assert(parsed == 1 and runs == 1, "lint command and User event should run exactly once")
   print("PASS actual Git subprocess stdout published through vim.diagnostic")
 
   -- A later edit-only event cancels a pending write lint for this buffer.
   vim.diagnostic.reset(ns, buffer)
   vim.api.nvim_exec_autocmds("BufWritePost", { buffer = buffer, modeline = false })
   vim.api.nvim_exec_autocmds("TextChanged", { buffer = buffer, modeline = false })
-  vim.wait(250, function() return false end, 15)
-  assert(parsed == 1 and runs == 1,
-    "last edit event did not replace the pending write lint")
+  vim.wait(250, function()
+    return false
+  end, 15)
+  assert(parsed == 1 and runs == 1, "last edit event did not replace the pending write lint")
   assert(#vim.diagnostic.get(buffer, { namespace = ns }) == 0)
   print("PASS per-buffer debounce respects last-event kind")
 
@@ -103,9 +115,10 @@ local ok, err = xpcall(function()
   vim.api.nvim_set_option_value("filetype", "orbitlint", { buf = wiped })
   vim.api.nvim_exec_autocmds("BufWritePost", { buffer = wiped, modeline = false })
   vim.api.nvim_buf_delete(wiped, { force = true })
-  vim.wait(250, function() return false end, 15)
-  assert(parsed == 1 and runs == 1,
-    "wiping a buffer did not cancel its scheduled linter")
+  vim.wait(250, function()
+    return false
+  end, 15)
+  assert(parsed == 1 and runs == 1, "wiping a buffer did not cancel its scheduled linter")
   print("PASS buffer wipe cancels real nvim-lint scheduling")
   vim.api.nvim_buf_delete(buffer, { force = true })
 end, debug.traceback)

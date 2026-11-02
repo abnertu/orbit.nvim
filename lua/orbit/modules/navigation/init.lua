@@ -32,8 +32,10 @@ local function oil_options(c)
     default_file_explorer = false,
     delete_to_trash = c.delete_to_trash,
     keymaps = {
-      ["<C-h>"] = false, ["<C-l>"] = false,
-      ["<C-p>"] = false, ["-"] = false,
+      ["<C-h>"] = false,
+      ["<C-l>"] = false,
+      ["<C-p>"] = false,
+      ["-"] = false,
       ["s"] = { "<cmd>write<CR>", mode = "n", desc = "sync/apply changes" },
       ["R"] = "actions.refresh",
       ["H"] = "actions.toggle_hidden",
@@ -42,8 +44,10 @@ local function oil_options(c)
       [";"] = { ":", mode = "n", desc = "command mode" },
     },
     float = {
-      max_width = 0.9, max_height = 0.9,
-      border = "rounded", preview_split = "right",
+      max_width = 0.9,
+      max_height = 0.9,
+      border = "rounded",
+      preview_split = "right",
     },
   }
 end
@@ -61,12 +65,20 @@ local function tree_options(c)
     update_focused_file = { enable = true, update_root = { enable = false } },
     view = { width = c.tree_width, preserve_window_proportions = true, signcolumn = "no" },
     renderer = {
-      root_folder_label = false, highlight_git = "all",
-      highlight_diagnostics = "all", indent_markers = { enable = true },
+      root_folder_label = false,
+      highlight_git = "all",
+      highlight_diagnostics = "all",
+      indent_markers = { enable = true },
       icons = {
         glyphs = {
           default = "󰈚",
-          folder = { default = "", empty = "", empty_open = "", open = "", symlink = "" },
+          folder = {
+            default = "",
+            empty = "",
+            empty_open = "",
+            open = "",
+            symlink = "",
+          },
           git = { unstaged = "󰄱", staged = "󰱒", unmerged = "" },
         },
         diagnostics_placement = "right_align",
@@ -82,7 +94,9 @@ end
 
 local function setup_tree(opts)
   require("nvim-tree").setup(opts)
-  if subscribed then return end
+  if subscribed then
+    return
+  end
   local api = require("nvim-tree.api")
   api.events.subscribe(api.events.Event.FileCreated, function()
     vim.api.nvim_exec_autocmds("User", { pattern = "CreateFile", modeline = false })
@@ -92,16 +106,25 @@ end
 
 ---@return LazySpec
 function M.spec()
-  if not accepted or not accepted.enabled then return {} end
+  if not accepted or not accepted.enabled then
+    return {}
+  end
   local c = vim.deepcopy(accepted)
   local specs = {}
   if c.oil then
     specs[#specs + 1] = {
       "stevearc/oil.nvim",
-      cmd = "Oil", event = "VeryLazy",
-      keys = { { "-", function()
-        require("oil").toggle_float(nil, { preview = {} })
-      end, desc = "oil toggle floating" } },
+      cmd = "Oil",
+      event = "VeryLazy",
+      keys = {
+        {
+          "-",
+          function()
+            require("oil").toggle_float(nil, { preview = {} })
+          end,
+          desc = "oil toggle floating",
+        },
+      },
       opts = oil_options(c),
     }
   end
@@ -113,10 +136,18 @@ function M.spec()
         { "<leader>fe", "<cmd>NvimTreeFocus<CR>", desc = "nvimtree focus window" },
         { "<C-Right>", "<cmd>NvimTreeResize +5<CR>", desc = "nvimtree resize +5" },
         { "<C-Left>", "<cmd>NvimTreeResize -5<CR>", desc = "nvimtree resize -5" },
-        { "<leader>fC", function() require("nvim-tree.api").fs.create() end, desc = "create file" },
+        {
+          "<leader>fC",
+          function()
+            require("nvim-tree.api").fs.create()
+          end,
+          desc = "create file",
+        },
       },
       opts = tree_options(c),
-      config = function(_, opts) setup_tree(opts) end,
+      config = function(_, opts)
+        setup_tree(opts)
+      end,
     }
   end
   if c.harpoon then
@@ -125,23 +156,38 @@ function M.spec()
       branch = "harpoon2",
       dependencies = { "nvim-lua/plenary.nvim" },
       keys = {
-        { "<C-e>", function()
-          local h = require("harpoon")
-          h.ui:toggle_quick_menu(h:list())
-        end, desc = "harpoon quick menu" },
-        { "<M-S-p>", function()
-          require("harpoon"):list():prev()
-        end, desc = "harpoon previous item" },
-        { "<M-S-n>", function()
-          require("harpoon"):list():next()
-        end, desc = "harpoon next item" },
-        { "<leader>ba", function()
-          require("harpoon"):list():add()
-        end, desc = "add buffer to harpoon" },
+        {
+          "<C-e>",
+          function()
+            local h = require("harpoon")
+            h.ui:toggle_quick_menu(h:list())
+          end,
+          desc = "harpoon quick menu",
+        },
+        {
+          "<M-S-p>",
+          function()
+            require("harpoon"):list():prev()
+          end,
+          desc = "harpoon previous item",
+        },
+        {
+          "<M-S-n>",
+          function()
+            require("harpoon"):list():next()
+          end,
+          desc = "harpoon next item",
+        },
+        {
+          "<leader>ba",
+          function()
+            require("harpoon"):list():add()
+          end,
+          desc = "add buffer to harpoon",
+        },
       },
       config = function()
-        require("orbit.modules.navigation.harpoon")
-          .setup(c.harpoon_short_path_length)
+        require("orbit.modules.navigation.harpoon").setup(c.harpoon_short_path_length)
       end,
     }
   end

@@ -31,10 +31,12 @@ end)
 check("Oil callback resolves plugin only on demand", function()
   local called = 0
   package.preload.oil = function()
-    return { toggle_float = function(_, options)
-      assert(vim.deep_equal(options, { preview = {} }))
-      called = called + 1
-    end }
+    return {
+      toggle_float = function(_, options)
+        assert(vim.deep_equal(options, { preview = {} }))
+        called = called + 1
+      end,
+    }
   end
   feature.spec()[1].keys[1][2]()
   assert(called == 1)
@@ -44,10 +46,12 @@ end)
 check("tree FileCreated callback relays one CreateFile event", function()
   local subscribers, setup_count, fired = {}, 0, 0
   package.preload["nvim-tree"] = function()
-    return { setup = function(opts)
-      assert(opts.view.width == 40)
-      setup_count = setup_count + 1
-    end }
+    return {
+      setup = function(opts)
+        assert(opts.view.width == 40)
+        setup_count = setup_count + 1
+      end,
+    }
   end
   package.preload["nvim-tree.api"] = function()
     return {
@@ -62,8 +66,13 @@ check("tree FileCreated callback relays one CreateFile event", function()
     }
   end
   local group = vim.api.nvim_create_augroup("OrbitTestCreateFile", { clear = true })
-  vim.api.nvim_create_autocmd("User", { group = group, pattern = "CreateFile",
-    callback = function() fired = fired + 1 end })
+  vim.api.nvim_create_autocmd("User", {
+    group = group,
+    pattern = "CreateFile",
+    callback = function()
+      fired = fired + 1
+    end,
+  })
   local spec = feature.spec()[2]
   spec.config(nil, spec.opts)
   spec.config(nil, spec.opts)

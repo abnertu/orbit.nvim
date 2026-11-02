@@ -7,18 +7,23 @@ function M.build_luasnip(plugin)
   local command = { "make", "install_jsregexp" }
   if vim.fn.has("win32") == 1 then
     local path = vim.uv.fs_realpath(vim.v.progpath) or vim.v.progpath
-    table.insert(command, 2, "NEOVIM_BIN_PATH=" ..
-      vim.fs.dirname(vim.fs.normalize(path)))
+    table.insert(command, 2, "NEOVIM_BIN_PATH=" .. vim.fs.dirname(vim.fs.normalize(path)))
   end
   local result = vim.system(command, { cwd = plugin.dir, text = true }):wait(120000)
   if result.code ~= 0 then
-    error("LuaSnip native build failed:\n" ..
-      tostring(result.stderr or "") .. tostring(result.stdout or ""), 0)
+    error(
+      "LuaSnip native build failed:\n"
+        .. tostring(result.stderr or "")
+        .. tostring(result.stdout or ""),
+      0
+    )
   end
 end
 
 function M.setup_luasnip(opts)
-  if snippets_started then return end
+  if snippets_started then
+    return
+  end
   local luasnip = require("luasnip")
   luasnip.config.set_config(opts)
   luasnip.filetype_extend("jsx", { "javascript", "javascriptreact" })
@@ -29,9 +34,7 @@ function M.setup_luasnip(opts)
     group = vim.api.nvim_create_augroup("OrbitSnippets", { clear = true }),
     callback = function()
       local session = luasnip.session
-      if session.current_nodes[vim.api.nvim_get_current_buf()]
-        and not session.jump_active
-      then
+      if session.current_nodes[vim.api.nvim_get_current_buf()] and not session.jump_active then
         luasnip.unlink_current()
       end
     end,
@@ -41,18 +44,19 @@ end
 
 local function detail(item)
   local value = item.detail
-  if type(value) == "table" then value = table.concat(value, "\n") end
-  if type(value) == "string" and value ~= "" then return vim.trim(value) end
+  if type(value) == "table" then
+    value = table.concat(value, "\n")
+  end
+  if type(value) == "string" and value ~= "" then
+    return vim.trim(value)
+  end
 end
 
 function M.draw_documentation(opts)
   local item = opts.item
   local lines, markdown = {}, {}
-  if type(item.documentation) == "string" or
-    type(item.documentation) == "table"
-  then
-    markdown = vim.lsp.util.convert_input_to_markdown_lines(
-      item.documentation, markdown)
+  if type(item.documentation) == "string" or type(item.documentation) == "table" then
+    markdown = vim.lsp.util.convert_input_to_markdown_lines(item.documentation, markdown)
   end
   local extra = detail(item)
   if extra and not table.concat(markdown, "\n"):find(extra, 1, true) then
@@ -74,7 +78,9 @@ function M.draw_documentation(opts)
 end
 
 function M.setup_blink(opts)
-  if blink_started then return end
+  if blink_started then
+    return
+  end
   require("orbit.modules.completion.cmdline").install(opts.cmdline.enabled)
   require("blink.cmp").setup(opts)
   blink_started = true

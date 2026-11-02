@@ -17,8 +17,7 @@ local function git(args)
   local command = { "git" }
   vim.list_extend(command, args)
   local result = vim.system(command, { text = true }):wait(15000)
-  assert(result.code == 0,
-    table.concat(command, " ") .. ": " .. tostring(result.stderr))
+  assert(result.code == 0, table.concat(command, " ") .. ": " .. tostring(result.stderr))
   return vim.trim(result.stdout)
 end
 
@@ -30,7 +29,8 @@ local function check(name, fn)
 end
 
 local function fixture(version)
-  return string.format([=[
+  return string.format(
+    [=[
 return {
   setup = function(specs, config)
     assert(specs[1].import == "orbit.plugins")
@@ -75,17 +75,33 @@ return {
     })
   end,
 }
-]=], features, features, features, version, recorded, replay)
+]=],
+    features,
+    features,
+    features,
+    version,
+    recorded,
+    replay
+  )
 end
 
 vim.fn.mkdir(vim.fs.joinpath(source, "lua", "lazy"), "p")
 git({ "init", "-b", "stable", source })
 local entry = vim.fs.joinpath(source, "lua", "lazy", "init.lua")
 local function commit_version(value)
-  vim.fn.writefile(vim.split(fixture(value), "\n", {plain=true}), entry)
+  vim.fn.writefile(vim.split(fixture(value), "\n", { plain = true }), entry)
   git({ "-C", source, "add", "." })
-  git({ "-C", source, "-c", "user.name=orbit.nvim",
-    "-c", "user.email=tests@example.invalid", "commit", "-m", value })
+  git({
+    "-C",
+    source,
+    "-c",
+    "user.name=orbit.nvim",
+    "-c",
+    "user.email=tests@example.invalid",
+    "commit",
+    "-m",
+    value,
+  })
   return git({ "-C", source, "rev-parse", "HEAD" })
 end
 
@@ -98,20 +114,25 @@ vim.fn.writefile({ vim.json.encode({
 
 local earlier = 0
 vim.api.nvim_create_autocmd("BufReadPre", {
-  group = vim.api.nvim_create_augroup("OrbitIntegrationOldRead", {clear = true}),
+  group = vim.api.nvim_create_augroup("OrbitIntegrationOldRead", { clear = true }),
   callback = function()
     earlier = earlier + 1
   end,
 })
 
 check("setup is hermetic and defers Git clone until demanded", function()
-  orbit.setup({ modules = { plugins = {
-    enabled = true,
-    bootstrap = true,
-    path = installed,
-    source = source,
-    lockfile = lockfile,
-  }, git = { marks = { change = "C" }, staged = { add = "+" } } } })
+  orbit.setup({
+    modules = {
+      plugins = {
+        enabled = true,
+        bootstrap = true,
+        path = installed,
+        source = source,
+        lockfile = lockfile,
+      },
+      git = { marks = { change = "C" }, staged = { add = "+" } },
+    },
+  })
   assert(plugins.status() == "pending")
   assert(vim.uv.fs_stat(installed) == nil)
   assert(vim.fn.filereadable(recorded) == 0)
@@ -120,23 +141,25 @@ end)
 
 check("first file-read demand clones locked revision and imports real specs", function()
   local buffer = vim.api.nvim_create_buf(true, false)
-  vim.api.nvim_exec_autocmds("BufReadPre", {buffer=buffer, modeline=false})
+  vim.api.nvim_exec_autocmds("BufReadPre", { buffer = buffer, modeline = false })
   assert(plugins.status() == "loaded")
   assert(git({ "-C", installed, "rev-parse", "HEAD" }) == locked)
-  assert(vim.deep_equal(vim.fn.readfile(recorded), {"locked"}))
-  assert(vim.deep_equal(vim.fn.readfile(features),
-    {"icons.setup", "icons.mock", "gitsigns.setup"}))
-  assert(vim.deep_equal(vim.fn.readfile(replay), {"replayed"}))
+  assert(vim.deep_equal(vim.fn.readfile(recorded), { "locked" }))
+  assert(
+    vim.deep_equal(vim.fn.readfile(features), { "icons.setup", "icons.mock", "gitsigns.setup" })
+  )
+  assert(vim.deep_equal(vim.fn.readfile(replay), { "replayed" }))
   assert(earlier == 1, "earlier observer should run once")
 end)
 
 check("later demand runs file observers but not Lazy setup again", function()
   local buffer = vim.api.nvim_create_buf(true, false)
-  vim.api.nvim_exec_autocmds("BufReadPre", {buffer=buffer, modeline=false})
-  assert(vim.deep_equal(vim.fn.readfile(recorded), {"locked"}))
-  assert(vim.deep_equal(vim.fn.readfile(replay), {"replayed", "replayed"}))
-  assert(vim.deep_equal(vim.fn.readfile(features),
-    {"icons.setup", "icons.mock", "gitsigns.setup"}))
+  vim.api.nvim_exec_autocmds("BufReadPre", { buffer = buffer, modeline = false })
+  assert(vim.deep_equal(vim.fn.readfile(recorded), { "locked" }))
+  assert(vim.deep_equal(vim.fn.readfile(replay), { "replayed", "replayed" }))
+  assert(
+    vim.deep_equal(vim.fn.readfile(features), { "icons.setup", "icons.mock", "gitsigns.setup" })
+  )
   assert(earlier == 2)
 end)
 

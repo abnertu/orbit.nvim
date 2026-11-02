@@ -15,10 +15,12 @@ local function check(label, callback)
 end
 
 check("failed later module restores option defaults and local overrides", function()
-  orbit.setup({ modules = {
-    editor = { shiftwidth = 4, number = true },
-    keymaps = { leader = " ", save = "<leader>w" },
-  } })
+  orbit.setup({
+    modules = {
+      editor = { shiftwidth = 4, number = true },
+      keymaps = { leader = " ", save = "<leader>w" },
+    },
+  })
   local buffer = vim.api.nvim_get_current_buf()
   vim.bo[buffer].shiftwidth = 7
   local accepted = orbit.get_config()
@@ -28,10 +30,12 @@ check("failed later module restores option defaults and local overrides", functi
     old_setup(opts)
     error("injected keymaps failure")
   end
-  local ok, err = pcall(orbit.setup, { modules = {
-    editor = { shiftwidth = 8, number = false },
-    keymaps = { leader = ",", save = "<leader>z" },
-  } })
+  local ok, err = pcall(orbit.setup, {
+    modules = {
+      editor = { shiftwidth = 8, number = false },
+      keymaps = { leader = ",", save = "<leader>z" },
+    },
+  })
   keymaps.setup = old_setup
 
   assert(not ok and tostring(err):find("injected keymaps failure", 1, true))
@@ -53,9 +57,10 @@ check("failed editor activation restores its own partial changes", function()
     old_setup(opts)
     error("injected editor failure")
   end
-  local ok, err = pcall(orbit.setup, { modules = {
-    editor = { shiftwidth = 9, number = false },
-  } })
+  local ok, err =
+    pcall(orbit.setup, { modules = {
+      editor = { shiftwidth = 9, number = false },
+    } })
   editor.setup = old_setup
 
   assert(not ok and tostring(err):find("injected editor failure", 1, true))
@@ -72,9 +77,10 @@ check("failed remapping restores a pre-existing mapping", function()
     old_setup(opts)
     error("injected failure")
   end
-  local ok = pcall(orbit.setup, { modules = {
-    keymaps = { leader = ",", save = "<leader>z" },
-  } })
+  local ok =
+    pcall(orbit.setup, { modules = {
+      keymaps = { leader = ",", save = "<leader>z" },
+    } })
   keymaps.setup = old_setup
   assert(not ok)
   assert(vim.fn.maparg(",z", "n") == before, "previous mapping was not restored")
@@ -83,10 +89,12 @@ check("failed remapping restores a pre-existing mapping", function()
 end)
 
 check("successful setup after a failure can replace mappings", function()
-  orbit.setup({ modules = {
-    editor = { shiftwidth = 3 },
-    keymaps = { leader = ",", save = "<leader>s" },
-  } })
+  orbit.setup({
+    modules = {
+      editor = { shiftwidth = 3 },
+      keymaps = { leader = ",", save = "<leader>s" },
+    },
+  })
   assert(vim.g.mapleader == ",")
   assert(vim.fn.maparg(",s", "n") ~= "")
   assert(vim.fn.maparg(" w", "n") == "")

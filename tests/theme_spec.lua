@@ -38,8 +38,10 @@ check("plugin start applies the scheme and Orbit overrides", function()
   assert(hl("FloatBorder").fg == hl("Function").fg, "FloatBorder must use the scheme's blue")
   assert(hl("DiagnosticUnderlineError").sp == hl("DiagnosticError").fg)
   assert(hl("SnacksPickerMatch").bold)
-  assert(hl("CursorLineNr").fg == runtime.palette().white,
-    "current line number must use Orbit's foreground")
+  assert(
+    hl("CursorLineNr").fg == runtime.palette().white,
+    "current line number must use Orbit's foreground"
+  )
 end)
 
 check("overrides survive a later colorscheme change", function()
@@ -51,7 +53,9 @@ end)
 
 check("reapplying highlights never derives a new palette from Orbit overrides", function()
   local before = runtime.palette()
-  for _ = 1, 3 do runtime.apply_highlights() end
+  for _ = 1, 3 do
+    runtime.apply_highlights()
+  end
   assert(vim.deep_equal(runtime.palette(), before), "repeated highlights changed the palette")
   assert(hl("DiagnosticInfo").fg == before.green and hl("DiagnosticHint").fg == before.purple)
   assert(hl("OrbitStFill").bg == before.statusline_bg)
@@ -81,10 +85,15 @@ end)
 check("later module failure restores the previous scheme", function()
   local accepted = orbit.get_config()
   local prior = commands.setup
-  commands.setup = function() error("injected theme rollback") end
-  local ok, err = pcall(orbit.setup, { modules = {
-    theme = { colorscheme = "habamax" }, commands = { path = settings, name = "OrbitThemeFail" },
-  } })
+  commands.setup = function()
+    error("injected theme rollback")
+  end
+  local ok, err = pcall(orbit.setup, {
+    modules = {
+      theme = { colorscheme = "habamax" },
+      commands = { path = settings, name = "OrbitThemeFail" },
+    },
+  })
   commands.setup = prior
   assert(not ok and tostring(err):find("injected theme rollback", 1, true))
   assert(vim.g.colors_name == "desert", "rollback must restore the prior scheme")
@@ -92,8 +101,12 @@ check("later module failure restores the previous scheme", function()
 end)
 
 check("disabling overrides removes the observer and the override values", function()
-  orbit.setup({ modules = { theme = { colorscheme = "desert", highlights = false },
-    commands = { path = settings } } })
+  orbit.setup({
+    modules = {
+      theme = { colorscheme = "desert", highlights = false },
+      commands = { path = settings },
+    },
+  })
   assert(not pcall(vim.api.nvim_get_autocmds, { group = "OrbitTheme" }))
   assert(not hl("SnacksPickerMatch").bold, "scheme reload must clear Orbit overrides")
   orbit.setup({ modules = { theme = { colorscheme = "desert" }, commands = { path = settings } } })
@@ -102,9 +115,15 @@ end)
 
 check("an unknown scheme warns and keeps the current scheme", function()
   local notify, warned = vim.notify, nil
-  vim.notify = function(message) warned = message end
-  orbit.setup({ modules = { theme = { colorscheme = "orbit-missing-scheme" },
-    commands = { path = settings } } })
+  vim.notify = function(message)
+    warned = message
+  end
+  orbit.setup({
+    modules = {
+      theme = { colorscheme = "orbit-missing-scheme" },
+      commands = { path = settings },
+    },
+  })
   vim.notify = notify
   assert(warned and warned:find("orbit-missing-scheme", 1, true))
   assert(vim.g.colors_name == "desert")
@@ -118,10 +137,14 @@ check("saving a selection requires an existing settings file", function()
 end)
 
 check("selection saves to existing settings and keeps other values", function()
-  assert(vim.fn.writefile({ '{"$schema": "x", "modules": {"editor": {"shiftwidth": 4}}}' },
-    settings) == 0)
+  assert(
+    vim.fn.writefile({ '{"$schema": "x", "modules": {"editor": {"shiftwidth": 4}}}' }, settings)
+      == 0
+  )
   local select, notify = vim.ui.select, vim.notify
-  vim.ui.select = function(_, _, callback) callback("habamax") end
+  vim.ui.select = function(_, _, callback)
+    callback("habamax")
+  end
   vim.notify = function() end
   require("orbit.modules.keymaps.theme").select()
   vim.ui.select, vim.notify = select, notify
@@ -135,8 +158,8 @@ end)
 
 check("invalid saves leave the settings file unchanged", function()
   local before = table.concat(vim.fn.readfile(settings, "b"), "\n")
-  local ok, err = require("orbit.settings").update(settings,
-    { "modules", "theme", "colorscheme" }, "")
+  local ok, err =
+    require("orbit.settings").update(settings, { "modules", "theme", "colorscheme" }, "")
   assert(not ok and tostring(err):find("colorscheme", 1, true))
   assert(table.concat(vim.fn.readfile(settings, "b"), "\n") == before)
   assert(#vim.fn.glob(directory .. "/*.tmp", false, true) == 0, "temporary file leaked")
@@ -145,10 +168,14 @@ end)
 check("default Tokyo Night restores editor, syntax, bar and plugin color roles", function()
   local colors = directory .. "/colors"
   vim.fn.mkdir(colors, "p")
-  vim.fn.writefile({ "highlight clear", "set background=dark", "let g:colors_name = 'tokyonight-night'" },
-    colors .. "/tokyonight-night.vim")
+  vim.fn.writefile(
+    { "highlight clear", "set background=dark", "let g:colors_name = 'tokyonight-night'" },
+    colors .. "/tokyonight-night.vim"
+  )
   vim.opt.rtp:prepend(directory)
-  orbit.setup({ modules = { theme = { colorscheme = "tokyonight-night" }, commands = { path = settings } } })
+  orbit.setup({
+    modules = { theme = { colorscheme = "tokyonight-night" }, commands = { path = settings } },
+  })
   assert(hl("Normal").fg == 0xa9b1d6 and hl("Normal").bg == 0x1a1b26)
   assert(hl("CursorLineNr").fg == 0xc0caf5 and hl("CursorLineNr").bg == nil)
   assert(hl("LineNr").fg == 0x40486a)

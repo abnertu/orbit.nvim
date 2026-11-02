@@ -42,7 +42,9 @@ check("comment shortcuts use native Neovim comment operators", function()
   vim.api.nvim_set_current_buf(buffer)
   vim.bo[buffer].commentstring = "-- %s"
   vim.api.nvim_buf_set_lines(buffer, 0, -1, false, {
-    "first line", "second line", "third line",
+    "first line",
+    "second line",
+    "third line",
   })
   local ok, err = xpcall(function()
     vim.api.nvim_win_set_cursor(0, { 1, 0 })
@@ -52,8 +54,10 @@ check("comment shortcuts use native Neovim comment operators", function()
     vim.api.nvim_win_set_cursor(0, { 2, 0 })
     vim.api.nvim_feedkeys(vim.keycode("Vj /"), "xt", false)
     lines = vim.api.nvim_buf_get_lines(buffer, 0, -1, false)
-    assert(lines[2]:match("^%-%- ") and lines[3]:match("^%-%- "),
-      "visual comment mapping did not execute")
+    assert(
+      lines[2]:match("^%-%- ") and lines[3]:match("^%-%- "),
+      "visual comment mapping did not execute"
+    )
   end, debug.traceback)
   vim.api.nvim_set_current_buf(previous)
   vim.api.nvim_buf_delete(buffer, { force = true })
@@ -63,7 +67,8 @@ end)
 local path = vim.fn.tempname() .. ".json"
 check("settings key follows the renamed command at invocation", function()
   orbit.setup({ modules = { commands = {
-    name = "OrbitActionSettings", path = path,
+    name = "OrbitActionSettings",
+    path = path,
   } } })
   mapping("n", " uc").callback()
   assert(vim.fn.filereadable(path) == 1)
@@ -79,7 +84,9 @@ check("disabled settings command warns without invoking an orphan", function()
   vim.notify = function(message, level)
     observed = { message, level }
   end
-  local ok, err = pcall(function() mapping("n", " uc").callback() end)
+  local ok, err = pcall(function()
+    mapping("n", " uc").callback()
+  end)
   vim.notify = original
   assert(ok, tostring(err))
   assert(observed and observed[1]:find("disabled", 1, true))
@@ -100,11 +107,15 @@ end)
 check("downstream failure preserves both mode maps and the leader", function()
   local accepted = orbit.get_config()
   local original = commands.setup
-  commands.setup = function() error("injected settings owner failure") end
-  local ok, err = pcall(orbit.setup, { modules = {
-    keymaps = { leader = ",", save = "<leader>w" },
-    commands = { enabled = true, name = "OrbitActionBroken", path = path },
-  } })
+  commands.setup = function()
+    error("injected settings owner failure")
+  end
+  local ok, err = pcall(orbit.setup, {
+    modules = {
+      keymaps = { leader = ",", save = "<leader>w" },
+      commands = { enabled = true, name = "OrbitActionBroken", path = path },
+    },
+  })
   commands.setup = original
   assert(not ok and tostring(err):find("injected settings owner failure", 1, true))
   assert(vim.deep_equal(orbit.get_config(), accepted))
@@ -117,7 +128,8 @@ end)
 
 check("changing leader restores original normal and visual maps", function()
   orbit.setup({ modules = { keymaps = {
-    leader = ",", save = "<leader>w",
+    leader = ",",
+    save = "<leader>w",
   } } })
   assert(mapping("n", " /").rhs == old.n_space)
   assert(mapping("v", " /").rhs == old.v_space)

@@ -19,8 +19,12 @@ check("default spec declares toggle and select keys without loading Edgy", funct
   assert(spec.keys[1][1] == "<leader>ue" and spec.keys[2][1] == "<leader>uE")
   local calls = {}
   package.loaded.edgy = {
-    toggle = function() calls[#calls + 1] = "toggle" end,
-    select = function() calls[#calls + 1] = "select" end,
+    toggle = function()
+      calls[#calls + 1] = "toggle"
+    end,
+    select = function()
+      calls[#calls + 1] = "select"
+    end,
   }
   spec.keys[1][2]()
   spec.keys[2][2]()
@@ -37,7 +41,9 @@ check("each side captures only its editor-relative Trouble split", function()
   local function accepted_by()
     local sides = {}
     for _, pos in ipairs({ "top", "bottom", "left", "right" }) do
-      if opts[pos][1].filter(0, win) then sides[#sides + 1] = pos end
+      if opts[pos][1].filter(0, win) then
+        sides[#sides + 1] = pos
+      end
     end
     return sides
   end

@@ -27,16 +27,15 @@ assert(ok, tostring(snippets))
 
 local by_trigger = {}
 for _, snippet in ipairs(snippets) do
-  assert(not by_trigger[snippet.trigger],
-    "duplicate T-SQL trigger: " .. snippet.trigger)
+  assert(not by_trigger[snippet.trigger], "duplicate T-SQL trigger: " .. snippet.trigger)
   by_trigger[snippet.trigger] = snippet
-  assert(not snippet.body:match("SELECT%s+%*"),
-    "unsafe wildcard in " .. snippet.trigger)
-  assert(not snippet.body:find("RAISERROR", 1, true),
-    "deprecated RAISERROR syntax in " .. snippet.trigger)
+  assert(not snippet.body:match("SELECT%s+%*"), "unsafe wildcard in " .. snippet.trigger)
+  assert(
+    not snippet.body:find("RAISERROR", 1, true),
+    "deprecated RAISERROR syntax in " .. snippet.trigger
+  )
 end
-assert(#snippets == 105,
-  "T-SQL snippet inventory changed: " .. #snippets)
+assert(#snippets == 105, "T-SQL snippet inventory changed: " .. #snippets)
 
 local expected = {
   cprocr = "CREATE OR ALTER PROCEDURE",
@@ -47,7 +46,6 @@ local expected = {
 }
 for trigger, text in pairs(expected) do
   assert(by_trigger[trigger], "missing T-SQL trigger " .. trigger)
-  assert(by_trigger[trigger].body:find(text, 1, true),
-    "missing expected content for " .. trigger)
+  assert(by_trigger[trigger].body:find(text, 1, true), "missing expected content for " .. trigger)
 end
 print("PASS 105 unique T-SQL declarations and representative templates")

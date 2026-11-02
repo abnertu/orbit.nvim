@@ -40,14 +40,17 @@ check("missing file uses declared defaults", function()
 end)
 
 check("valid overrides preserve defaults and boolean false", function()
-  with_settings('{"modules":{"editor":{"shiftwidth":4},"keymaps":{"enabled":false}}}', function(path)
-    local config, err, source = settings.read(path)
-    assert(config ~= nil, tostring(err))
-    assert(config.modules.editor.shiftwidth == 4)
-    assert(config.modules.editor.number == true)
-    assert(config.modules.keymaps.enabled == false)
-    assert(source.modules.editor.shiftwidth == 4)
-  end)
+  with_settings(
+    '{"modules":{"editor":{"shiftwidth":4},"keymaps":{"enabled":false}}}',
+    function(path)
+      local config, err, source = settings.read(path)
+      assert(config ~= nil, tostring(err))
+      assert(config.modules.editor.shiftwidth == 4)
+      assert(config.modules.editor.number == true)
+      assert(config.modules.keymaps.enabled == false)
+      assert(source.modules.editor.shiftwidth == 4)
+    end
+  )
 end)
 
 check("malformed JSON is rejected without rewriting source", function()

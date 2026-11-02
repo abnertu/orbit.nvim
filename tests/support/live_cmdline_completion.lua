@@ -46,7 +46,9 @@ return function(opts)
   local orbit = require("orbit")
   local source = vim.fs.normalize(debug.getinfo(orbit.setup, "S").source:sub(2))
   local installed = vim.fs.normalize(opts.installed)
-  if vim.fn.has("win32") == 1 then source, installed = source:lower(), installed:lower() end
+  if vim.fn.has("win32") == 1 then
+    source, installed = source:lower(), installed:lower()
+  end
   assert(source:sub(1, #installed + 1) == installed .. "/", "wrong native Orbit installation")
 
   ---@type string[], string[], string[], string[], table<string, integer>
@@ -55,28 +57,41 @@ return function(opts)
   local group = vim.api.nvim_create_augroup("OrbitLiveCmdline", {})
   local notify = vim.notify
   vim.notify = function(message, level, options)
-    if level and level >= vim.log.levels.ERROR then errors[#errors + 1] = tostring(message) end
+    if level and level >= vim.log.levels.ERROR then
+      errors[#errors + 1] = tostring(message)
+    end
     return notify(message, level, options)
   end
-  vim.ui_attach(vim.api.nvim_create_namespace("OrbitLiveCmdlineMessages"), { ext_messages = true },
+  vim.ui_attach(
+    vim.api.nvim_create_namespace("OrbitLiveCmdlineMessages"),
+    { ext_messages = true },
     function(event, kind, content)
       if event == "msg_show" and kind == "emsg" then
         local parts = {}
-        for _, chunk in ipairs(content) do parts[#parts + 1] = chunk[2] end
+        for _, chunk in ipairs(content) do
+          parts[#parts + 1] = chunk[2]
+        end
         errors[#errors + 1] = table.concat(parts)
       end
-    end)
+    end
+  )
   vim.api.nvim_create_autocmd({ "UIEnter", "InsertEnter", "CmdlineEnter" }, {
     group = group,
     ---@param event vim.api.keyset.create_autocmd.callback_args
-    callback = function(event) events[#events + 1] = event.event end,
+    callback = function(event)
+      events[#events + 1] = event.event
+    end,
   })
   vim.api.nvim_create_autocmd("User", {
-    group = group, pattern = "VeryLazy",
-    callback = function() events[#events + 1] = "VeryLazy" end,
+    group = group,
+    pattern = "VeryLazy",
+    callback = function()
+      events[#events + 1] = "VeryLazy"
+    end,
   })
   vim.api.nvim_create_autocmd("User", {
-    group = group, pattern = "LazyLoad",
+    group = group,
+    pattern = "LazyLoad",
     ---@param event {data: string}
     callback = function(event)
       loaded[event.data] = (loaded[event.data] or 0) + 1
@@ -84,35 +99,53 @@ return function(opts)
     end,
   })
   vim.api.nvim_create_autocmd("User", {
-    group = group, pattern = "BlinkCmpAccept",
+    group = group,
+    pattern = "BlinkCmpAccept",
     ---@param event {data: {item: {label: string}}}
-    callback = function(event) accepts[#accepts + 1] = event.data.item.label end,
+    callback = function(event)
+      accepts[#accepts + 1] = event.data.item.label
+    end,
   })
   for _, name in ipairs({ "OrbitCmdlineAlpha", "OrbitCmdlineBeta", "OrbitCmdlineGamma" }) do
-    vim.api.nvim_create_user_command(name, function() executed[#executed + 1] = name end, {})
+    vim.api.nvim_create_user_command(name, function()
+      executed[#executed + 1] = name
+    end, {})
   end
   vim.bo.filetype = "text"
   vim.api.nvim_buf_set_lines(buffer, 0, -1, false, {
-    "orbitSearchUniqueBackward", "editor anchor", "orbitSearchUniqueForward",
+    "orbitSearchUniqueBackward",
+    "editor anchor",
+    "orbitSearchUniqueForward",
   })
   vim.api.nvim_win_set_cursor(editor, { 2, 0 })
 
-  local manifest = vim.json.decode(table.concat(vim.fn.readfile(
-    vim.fs.joinpath(opts.installed, "lua/orbit/modules/manifest.json")), "\n"))
+  local manifest = vim.json.decode(
+    table.concat(
+      vim.fn.readfile(vim.fs.joinpath(opts.installed, "lua/orbit/modules/manifest.json")),
+      "\n"
+    )
+  )
   local modules = {}
-  for _, name in ipairs(manifest.order) do modules[name] = { enabled = false } end
+  for _, name in ipairs(manifest.order) do
+    modules[name] = { enabled = false }
+  end
   modules.completion = { enabled = opts.completion, cmdline = opts.cmdline }
   modules.corekeys = { enabled = true }
   modules.messages = { enabled = opts.messages }
-  modules.plugins = { enabled = true, path = opts.dependencies["lazy.nvim"], import = "live_cmdline_paths" }
+  modules.plugins =
+    { enabled = true, path = opts.dependencies["lazy.nvim"], import = "live_cmdline_paths" }
   local options = { modules = modules }
 
   ---@param spec string|LazyPluginSpec
   ---@return LazyPluginSpec
   local function localize(spec)
-    if type(spec) == "string" then spec = { spec } end
+    if type(spec) == "string" then
+      spec = { spec }
+    end
     spec.dir = assert(opts.dependencies[spec[1]:match("[^/]+$")], spec[1])
-    if type(spec.dependencies) == "string" then spec.dependencies = { spec.dependencies } end
+    if type(spec.dependencies) == "string" then
+      spec.dependencies = { spec.dependencies }
+    end
     for index, dependency in ipairs(spec.dependencies or {}) do
       spec.dependencies[index] = localize(dependency)
     end
@@ -126,11 +159,16 @@ return function(opts)
       for index, spec in ipairs(specs) do
         specs[index] = localize(spec)
         -- Native binary distribution is a separate acceptance gate.
-        if spec[1] == "saghen/blink.cmp" then spec.opts.fuzzy.implementation = "lua" end
+        if spec[1] == "saghen/blink.cmp" then
+          spec.opts.fuzzy.implementation = "lua"
+        end
       end
       return specs
     end,
-    repeat_setup = function() orbit.setup(options); orbit.setup(options) end,
+    repeat_setup = function()
+      orbit.setup(options)
+      orbit.setup(options)
+    end,
     ---@return Orbit.LiveCmdlineSnapshot
     snapshot = function()
       local cmp = package.loaded["blink.cmp"]
@@ -141,36 +179,57 @@ return function(opts)
       local next_mapping = vim.fn.maparg("<C-j>", "c", false, true)
       local items = {}
       if type(cmp) == "table" then
-        for _, item in ipairs(cmp.get_items()) do items[#items + 1] = item.label end
+        for _, item in ipairs(cmp.get_items()) do
+          items[#items + 1] = item.label
+        end
       end
       ---@type Orbit.LiveCmdlineWindow[]
       local windows = {}
       for _, window in ipairs(vim.api.nvim_list_wins()) do
         local buf = vim.api.nvim_win_get_buf(window)
-        windows[#windows + 1] = { id = window, ft = vim.bo[buf].filetype,
+        windows[#windows + 1] = {
+          id = window,
+          ft = vim.bo[buf].filetype,
           floating = vim.api.nvim_win_get_config(window).relative ~= "",
-          lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false) }
+          lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false),
+        }
       end
       return {
         mode = vim.api.nvim_get_mode().mode,
-        command = vim.fn.getcmdline(), command_type = vim.fn.getcmdtype(),
-        blink = type(cmp) == "table", noice = type(noice) == "table",
+        command = vim.fn.getcmdline(),
+        command_type = vim.fn.getcmdtype(),
+        blink = type(cmp) == "table",
+        noice = type(noice) == "table",
         ready = type(trigger) == "table" and trigger.cmdline_events ~= nil,
         noice_running = type(config) == "table" and config.is_running() or false,
         visible = type(cmp) == "table" and cmp.is_visible() or false,
         selected = selected and selected.label or "",
         selected_index = type(cmp) == "table" and cmp.get_selected_item_idx() or 0,
-        items = items, windows = windows, loaded = loaded, events = events,
-        accepts = accepts, executed = executed, errors = errors, errmsg = vim.v.errmsg,
-        editor = editor, editor_buffer = vim.api.nvim_win_get_buf(editor),
+        items = items,
+        windows = windows,
+        loaded = loaded,
+        events = events,
+        accepts = accepts,
+        executed = executed,
+        errors = errors,
+        errmsg = vim.v.errmsg,
+        editor = editor,
+        editor_buffer = vim.api.nvim_win_get_buf(editor),
         current_window = vim.api.nvim_get_current_win(),
         lines = vim.api.nvim_buf_get_lines(buffer, 0, -1, false),
         cursor = vim.api.nvim_win_get_cursor(editor),
-        next_mapping = { callback = type(next_mapping.callback) == "function",
-          expr = next_mapping.expr or 0, rhs = next_mapping.rhs or "", desc = next_mapping.desc or "" },
+        next_mapping = {
+          callback = type(next_mapping.callback) == "function",
+          expr = next_mapping.expr or 0,
+          rhs = next_mapping.rhs or "",
+          desc = next_mapping.desc or "",
+        },
       }
     end,
   }
   orbit.setup(options)
-  assert(not package.loaded["blink.cmp"] and not package.loaded.noice, "eager commandline plugin import")
+  assert(
+    not package.loaded["blink.cmp"] and not package.loaded.noice,
+    "eager commandline plugin import"
+  )
 end

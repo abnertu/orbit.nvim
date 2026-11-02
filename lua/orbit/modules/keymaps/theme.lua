@@ -3,7 +3,9 @@
 local M = {}
 
 local function apply(name)
-  if type(name) ~= "string" or name == "" then return false end
+  if type(name) ~= "string" or name == "" then
+    return false
+  end
   local ok, err = pcall(vim.cmd.colorscheme, name)
   if not ok then
     vim.notify("[theme] " .. tostring(err), vim.log.levels.WARN)
@@ -20,13 +22,19 @@ function M.select()
   end
   table.sort(names)
   vim.ui.select(names, { prompt = "Select colorscheme" }, function(choice)
-    if not choice or not apply(choice) then return end
-    if not package.loaded["orbit.modules.theme.runtime"] then return end
+    if not choice or not apply(choice) then
+      return
+    end
+    if not package.loaded["orbit.modules.theme.runtime"] then
+      return
+    end
     -- The theme owner saves the choice only to an existing settings file.
     local saved, err = require("orbit.modules.theme.runtime").persist(choice)
     if not saved then
-      vim.notify("[theme] " .. choice .. " applies to this session: " .. tostring(err),
-        vim.log.levels.INFO)
+      vim.notify(
+        "[theme] " .. choice .. " applies to this session: " .. tostring(err),
+        vim.log.levels.INFO
+      )
     end
   end)
 end
@@ -41,8 +49,7 @@ function M.reload()
   end
   local ok = apply(current)
   if ok then
-    vim.notify("Theme reloaded", vim.log.levels.INFO,
-      { title = "orbit.nvim theme" })
+    vim.notify("Theme reloaded", vim.log.levels.INFO, { title = "orbit.nvim theme" })
   end
   return ok
 end

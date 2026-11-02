@@ -13,10 +13,15 @@ end
 -- Lazy activation is restart-only, so the command is registered once and
 -- never replaces a user-owned TSInstallAll.
 function M.setup()
-  if registered then return end
+  if registered then
+    return
+  end
   if vim.api.nvim_get_commands({}).TSInstallAll ~= nil then
-    vim.notify("TSInstallAll already exists; Orbit leaves it unchanged",
-      vim.log.levels.WARN, { title = "orbit.nvim Tree-sitter" })
+    vim.notify(
+      "TSInstallAll already exists; Orbit leaves it unchanged",
+      vim.log.levels.WARN,
+      { title = "orbit.nvim Tree-sitter" }
+    )
     return
   end
   vim.api.nvim_create_user_command("TSInstallAll", function()

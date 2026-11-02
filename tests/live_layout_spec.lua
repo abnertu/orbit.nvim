@@ -10,8 +10,10 @@ local base = vim.fn.tempname() .. " live layout with spaces"
 
 local function run(argv)
   local result = vim.system(argv, { text = true, timeout = 120000 }):wait()
-  assert(result.code == 0, vim.inspect(argv) ..
-    " failed: " .. tostring(result.stderr or result.stdout))
+  assert(
+    result.code == 0,
+    vim.inspect(argv) .. " failed: " .. tostring(result.stderr or result.stdout)
+  )
   return result.stdout or ""
 end
 
@@ -28,8 +30,10 @@ local ok, err = xpcall(function()
     run({ "git", "init", directory })
     run({ "git", "-C", directory, "fetch", "--depth", "1", pin[1], pin[2] })
     run({ "git", "-C", directory, "checkout", "--detach", "FETCH_HEAD" })
-    assert(vim.trim(run({ "git", "-C", directory, "rev-parse", "HEAD" })) == pin[2],
-      "upstream revision mismatch: " .. pin[1])
+    assert(
+      vim.trim(run({ "git", "-C", directory, "rev-parse", "HEAD" })) == pin[2],
+      "upstream revision mismatch: " .. pin[1]
+    )
     vim.opt.rtp:prepend(directory)
   end
   vim.o.laststatus = 3
@@ -50,36 +54,57 @@ local ok, err = xpcall(function()
   local ns = vim.api.nvim_create_namespace("orbit.live.layout")
   vim.api.nvim_buf_set_lines(buffer, 0, -1, false, { "local value = 1" })
   vim.diagnostic.set(ns, buffer, {
-    { lnum = 0, col = 0, message = "live layout diagnostic",
-      severity = vim.diagnostic.severity.WARN },
+    {
+      lnum = 0,
+      col = 0,
+      message = "live layout diagnostic",
+      severity = vim.diagnostic.severity.WARN,
+    },
   })
 
   local trouble = require("trouble")
   for _, pos in ipairs({ "right", "bottom" }) do
     local view = trouble.open({
-      mode = "diagnostics", new = true, focus = false, auto_preview = false,
+      mode = "diagnostics",
+      new = true,
+      focus = false,
+      auto_preview = false,
       win = { position = pos, type = "split", relative = "editor" },
     })
-    assert(vim.wait(10000, function()
-      return view.win and view.win.win and vim.api.nvim_win_is_valid(view.win.win)
-        and managed(view.win.win) == pos
-    end, 50), "Edgy did not place the " .. pos .. " Trouble view")
-    assert(managed(unrelated) == nil and managed(main) == nil,
-      "Edgy captured an unrelated window")
+    assert(
+      vim.wait(10000, function()
+        return view.win
+          and view.win.win
+          and vim.api.nvim_win_is_valid(view.win.win)
+          and managed(view.win.win) == pos
+      end, 50),
+      "Edgy did not place the " .. pos .. " Trouble view"
+    )
+    assert(managed(unrelated) == nil and managed(main) == nil, "Edgy captured an unrelated window")
     trouble.close("diagnostics")
-    assert(vim.wait(10000, function() return not trouble.is_open("diagnostics") end, 50))
+    assert(vim.wait(10000, function()
+      return not trouble.is_open("diagnostics")
+    end, 50))
     print("PASS real Edgy places the " .. pos .. " Trouble view")
   end
 
   local view = trouble.open({
-    mode = "diagnostics", new = true, focus = false, auto_preview = false,
+    mode = "diagnostics",
+    new = true,
+    focus = false,
+    auto_preview = false,
     win = { position = "right", type = "split", relative = "editor" },
   })
-  assert(vim.wait(10000, function() return view.win.win and managed(view.win.win) end, 50))
-  layout.keys[1][2]()
   assert(vim.wait(10000, function()
-    return not (view.win.win and vim.api.nvim_win_is_valid(view.win.win))
-  end, 50), "toggle key did not close the side layout")
+    return view.win.win and managed(view.win.win)
+  end, 50))
+  layout.keys[1][2]()
+  assert(
+    vim.wait(10000, function()
+      return not (view.win.win and vim.api.nvim_win_is_valid(view.win.win))
+    end, 50),
+    "toggle key did not close the side layout"
+  )
   assert(vim.api.nvim_win_is_valid(main) and vim.api.nvim_win_is_valid(unrelated))
   print("PASS layout toggle key closes only the side layout")
   vim.diagnostic.reset(ns, buffer)

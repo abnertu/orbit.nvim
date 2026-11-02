@@ -11,8 +11,10 @@ local protocol_error
 
 local function run(argv)
   local result = vim.system(argv, { text = true, timeout = 120000 }):wait()
-  assert(result.code == 0, vim.inspect(argv) .. " failed: "
-    .. tostring(result.stderr or result.stdout or result.code))
+  assert(
+    result.code == 0,
+    vim.inspect(argv) .. " failed: " .. tostring(result.stderr or result.stdout or result.code)
+  )
   return result.stdout or ""
 end
 
@@ -28,8 +30,10 @@ local ok, err = xpcall(function()
   run({ "git", "init", directory })
   run({ "git", "-C", directory, "fetch", "--depth", "1", source, pinned })
   run({ "git", "-C", directory, "checkout", "--detach", "FETCH_HEAD" })
-  assert(vim.trim(run({ "git", "-C", directory, "rev-parse", "HEAD" })) == pinned,
-    "nvim-dap checkout revision mismatch")
+  assert(
+    vim.trim(run({ "git", "-C", directory, "rev-parse", "HEAD" })) == pinned,
+    "nvim-dap checkout revision mismatch"
+  )
   vim.opt.rtp:prepend(directory)
 
   local orbit = require("orbit")
@@ -41,13 +45,16 @@ local ok, err = xpcall(function()
   assert(type(spec.config) == "function")
   spec.config()
   local dap = require("dap")
-  assert(type(dap.adapters.python) == "function",
-    "Orbit failed to register Python through real nvim-dap")
-  assert(#dap.configurations.python == 2,
-    "Orbit did not register real nvim-dap Python configurations")
+  assert(
+    type(dap.adapters.python) == "function",
+    "Orbit failed to register Python through real nvim-dap"
+  )
+  assert(
+    #dap.configurations.python == 2,
+    "Orbit did not register real nvim-dap Python configurations"
+  )
   spec.config()
-  assert(#dap.configurations.python == 2,
-    "repeated callback registered duplicate configurations")
+  assert(#dap.configurations.python == 2, "repeated callback registered duplicate configurations")
   print("PASS pinned real nvim-dap Lazy activation and adapter ownership")
 
   local requests = {}
@@ -60,12 +67,18 @@ local ok, err = xpcall(function()
   local function respond(req, body)
     sequence = sequence + 1
     send({
-      seq = sequence, type = "response", success = true,
-      command = req.command, request_seq = req.seq, body = body or {},
+      seq = sequence,
+      type = "response",
+      success = true,
+      command = req.command,
+      request_seq = req.seq,
+      body = body or {},
     })
   end
   local function on_message(request)
-    if request.type ~= "request" then return end
+    if request.type ~= "request" then
+      return
+    end
     requests[#requests + 1] = request
     if request.command == "initialize" then
       assert(request.arguments.clientID == "neovim")
@@ -94,11 +107,15 @@ local ok, err = xpcall(function()
     received = received .. chunk
     while true do
       local finish = received:find("\r\n\r\n", 1, true)
-      if not finish then return end
+      if not finish then
+        return
+      end
       local header = received:sub(1, finish - 1)
       local length = tonumber(header:match("[Cc]ontent%-[Ll]ength:%s*(%d+)"))
       assert(length and length > 0, "missing DAP Content-Length header")
-      if #received < finish + 3 + length then return end
+      if #received < finish + 3 + length then
+        return
+      end
       local body = received:sub(finish + 4, finish + 3 + length)
       received = received:sub(finish + 4 + length)
       on_message(vim.json.decode(body))
@@ -115,10 +132,19 @@ local ok, err = xpcall(function()
     client = assert(vim.uv.new_tcp())
     assert(listener:accept(client))
     client:read_start(function(read_error, chunk)
-      if read_error then protocol_error = tostring(read_error); return end
-      if not chunk then return end
-      local valid, message = xpcall(function() consume(chunk) end, debug.traceback)
-      if not valid then protocol_error = message end
+      if read_error then
+        protocol_error = tostring(read_error)
+        return
+      end
+      if not chunk then
+        return
+      end
+      local valid, message = xpcall(function()
+        consume(chunk)
+      end, debug.traceback)
+      if not valid then
+        protocol_error = message
+      end
     end)
   end))
 
@@ -129,29 +155,46 @@ local ok, err = xpcall(function()
   vim.api.nvim_buf_set_lines(buffer, 0, -1, false, { "print('DAP fixture')" })
   dap.set_breakpoint()
   local bps = require("dap.breakpoints").get(buffer)
-  assert(type(bps[buffer]) == "table" and #bps[buffer] == 1,
-    "real nvim-dap breakpoint was not recorded")
+  assert(
+    type(bps[buffer]) == "table" and #bps[buffer] == 1,
+    "real nvim-dap breakpoint was not recorded"
+  )
 
   local config = {
-    type = "python", request = "attach", name = "Orbit live Python attach",
+    type = "python",
+    request = "attach",
+    name = "Orbit live Python attach",
     connect = { host = "127.0.0.1", port = port },
   }
   dap.run(config)
   local ready = vim.wait(12000, function()
-    return protocol_error ~= nil or (dap.session() ~= nil
-      and dap.session().initialized == true)
+    return protocol_error ~= nil or (dap.session() ~= nil and dap.session().initialized == true)
   end, 20)
   assert(protocol_error == nil, tostring(protocol_error))
-  assert(ready and dap.session() and dap.session().initialized,
-    "real nvim-dap did not complete DAP initialize/attach/configurationDone")
-  local names = vim.tbl_map(function(req) return req.command end, requests)
-  assert(vim.deep_equal(names, {
-    "initialize", "attach", "setBreakpoints", "configurationDone",
-  }), "DAP message order or breakpoint registration failed: " .. vim.inspect(names))
-  assert(requests[3].arguments.source.path ~= nil,
-    "real DAP setBreakpoints was missing the source path")
-  assert(requests[3].arguments.breakpoints[1].line == 1,
-    "real DAP setBreakpoints had an incorrect source line")
+  assert(
+    ready and dap.session() and dap.session().initialized,
+    "real nvim-dap did not complete DAP initialize/attach/configurationDone"
+  )
+  local names = vim.tbl_map(function(req)
+    return req.command
+  end, requests)
+  assert(
+    vim.deep_equal(names, {
+      "initialize",
+      "attach",
+      "setBreakpoints",
+      "configurationDone",
+    }),
+    "DAP message order or breakpoint registration failed: " .. vim.inspect(names)
+  )
+  assert(
+    requests[3].arguments.source.path ~= nil,
+    "real DAP setBreakpoints was missing the source path"
+  )
+  assert(
+    requests[3].arguments.breakpoints[1].line == 1,
+    "real DAP setBreakpoints had an incorrect source line"
+  )
   print("PASS real DAP TCP initialize/attach/breakpoints/configurationDone")
 
   local disconnected = false
@@ -159,13 +202,19 @@ local ok, err = xpcall(function()
     assert(not failure, "real DAP disconnect failed")
     disconnected = true
   end)
-  assert(vim.wait(12000, function()
-    return protocol_error ~= nil or disconnected
-  end, 20), "real DAP disconnect did not acknowledge")
+  assert(
+    vim.wait(12000, function()
+      return protocol_error ~= nil or disconnected
+    end, 20),
+    "real DAP disconnect did not acknowledge"
+  )
   assert(not protocol_error, tostring(protocol_error))
-  assert(vim.wait(5000, function()
-    return dap.session() == nil
-  end, 20), "real DAP session stayed registered after disconnect")
+  assert(
+    vim.wait(5000, function()
+      return dap.session() == nil
+    end, 20),
+    "real DAP session stayed registered after disconnect"
+  )
   assert(requests[#requests].command == "disconnect")
   print("PASS real DAP TCP disconnect and client session cleanup")
   dap.clear_breakpoints()

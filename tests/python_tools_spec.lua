@@ -24,14 +24,18 @@ local function old_exists()
   return vim.fn.filereadable(vim.fs.joinpath(target, "old.pyi")) == 1
 end
 local function restore_old()
-  if vim.fn.isdirectory(target) == 0 then assert(vim.fn.mkdir(target, "p") == 1) end
+  if vim.fn.isdirectory(target) == 0 then
+    assert(vim.fn.mkdir(target, "p") == 1)
+  end
   assert(vim.fn.writefile({ "old stub" }, vim.fs.joinpath(target, "old.pyi")) == 0)
 end
 local function assert_no_backup()
   local scan = vim.uv.fs_scandir(vim.fs.joinpath(project, "typings"))
   while scan do
     local name = vim.uv.fs_scandir_next(scan)
-    if not name then break end
+    if not name then
+      break
+    end
     assert(not name:match("^%.orbit%-stub%-"), "backup leaked: " .. name)
   end
 end
@@ -46,7 +50,9 @@ end)
 check("spawn failure restores original directory after delayed selection", function()
   vim.api.nvim_set_current_dir(project)
   local choose, notified, seen
-  vim.notify = function(msg) notified = msg end
+  vim.notify = function(msg)
+    notified = msg
+  end
   vim.ui.select = function(items, opts, cb)
     assert(vim.deep_equal(items, { "pkg" }))
     assert(opts.prompt == "Choose existing stub")
@@ -71,9 +77,13 @@ check("spawn failure restores original directory after delayed selection", funct
 end)
 
 check("nonzero exit restores old stub after partial generation", function()
-  vim.ui.select = function(_, _, cb) cb("pkg") end
+  vim.ui.select = function(_, _, cb)
+    cb("pkg")
+  end
   local notified
-  vim.notify = function(msg) notified = msg end
+  vim.notify = function(msg)
+    notified = msg
+  end
   vim.fn.jobstart = function(_, opts)
     assert(vim.fn.mkdir(target, "p") == 1)
     assert(vim.fn.writefile({ "partial" }, vim.fs.joinpath(target, "partial.pyi")) == 0)
@@ -81,7 +91,9 @@ check("nonzero exit restores old stub after partial generation", function()
     return 1
   end
   vim.cmd.PyrightReCreateStub()
-  assert(vim.wait(2000, function() return notified ~= nil end, 10))
+  assert(vim.wait(2000, function()
+    return notified ~= nil
+  end, 10))
   assert(notified:find("code 3", 1, true))
   assert(old_exists())
   assert(vim.fn.filereadable(vim.fs.joinpath(target, "partial.pyi")) == 0)
@@ -96,9 +108,13 @@ check("successful replacement removes old stub only after new output exists", fu
     return 1
   end
   local notified
-  vim.notify = function(msg) notified = msg end
+  vim.notify = function(msg)
+    notified = msg
+  end
   vim.cmd.PyrightReCreateStub()
-  assert(vim.wait(2000, function() return notified ~= nil end, 10))
+  assert(vim.wait(2000, function()
+    return notified ~= nil
+  end, 10))
   assert(not old_exists())
   assert(vim.fn.filereadable(vim.fs.joinpath(target, "new.pyi")) == 1)
   assert_no_backup()

@@ -31,8 +31,10 @@ function M.open_lsp_references()
   local trouble = require("trouble")
   trouble.close({ mode = "lsp" })
   trouble.open({
-    mode = "lsp", auto_refresh = false,
-    win = { position = "right" }, focus = false,
+    mode = "lsp",
+    auto_refresh = false,
+    win = { position = "right" },
+    focus = false,
   })
 end
 
@@ -63,22 +65,48 @@ function M.spec()
           diagnostic_preview_float = {
             mode = "diagnostics",
             preview = {
-              type = "float", relative = "editor",
-              border = c.preview_border, title = " Preview ",
-              title_pos = "center", position = { 0, -2 },
-              size = { width = c.preview_width_percent / 100, height = c.preview_height_percent / 100 },
+              type = "float",
+              relative = "editor",
+              border = c.preview_border,
+              title = " Preview ",
+              title_pos = "center",
+              position = { 0, -2 },
+              size = {
+                width = c.preview_width_percent / 100,
+                height = c.preview_height_percent / 100,
+              },
               zindex = 200,
             },
           },
         },
       },
       keys = {
-        { "<leader>td", "<cmd>Trouble diagnostic_preview_float toggle win.position=bottom<cr>", desc = "diagnostics (trouble)" },
-        { "<leader>tD", "<cmd>Trouble diagnostic_preview_float toggle filter.buf=0 win.position=bottom<cr>", desc = "buffer diagnostics (trouble)" },
-        { "<leader>cs", "<cmd>Trouble symbols toggle focus=false win.position=right<cr>", desc = "symbols (trouble)" },
+        {
+          "<leader>td",
+          "<cmd>Trouble diagnostic_preview_float toggle win.position=bottom<cr>",
+          desc = "diagnostics (trouble)",
+        },
+        {
+          "<leader>tD",
+          "<cmd>Trouble diagnostic_preview_float toggle filter.buf=0 win.position=bottom<cr>",
+          desc = "buffer diagnostics (trouble)",
+        },
+        {
+          "<leader>cs",
+          "<cmd>Trouble symbols toggle focus=false win.position=right<cr>",
+          desc = "symbols (trouble)",
+        },
         { "<leader>cL", M.open_lsp_references, desc = "lsp references (trouble)" },
-        { "<leader>tL", "<cmd>Trouble loclist toggle win.position=bottom<cr>", desc = "location list (trouble)" },
-        { "<leader>tQ", "<cmd>Trouble qflist toggle win.position=bottom<cr>", desc = "quickfix list (trouble)" },
+        {
+          "<leader>tL",
+          "<cmd>Trouble loclist toggle win.position=bottom<cr>",
+          desc = "location list (trouble)",
+        },
+        {
+          "<leader>tQ",
+          "<cmd>Trouble qflist toggle win.position=bottom<cr>",
+          desc = "quickfix list (trouble)",
+        },
       },
     }
   end
@@ -88,10 +116,20 @@ function M.spec()
       event = "User FilePost",
       dependencies = { "nvim-lua/plenary.nvim" },
       keys = {
-        { "<leader>st", function() todo_picker() end, desc = "Todo" },
-        { "<leader>sT", function()
-          todo_picker({ "TODO", "FIX", "FIXME", "WORKAROUND" })
-        end, desc = "Todo/Fix/Fixme/Workaround" },
+        {
+          "<leader>st",
+          function()
+            todo_picker()
+          end,
+          desc = "Todo",
+        },
+        {
+          "<leader>sT",
+          function()
+            todo_picker({ "TODO", "FIX", "FIXME", "WORKAROUND" })
+          end,
+          desc = "Todo/Fix/Fixme/Workaround",
+        },
       },
       opts = {
         keywords = {

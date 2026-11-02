@@ -56,15 +56,21 @@ end)
 check("TODO shortcuts and setup invoke their owned plugin APIs", function()
   local picked, configured = {}, 0
   package.preload.snacks = function()
-    return { picker = { todo_comments = function(opts)
-      picked[#picked + 1] = opts or {}
-    end } }
+    return {
+      picker = {
+        todo_comments = function(opts)
+          picked[#picked + 1] = opts or {}
+        end,
+      },
+    }
   end
   package.preload["todo-comments"] = function()
-    return { setup = function(opts)
-      assert(opts.keywords.WORKAROUND.color == "warning")
-      configured = configured + 1
-    end }
+    return {
+      setup = function(opts)
+        assert(opts.keywords.WORKAROUND.color == "warning")
+        configured = configured + 1
+      end,
+    }
   end
   local todo = diagnostics.spec()[2]
   todo.keys[1][2]()
@@ -78,9 +84,12 @@ end)
 
 check("invalid size is rejected without replacing configuration", function()
   local previous = orbit.get_config()
-  local ok, err = pcall(orbit.setup, { modules = {
-    diagnostics_plugins = { preview_width_percent = 200 },
-  } })
+  local ok, err = pcall(
+    orbit.setup,
+    { modules = {
+      diagnostics_plugins = { preview_width_percent = 200 },
+    } }
+  )
   assert(not ok and tostring(err):find("preview_width_percent", 1, true))
   assert(vim.deep_equal(previous, orbit.get_config()))
 end)

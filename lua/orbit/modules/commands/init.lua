@@ -30,10 +30,11 @@ local function initialize(path)
   local parent = vim.fs.dirname(path)
   vim.fn.mkdir(parent, "p")
   assert(vim.fn.isdirectory(parent) == 1, "cannot create settings directory: " .. parent)
-  local schema = assert(vim.api.nvim_get_runtime_file("settings.schema.json", false)[1],
-    "settings schema is missing")
-  local content = "{\n  \"$schema\": " ..
-    vim.json.encode(vim.uri_from_fname(schema)) .. "\n}\n"
+  local schema = assert(
+    vim.api.nvim_get_runtime_file("settings.schema.json", false)[1],
+    "settings schema is missing"
+  )
+  local content = '{\n  "$schema": ' .. vim.json.encode(vim.uri_from_fname(schema)) .. "\n}\n"
 
   -- Open exclusively. Never truncate an existing user settings file.
   local handle, open_error, open_code = vim.uv.fs_open(path, "wx", 420)
@@ -45,8 +46,9 @@ local function initialize(path)
   local closed, close_error = vim.uv.fs_close(handle)
   if not written or written ~= #content or not closed then
     vim.uv.fs_unlink(path)
-    error("failed to initialize settings: " ..
-      tostring(write_error or close_error or "short write"))
+    error(
+      "failed to initialize settings: " .. tostring(write_error or close_error or "short write")
+    )
   end
 end
 
@@ -140,11 +142,12 @@ function M.setup(opts)
     owned_name, owned_path = nil, nil
     return
   end
-  assert(opts.name:match("^[A-Z][A-Za-z0-9]*$"),
-    "command name must begin with an uppercase letter")
+  assert(opts.name:match("^[A-Z][A-Za-z0-9]*$"), "command name must begin with an uppercase letter")
   if owned_name ~= opts.name then
-    assert(vim.api.nvim_get_commands({})[opts.name] == nil,
-      "refusing to overwrite existing user command: " .. opts.name)
+    assert(
+      vim.api.nvim_get_commands({})[opts.name] == nil,
+      "refusing to overwrite existing user command: " .. opts.name
+    )
     if owned_name then
       vim.api.nvim_del_user_command(owned_name)
     end

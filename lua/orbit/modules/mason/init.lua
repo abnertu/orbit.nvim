@@ -28,12 +28,16 @@ end
 ---Add Mason's bin directory to PATH once, so servers resolve before Mason loads.
 ---@param mode 'skip'|'prepend'|'append'
 function M.add_bin_to_path(mode)
-  if mode == "skip" then return end
+  if mode == "skip" then
+    return
+  end
   local bin = vim.fs.joinpath(vim.fn.stdpath("data"), "mason", "bin")
   local separator = vim.fn.has("win32") == 1 and ";" or ":"
   local path = vim.env.PATH or ""
   for entry in vim.gsplit(path, separator, { plain = true }) do
-    if vim.fs.normalize(entry) == vim.fs.normalize(bin) then return end
+    if vim.fs.normalize(entry) == vim.fs.normalize(bin) then
+      return
+    end
   end
   vim.env.PATH = mode == "prepend" and (bin .. separator .. path) or (path .. separator .. bin)
 end
@@ -49,7 +53,9 @@ function M.spec()
       "williamboman/mason.nvim",
       cmd = { "Mason", "MasonInstall", "MasonUpdate" },
       -- Mason loads only on its commands; Orbit owns PATH at startup instead.
-      init = function() M.add_bin_to_path(c.path_mode) end,
+      init = function()
+        M.add_bin_to_path(c.path_mode)
+      end,
       opts = {
         PATH = "skip",
         ui = {

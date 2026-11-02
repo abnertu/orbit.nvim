@@ -62,11 +62,19 @@ local function isolated(run)
         -- Kill only the child process tree, never the hosting CI console.
         local pid = vim.fn.jobpid(job)
         assert(pid > 0, "terminal job has no OS process ID")
-        local stopped = vim.system({
-          "taskkill.exe", "/F", "/T", "/PID", tostring(pid),
-        }, { text = true, timeout = 15000 }):wait()
-        assert(stopped.code == 0 or not alive(job),
-          "failed to stop terminal process: " .. tostring(stopped.stderr))
+        local stopped = vim
+          .system({
+            "taskkill.exe",
+            "/F",
+            "/T",
+            "/PID",
+            tostring(pid),
+          }, { text = true, timeout = 15000 })
+          :wait()
+        assert(
+          stopped.code == 0 or not alive(job),
+          "failed to stop terminal process: " .. tostring(stopped.stderr)
+        )
       else
         pcall(vim.fn.jobstop, job)
         vim.fn.jobwait({ job }, 3000)
@@ -107,13 +115,17 @@ check("real shell survives hiding and reopening the mapped vertical terminal", f
     binding.callback()
     assert(not vim.api.nvim_win_is_valid(terminal_window), "toggle did not hide split")
     assert(vim.api.nvim_get_current_win() == original, "original window lost focus")
-    assert(vim.api.nvim_buf_is_valid(buffer) and alive(job),
-      "hiding the split terminated the shell")
+    assert(
+      vim.api.nvim_buf_is_valid(buffer) and alive(job),
+      "hiding the split terminated the shell"
+    )
 
     binding.callback()
     assert(vim.api.nvim_get_current_buf() == buffer, "toggle lost saved terminal buffer")
-    assert(vim.b[buffer].terminal_job_id == job and alive(job),
-      "reopening started another process or lost the original shell")
+    assert(
+      vim.b[buffer].terminal_job_id == job and alive(job),
+      "reopening started another process or lost the original shell"
+    )
   end)
 end)
 
@@ -127,15 +139,20 @@ check("the last normal window hides a live session beside an unrelated float", f
 
     local foreign_buffer = vim.api.nvim_create_buf(false, true)
     local popup = vim.api.nvim_open_win(foreign_buffer, false, {
-      relative = "editor", row = 1, col = 1, width = 10, height = 2,
+      relative = "editor",
+      row = 1,
+      col = 1,
+      width = 10,
+      height = 2,
     })
     local ok, err = xpcall(function()
       assert(terminal.toggle("vsp", "live-last-normal"))
-      assert(vim.api.nvim_win_is_valid(terminal_window),
-        "the tab's last normal window must remain")
+      assert(vim.api.nvim_win_is_valid(terminal_window), "the tab's last normal window must remain")
       assert(vim.api.nvim_win_is_valid(popup), "foreign popup was closed")
-      assert(vim.api.nvim_get_current_buf() ~= buffer,
-        "hiding must install a replacement normal buffer")
+      assert(
+        vim.api.nvim_get_current_buf() ~= buffer,
+        "hiding must install a replacement normal buffer"
+      )
       assert(alive(job), "hiding the last normal window stopped the shell")
 
       assert(terminal.toggle("vsp", "live-last-normal"))

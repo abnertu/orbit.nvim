@@ -71,12 +71,9 @@ check("common editing shortcuts use their modes and actions", function()
   for _, item in ipairs(expected) do
     local actual = vim.fn.maparg(item[2], item[1])
     -- Visual P must be case-sensitive: lowercase p changes registers.
-    local matches = item[1] == "x" and item[2] == "p"
-      and actual == item[3]
-      or (item[1] ~= "x" or item[2] ~= "p")
-        and actual:lower():find(item[3], 1, true) ~= nil
-    assert(matches,
-      string.format("missing %s %s: %s", item[1], item[2], actual))
+    local matches = item[1] == "x" and item[2] == "p" and actual == item[3]
+      or (item[1] ~= "x" or item[2] ~= "p") and actual:lower():find(item[3], 1, true) ~= nil
+    assert(matches, string.format("missing %s %s: %s", item[1], item[2], actual))
   end
 end)
 
@@ -103,8 +100,12 @@ check("visual J/K callbacks preserve selection and move in opposite directions",
   vim.api.nvim_feedkeys, vim.cmd = original_feedkeys, original_cmd
   assert(ok, err)
   assert(vim.deep_equal(actions, {
-    "escape", "'<,'>move '>+1", "normal! gv-gv",
-    "escape", "'<,'>move '<-2", "normal! gv-gv",
+    "escape",
+    "'<,'>move '>+1",
+    "normal! gv-gv",
+    "escape",
+    "'<,'>move '<-2",
+    "normal! gv-gv",
   }))
 end)
 
@@ -166,8 +167,10 @@ check("buffer cycling stays within the current tab", function()
   vim.api.nvim_set_current_buf(tab_second)
 
   tab_key("<Tab>")()
-  assert(vim.api.nvim_get_current_buf() == tab_first,
-    "next must wrap within the tab: " .. vim.inspect(require("orbit.buffers").list()))
+  assert(
+    vim.api.nvim_get_current_buf() == tab_first,
+    "next must wrap within the tab: " .. vim.inspect(require("orbit.buffers").list())
+  )
   tab_key("<S-Tab>")()
   assert(vim.api.nvim_get_current_buf() == tab_second)
   assert(not vim.list_contains(require("orbit.buffers").list(), outer))
@@ -231,10 +234,12 @@ check("later module failure restores previous bindings", function()
     prior(opts)
     error("injected command failure")
   end
-  local ok, err = pcall(orbit.setup, { modules = {
-    corekeys = { save = "<F11>" },
-    commands = { name = "OrbitFailed" },
-  } })
+  local ok, err = pcall(orbit.setup, {
+    modules = {
+      corekeys = { save = "<F11>" },
+      commands = { name = "OrbitFailed" },
+    },
+  })
   commands.setup = prior
   assert(not ok and tostring(err):find("injected command failure", 1, true))
   assert(rhs("<F12>"):lower():find("write", 1, true))
@@ -254,8 +259,10 @@ end)
 
 check("disabling restores user maps from every edited mode", function()
   for _, item in ipairs(previous) do
-    assert(vim.fn.maparg(item[2], item[1]) == item[3],
-      string.format("lost user %s %s mapping", item[1], item[2]))
+    assert(
+      vim.fn.maparg(item[2], item[1]) == item[3],
+      string.format("lost user %s %s mapping", item[1], item[2])
+    )
   end
 end)
 
@@ -265,8 +272,10 @@ check("disabling restores original buffer cycling keys", function()
   local buffers = require("orbit.buffers")
   assert(not buffers.attached("corekeys"))
   -- The group stays only while another owner, such as the tab line, uses it.
-  assert(pcall(vim.api.nvim_get_autocmds, { group = "OrbitBufferOrder" })
-    == buffers.attached("tabline"), "the last owner must remove the buffer-order group")
+  assert(
+    pcall(vim.api.nvim_get_autocmds, { group = "OrbitBufferOrder" }) == buffers.attached("tabline"),
+    "the last owner must remove the buffer-order group"
+  )
 end)
 
 check("reenabling does not stack mappings", function()
@@ -275,8 +284,10 @@ check("reenabling does not stack mappings", function()
   local groups = vim.api.nvim_get_autocmds({ group = "OrbitBufferOrder" })
   orbit.setup({ modules = { corekeys = { save = "<F10>" } } })
   orbit.setup()
-  assert(#vim.api.nvim_get_autocmds({ group = "OrbitBufferOrder" }) == #groups,
-    "repeated setup must not duplicate buffer-order handlers")
+  assert(
+    #vim.api.nvim_get_autocmds({ group = "OrbitBufferOrder" }) == #groups,
+    "repeated setup must not duplicate buffer-order handlers"
+  )
   assert(rhs("<C-s>"):lower():find("write", 1, true))
   assert(rhs("<C-h>"):lower() == "<c-w>h")
 end)
@@ -287,22 +298,32 @@ check("repeated rollback keeps jk and smart Escape mappings intact", function()
     local accepted = orbit.get_config()
     local escape = vim.fn.maparg("jk", "i")
     assert(escape:lower() == "<esc>", "initial jk mapping missing")
-    commands.setup = function() error("injected repeated rollback") end
-    local ok, err = pcall(orbit.setup, { modules = {
-      corekeys = { save = "<F11>" },
-      commands = { enabled = false },
-    } })
+    commands.setup = function()
+      error("injected repeated rollback")
+    end
+    local ok, err = pcall(orbit.setup, {
+      modules = {
+        corekeys = { save = "<F11>" },
+        commands = { enabled = false },
+      },
+    })
     commands.setup = prior
     assert(not ok and tostring(err):find("injected repeated rollback", 1, true))
     assert(not tostring(err):find("rollback failed", 1, true), tostring(err))
     assert(vim.deep_equal(orbit.get_config(), accepted))
-    assert(vim.fn.maparg("jk", "i") == escape,
-      "jk mapping disappeared at iteration " .. index ..
-      ": " .. vim.inspect(vim.fn.maparg("jk", "i", false, true)))
+    assert(
+      vim.fn.maparg("jk", "i") == escape,
+      "jk mapping disappeared at iteration "
+        .. index
+        .. ": "
+        .. vim.inspect(vim.fn.maparg("jk", "i", false, true))
+    )
     for _, mode in ipairs({ "n", "i", "s" }) do
       local current = vim.fn.maparg("<Esc>", mode, false, true)
-      assert(type(current.callback) == "function" and current.expr == 1,
-        "Escape mapping lost in mode " .. mode .. " at iteration " .. index)
+      assert(
+        type(current.callback) == "function" and current.expr == 1,
+        "Escape mapping lost in mode " .. mode .. " at iteration " .. index
+      )
     end
   end
 end)

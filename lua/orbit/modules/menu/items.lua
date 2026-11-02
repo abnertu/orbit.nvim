@@ -26,14 +26,20 @@ local function deferred(source, action)
     local runtime = require("orbit.modules.menu.runtime")
     runtime.close()
     vim.schedule(function()
-      if not vim.api.nvim_win_is_valid(source.win)
+      if
+        not vim.api.nvim_win_is_valid(source.win)
         or not vim.api.nvim_buf_is_valid(source.buf)
-        or vim.api.nvim_win_get_buf(source.win) ~= source.buf then return end
+        or vim.api.nvim_win_get_buf(source.win) ~= source.buf
+      then
+        return
+      end
       local ok, err = pcall(function()
         vim.api.nvim_set_current_win(source.win)
         action()
       end)
-      if not ok then vim.notify(tostring(err), vim.log.levels.ERROR, { title = "Context Menu" }) end
+      if not ok then
+        vim.notify(tostring(err), vim.log.levels.ERROR, { title = "Context Menu" })
+      end
     end)
   end
 end
@@ -42,11 +48,21 @@ end
 ---@return fun(name: string, lhs: string, hl?: string): Orbit.MenuItem
 local function key_items(source)
   return function(name, lhs, hl)
-    return { name = name, rtxt = lhs, hl = hl, cmd = deferred(source, function()
-      local keys = lhs:gsub("<leader>", function() return vim.g.mapleader or "\\" end)
-        :gsub("<localleader>", function() return vim.g.maplocalleader or "\\" end)
-      vim.api.nvim_feedkeys(vim.keycode(keys), "m", false)
-    end) }
+    return {
+      name = name,
+      rtxt = lhs,
+      hl = hl,
+      cmd = deferred(source, function()
+        local keys = lhs
+          :gsub("<leader>", function()
+            return vim.g.mapleader or "\\"
+          end)
+          :gsub("<localleader>", function()
+            return vim.g.maplocalleader or "\\"
+          end)
+        vim.api.nvim_feedkeys(vim.keycode(keys), "m", false)
+      end),
+    }
   end
 end
 
@@ -162,36 +178,14 @@ function M.tree(source)
 
   return {
     action_item("  Open", "o", node_action(api.node.open.edit), "ExGreen"),
-    action_item(
-      "󰈙  Open Preview",
-      "<Tab>",
-      node_action(api.node.open.preview),
-      "ExBlue"
-    ),
-    action_item(
-      "  Open in Vertical Split",
-      "<C-v>",
-      node_action(api.node.open.vertical)
-    ),
-    action_item(
-      "  Open in Horizontal Split",
-      "<C-x>",
-      node_action(api.node.open.horizontal)
-    ),
-    action_item(
-      "󰓩  Open in New Tab",
-      "<C-t>",
-      node_action(api.node.open.tab)
-    ),
+    action_item("󰈙  Open Preview", "<Tab>", node_action(api.node.open.preview), "ExBlue"),
+    action_item("  Open in Vertical Split", "<C-v>", node_action(api.node.open.vertical)),
+    action_item("  Open in Horizontal Split", "<C-x>", node_action(api.node.open.horizontal)),
+    action_item("󰓩  Open in New Tab", "<C-t>", node_action(api.node.open.tab)),
 
     { name = "separator" },
 
-    action_item(
-      "  Create File or Directory",
-      "a",
-      node_action(api.fs.create),
-      "ExGreen"
-    ),
+    action_item("  Create File or Directory", "a", node_action(api.fs.create), "ExGreen"),
     action_item("󰑕  Rename", "r", node_action(api.fs.rename), "ExYellow"),
     action_item(
       "󰑕  Rename without Extension",
@@ -222,16 +216,8 @@ function M.tree(source)
       items = {
         action_item("󰈔  Filename", "y", node_action(api.fs.copy.filename)),
         action_item("󰈔  Basename", "ge", node_action(api.fs.copy.basename)),
-        action_item(
-          "󰝰  Relative Path",
-          "Y",
-          node_action(api.fs.copy.relative_path)
-        ),
-        action_item(
-          "󰝰  Absolute Path",
-          "gy",
-          node_action(api.fs.copy.absolute_path)
-        ),
+        action_item("󰝰  Relative Path", "Y", node_action(api.fs.copy.relative_path)),
+        action_item("󰝰  Absolute Path", "gy", node_action(api.fs.copy.absolute_path)),
       },
     },
     {
@@ -242,12 +228,7 @@ function M.tree(source)
         action_item("󰑓  Refresh", "R", api.tree.reload, "ExGreen"),
         action_item("󰘕  Collapse All", "W", api.tree.collapse_all),
         action_item("󰘖  Expand All", "E", node_action(api.tree.expand_all)),
-        action_item(
-          "󰘓  Toggle Dotfiles",
-          "H",
-          api.filter.dotfiles.toggle,
-          "ExYellow"
-        ),
+        action_item("󰘓  Toggle Dotfiles", "H", api.filter.dotfiles.toggle, "ExYellow"),
         action_item("󰋖  Help", "g?", api.tree.toggle_help, "ExBlue"),
         action_item("󰅖  Close", "q", api.tree.close, "ExRed"),
       },

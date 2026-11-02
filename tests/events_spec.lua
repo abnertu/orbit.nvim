@@ -51,10 +51,12 @@ check("a later failure restores the previous event settings", function()
     previous(opts)
     error("injected command failure")
   end
-  local ok, err = pcall(orbit.setup, { modules = {
-    events = { diagnostics_redraw = true },
-    commands = { name = "OrbitBroken" },
-  } })
+  local ok, err = pcall(orbit.setup, {
+    modules = {
+      events = { diagnostics_redraw = true },
+      commands = { name = "OrbitBroken" },
+    },
+  })
   commands.setup = previous
   assert(not ok and tostring(err):find("injected command failure", 1, true))
   assert(vim.deep_equal(orbit.get_config(), accepted))
@@ -93,9 +95,12 @@ check("directory startup event changes cwd and deletes its argument buffer", fun
       actual, expected = actual:lower(), expected:lower()
     end
     assert(actual == expected, "directory argument did not change cwd")
-    assert(vim.wait(1000, function()
-      return not vim.api.nvim_buf_is_valid(buffer)
-    end, 10), "argument buffer was not removed")
+    assert(
+      vim.wait(1000, function()
+        return not vim.api.nvim_buf_is_valid(buffer)
+      end, 10),
+      "argument buffer was not removed"
+    )
   end, debug.traceback)
   vim.api.nvim_set_current_dir(oldcwd)
   vim.fn.delete(directory, "rf")

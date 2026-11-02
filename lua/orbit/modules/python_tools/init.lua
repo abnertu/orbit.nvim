@@ -9,11 +9,15 @@ local owns_command = false
 local function list_stubs(root)
   local parent = vim.fs.joinpath(root, "typings")
   local scan = vim.uv.fs_scandir(parent)
-  if not scan then return {} end
+  if not scan then
+    return {}
+  end
   local found = {}
   while true do
     local name, kind = vim.uv.fs_scandir_next(scan)
-    if not name then break end
+    if not name then
+      break
+    end
     if kind == "directory" and not name:match("^%.orbit%-stub%-") then
       local stat = vim.uv.fs_lstat(vim.fs.joinpath(parent, name))
       if stat and stat.type == "directory" then
@@ -26,24 +30,32 @@ local function list_stubs(root)
 end
 
 local function register()
-  assert(vim.api.nvim_get_commands({}).PyrightReCreateStub == nil,
-    "refusing to overwrite existing user command: PyrightReCreateStub")
+  assert(
+    vim.api.nvim_get_commands({}).PyrightReCreateStub == nil,
+    "refusing to overwrite existing user command: PyrightReCreateStub"
+  )
   vim.api.nvim_create_user_command("PyrightReCreateStub", function()
     local root = vim.fn.getcwd()
     local candidates = list_stubs(root)
     if #candidates == 0 then
-      vim.notify("No existing Pyright stub directories", vim.log.levels.INFO,
-        { title = "orbit.nvim Python" })
+      vim.notify(
+        "No existing Pyright stub directories",
+        vim.log.levels.INFO,
+        { title = "orbit.nvim Python" }
+      )
       return
     end
     vim.ui.select(candidates, { prompt = "Choose existing stub" }, function(name)
-      if name == nil then return end
-      require("orbit.modules.python_tools.runtime").recreate(root, name,
-        function(ok, err)
-          vim.notify(err or "Stub regenerated successfully",
-            ok and not err and vim.log.levels.INFO or vim.log.levels.WARN,
-            { title = "orbit.nvim Python" })
-        end)
+      if name == nil then
+        return
+      end
+      require("orbit.modules.python_tools.runtime").recreate(root, name, function(ok, err)
+        vim.notify(
+          err or "Stub regenerated successfully",
+          ok and not err and vim.log.levels.INFO or vim.log.levels.WARN,
+          { title = "orbit.nvim Python" }
+        )
+      end)
     end)
   end, { desc = "Regenerate a Pyright stub with failure recovery" })
   owns_command = true
@@ -60,7 +72,9 @@ function M.restore(snapshot)
     pcall(vim.api.nvim_del_user_command, "PyrightReCreateStub")
     owns_command = false
   end
-  if snapshot.owns_command then register() end
+  if snapshot.owns_command then
+    register()
+  end
 end
 
 ---@param opts? Orbit.PythonToolsOptions

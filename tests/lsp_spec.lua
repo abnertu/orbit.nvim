@@ -85,8 +85,7 @@ check("server failures are isolated and diagnostics remain compatible", function
   assert(configured.lua_ls.capabilities.orbit_blink_marker)
   assert(configured.lua_ls.settings.Lua.runtime.version == "LuaJIT")
   assert(configured.pyright.settings.python.analysis.typeCheckingMode == "standard")
-  assert(configured.ruff.init_options.settings.configurationPreference ==
-    "filesystemFirst")
+  assert(configured.ruff.init_options.settings.configurationPreference == "filesystemFirst")
   local client = { server_capabilities = { semanticTokensProvider = {} } }
   configured.lua_ls.on_init(client)
   assert(client.server_capabilities.semanticTokensProvider == nil)
@@ -94,8 +93,10 @@ check("server failures are isolated and diagnostics remain compatible", function
   configured.ruff.on_attach(ruff_client)
   assert(ruff_client.server_capabilities.hoverProvider == false)
   local json_schema = configured.jsonls.settings.json.schemas[1]
-  assert(json_schema.url == vim.uri_from_fname(
-    vim.api.nvim_get_runtime_file("settings.schema.json", false)[1]))
+  assert(
+    json_schema.url
+      == vim.uri_from_fname(vim.api.nvim_get_runtime_file("settings.schema.json", false)[1])
+  )
   assert(diagnostic.underline and diagnostic.severity_sort)
   assert(diagnostic.virtual_text.severity.min == vim.diagnostic.severity.WARN)
   assert(diagnostic.signs.text[vim.diagnostic.severity.ERROR] == " ")
@@ -109,10 +110,14 @@ check("second activation is idempotent", function()
 end)
 
 check("server and diagnostic changes are held until restart", function()
-  orbit.setup({ modules = { lsp = {
-    servers = { lua_ls = false },
-    diagnostics = { virtual_text = false },
-  } } })
+  orbit.setup({
+    modules = {
+      lsp = {
+        servers = { lua_ls = false },
+        diagnostics = { virtual_text = false },
+      },
+    },
+  })
   assert(orbit.get_config().modules.lsp.servers.lua_ls == true)
   assert(orbit.get_config().modules.lsp.diagnostics.virtual_text == true)
   local deferred = orbit.get_pending_restart()

@@ -36,8 +36,7 @@ function M.close_others()
   assert(normal(current), "cannot clean buffers from a special buffer")
   local others = listed_others(current)
   for _, buffer in ipairs(others) do
-    assert(not protected(buffer),
-      "other buffer has unsaved changes: " .. buffer)
+    assert(not protected(buffer), "other buffer has unsaved changes: " .. buffer)
   end
   for _, buffer in ipairs(others) do
     vim.api.nvim_buf_delete(buffer, { force = false })

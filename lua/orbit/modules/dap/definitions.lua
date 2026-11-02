@@ -40,11 +40,18 @@ function M.build(opts)
     },
     configurations = {
       python = {
-        { type = "python", request = "launch", name = "launch debugpy server",
-          program = "$" .. "{file}" },
-        { type = "python", request = "attach",
+        {
+          type = "python",
+          request = "launch",
+          name = "launch debugpy server",
+          program = "$" .. "{file}",
+        },
+        {
+          type = "python",
+          request = "attach",
           name = "attach to active debugpy server",
-          connect = { host = opts.python_host, port = opts.python_port } },
+          connect = { host = opts.python_host, port = opts.python_port },
+        },
       },
     },
   }
