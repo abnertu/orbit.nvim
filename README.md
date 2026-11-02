@@ -131,6 +131,9 @@ Orbit never replaces a user-defined command. Each module defines its keys in its
 With an attached LSP, `gd`, `gD`, `gI`, `gy`, and `gR` navigate definitions, declarations, implementations, types, and references.
 Orbit restores prior buffer mappings after the last client detaches.
 
+Without an explicit `shell`, Windows terminals prefer available pwsh, then Windows PowerShell.
+PowerShell loads profiles and suppresses its startup banner. Explicit shell choices and flags take priority.
+
 ## Development
 
 Run the checks with [just](https://github.com/casey/just) on Linux or Windows:

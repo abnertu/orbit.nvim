@@ -24,16 +24,47 @@ end
 
 local workspace = vim.fn.tempname() .. " terminal session"
 vim.fn.mkdir(workspace, "p")
+local env = { XDG_STATE_HOME = workspace .. "/state" }
+if windows then
+  -- Use a private PSHOME so a real startup profile never changes an installed or user profile.
+  local installed = vim.fs.dirname(vim.fn.exepath(shell))
+  local private = workspace .. "/PowerShell"
+  ---@param source string
+  ---@param target string
+  local function copy_shell(source, target)
+    assert(vim.fn.mkdir(target, "p") == 1)
+    for name in vim.fs.dir(source) do
+      local from, to = vim.fs.joinpath(source, name), vim.fs.joinpath(target, name)
+      local profile = source == installed
+        and (name:lower() == "profile.ps1" or name:lower() == "microsoft.powershell_profile.ps1")
+      if not profile then
+        if assert(vim.uv.fs_stat(from)).type == "directory" then
+          copy_shell(from, to)
+        elseif not vim.uv.fs_link(from, to) then
+          assert(vim.uv.fs_copyfile(from, to))
+        end
+      end
+    end
+  end
+  copy_shell(installed, private)
+  vim.fn.writefile({
+    "$env:ORBIT_TERMINAL_PROFILE = 'orbit-profile-' + (6 * 7)",
+    "function prompt { 'orbit-ready> ' }",
+  }, private .. "/profile.ps1")
+  env.PATH = private .. ";" .. vim.env.PATH
+  env.ORBIT_TERMINAL_PROFILE = ""
+end
 local init = workspace .. "/init.lua"
+local initialize_shell = windows and "" -- Exercise Neovim's untouched cmd.exe default on Windows.
+  or "vim.o.shell = " .. vim.inspect('"' .. vim.fn.exepath(shell) .. '" -i')
 vim.fn.writefile({
   "vim.opt.rtp:prepend(" .. vim.inspect(root) .. ")",
-  "vim.o.shell = "
-    .. vim.inspect('"' .. vim.fn.exepath(shell) .. '" ' .. (windows and "-NoLogo" or "-i")),
+  initialize_shell,
   "require('orbit').setup()",
 }, init)
 local job = vim.fn.jobstart(
   { vim.v.progpath, "--embed", "--headless", "-i", "NONE", "-u", init },
-  { rpc = true, env = { XDG_STATE_HOME = workspace .. "/state" } }
+  { rpc = true, env = env }
 )
 assert(job > 0, "cannot start child Neovim")
 
@@ -61,12 +92,25 @@ local ok, err = pcall(function()
 
   check("real " .. shell .. " input produces output in the toggled terminal", function()
     session.origin = lua("return vim.api.nvim_get_current_win()")
+    if windows then
+      assert(not lua("return vim.api.nvim_get_option_info2('shell', {}).was_set"))
+      assert(
+        vim.deep_equal(
+          lua("return require('orbit.modules.keymaps.terminal').shell_argv()"),
+          { "pwsh.exe", "-NoLogo" }
+        ),
+        "the default terminal must select PowerShell with profiles enabled and no logo"
+      )
+    end
     assert(lua("return require('orbit.modules.keymaps.terminal').toggle('vsp', 'acceptance')"))
     session.buffer = lua("return vim.api.nvim_get_current_buf()")
     session.job = lua("return vim.b[...].terminal_job_id", session.buffer)
     assert(lua("return vim.bo[...].buftype", session.buffer) == "terminal")
     -- Wait for the shell to start before typing.
     wait(function()
+      if windows then
+        return contains(session.buffer, "orbit-ready>")
+      end
       return lua(
         "return #table.concat(vim.api.nvim_buf_get_lines(..., 0, -1, false)) > 0",
         session.buffer
@@ -77,6 +121,22 @@ local ok, err = pcall(function()
       return contains(session.buffer, "orbit-first-42")
     end, "shell output did not reach the terminal buffer")
   end)
+
+  if windows then
+    check("the default Windows terminal loads its startup profile without a banner", function()
+      lua(
+        [[vim.api.nvim_chan_send(...)]],
+        session.job,
+        "[Console]::WriteLine($env:ORBIT_TERMINAL_PROFILE)\r"
+      )
+      wait(function()
+        return contains(session.buffer, "orbit-profile-42")
+      end, "PowerShell did not load the startup profile")
+      for _, banner in ipairs({ "PowerShell 7", "Copyright (C)", "Microsoft Windows" }) do
+        assert(not contains(session.buffer, banner), "unexpected startup banner: " .. banner)
+      end
+    end)
+  end
 
   check("hiding returns focus to the source window and keeps the shell", function()
     assert(lua("return require('orbit.modules.keymaps.terminal').toggle('vsp', 'acceptance')"))

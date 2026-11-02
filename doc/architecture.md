@@ -79,6 +79,7 @@ Keep plugin loading with Lazy and tool state with hangar.nvim.
 - Buffer cleanup checks every candidate first and refuses modified buffers. It never runs `%bd|e#`.
 - Terminals open horizontal splits below and vertical splits right. They reuse live jobs and replace exited jobs.
 - Terminal argv preserves quoted shell paths and explicit flags. Windows PowerShell defaults to `-NoLogo` when no flags exist.
+- With no explicit Windows shell, terminals prefer pwsh, then Windows PowerShell, with profiles enabled and `-NoLogo`.
 - `statusline` and `tabline` set only the global options through `%!` expressions and restore the previous values.
 - Trouble loads on `LspAttach` and supplies the statusline symbol path. The render loop never imports external plugins.
 - The theme owns bar and plugin highlights. [Appearance](appearance.md) records their sources and rendering contracts.
