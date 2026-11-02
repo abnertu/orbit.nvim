@@ -8,6 +8,22 @@ orbit.setup()
 local source = vim.api.nvim_get_current_buf()
 vim.keymap.set("n", "gD", "<cmd>echo 'user local declaration'<cr>", { buffer = source })
 local local_original = vim.fn.maparg("gD", "n")
+vim.keymap.set("n", "gy", function() return "i<CR><Esc>" end, {
+  buffer = source, expr = true, replace_keycodes = false, script = true, silent = true,
+})
+local expression_original = vim.fn.maparg("gy", "n", false, true)
+local function check_expression_mapping()
+  local restored = vim.fn.maparg("gy", "n", false, true)
+  for _, field in ipairs({ "callback", "expr", "noremap", "script", "replace_keycodes", "silent" }) do
+    assert(restored[field] == expression_original[field], "restoration changed expression mapping field: " .. field)
+  end
+  vim.api.nvim_buf_set_lines(source, 0, -1, false, { "" })
+  vim.api.nvim_win_set_cursor(0, { 1, 0 })
+  vim.api.nvim_feedkeys("gy", "xt", false)
+  assert(vim.api.nvim_buf_line_count(source) == 1
+    and vim.api.nvim_buf_get_lines(source, 0, 1, false)[1] == "<CR><Esc>",
+    "restored expression mapping replaced literal keycodes")
+end
 vim.api.nvim_buf_set_lines(source, 0, -1, false, { "vim.api.nvim_get_current_buf()" })
 local target = vim.fn.tempname() .. " builtin api.lua"
 vim.fn.writefile({ "---@return integer", "function vim.api.nvim_get_current_buf() end" }, target)
@@ -69,13 +85,21 @@ for _, item in ipairs({ { "gd", "definition" }, { "gD", "declaration" },
   end
 end
 vim.api.nvim_set_current_buf(source)
+orbit.setup({ modules = { corekeys = { enabled = false } } })
+check_expression_mapping()
+local commands = require("orbit.modules.commands")
+local setup = commands.setup
+commands.setup = function() error("injected expression rollback") end
+assert(not pcall(orbit.setup, { modules = { corekeys = { enabled = true }, commands = { name = "OrbitExpressionFail" } } }))
+commands.setup = setup
+check_expression_mapping()
+orbit.setup({ modules = { corekeys = { enabled = true } } })
 local attached = vim.fn.maparg("gd", "n", false, true).callback
 local observers = #vim.api.nvim_get_autocmds({ group = "OrbitLspNavigation" })
 orbit.setup({ modules = { corekeys = { save = "<F12>" } } })
 assert(#vim.api.nvim_get_autocmds({ group = "OrbitLspNavigation" }) == observers,
   "reconfiguration duplicated navigation observers")
-local commands = require("orbit.modules.commands")
-local setup = commands.setup
+setup = commands.setup
 commands.setup = function() error("injected navigation rollback") end
 assert(not pcall(orbit.setup, { modules = { corekeys = { enabled = false }, commands = { name = "OrbitNavigationFail" } } }))
 commands.setup = setup
@@ -91,6 +115,7 @@ vim.lsp.get_client_by_id(second_id):stop(true)
 assert(vim.wait(1000, function()
   return vim.fn.maparg("gd", "n") == original and vim.fn.maparg("gD", "n") == local_original
 end), "last detach did not restore prior mappings")
+check_expression_mapping()
 orbit.setup({ modules = { corekeys = { enabled = false } } })
 vim.api.nvim_set_current_buf(source)
 assert(vim.fn.maparg("gd", "n") == original, "disabling lost the user's definition mapping")

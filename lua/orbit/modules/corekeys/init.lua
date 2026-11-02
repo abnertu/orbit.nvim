@@ -3,7 +3,7 @@ local M = {}
 ---@alias Orbit.CorekeysBinding table<string, any>|false
 ---@alias Orbit.CorekeysOwned {mode: string, lhs: string, original: Orbit.CorekeysBinding}
 ---@alias Orbit.CorekeysAffected {mode: string, lhs: string, current: Orbit.CorekeysBinding}
----@alias Orbit.NavigationBinding {lhs: string, rhs?: string, callback?: fun(), noremap: integer, silent: integer, expr: integer, nowait: integer, desc?: string}
+---@alias Orbit.NavigationBinding {lhs: string, lhsraw: string, lhsrawalt?: string, rhs?: string, callback?: fun(): string?, noremap: integer, silent: integer, script: integer, expr: integer, replace_keycodes?: integer, nowait: integer, buffer: integer, mode: string, sid: integer, scriptversion: integer, lnum: integer, abbr: integer, mode_bits: integer, desc?: string}
 ---@alias Orbit.NavigationOwned {previous: Orbit.NavigationBinding|false, callback: fun()}
 ---@alias Orbit.NavigationSnapshot {active: boolean, owned: table<integer, table<string, Orbit.NavigationOwned>>, current: table<integer, table<string, Orbit.NavigationBinding|false>>}
 ---@alias Orbit.CorekeysSnapshot {owned: table<string, Orbit.CorekeysOwned>, affected: table<string, Orbit.CorekeysAffected>, order: boolean, navigation: Orbit.NavigationSnapshot}

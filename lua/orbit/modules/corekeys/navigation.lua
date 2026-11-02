@@ -15,10 +15,10 @@ local actions = {
 ---@param key string
 ---@return Orbit.NavigationBinding|false
 local function mapping(buffer, key)
-  for _, item in ipairs(vim.api.nvim_buf_get_keymap(buffer, "n")) do
-    if item.lhs == key then return item end
-  end
-  return false
+  return vim.api.nvim_buf_call(buffer, function()
+    local item = vim.fn.maparg(key, "n", false, true)
+    return item.buffer == 1 and item or false
+  end)
 end
 
 ---@param buffer integer
@@ -27,10 +27,7 @@ end
 local function restore_mapping(buffer, key, previous)
   pcall(vim.keymap.del, "n", key, { buffer = buffer })
   if not previous then return end
-  vim.keymap.set("n", key, previous.callback or previous.rhs, {
-    buffer = buffer, remap = previous.noremap == 0, silent = previous.silent == 1,
-    expr = previous.expr == 1, nowait = previous.nowait == 1, desc = previous.desc,
-  })
+  vim.api.nvim_buf_call(buffer, function() vim.fn.mapset("n", false, previous) end)
 end
 
 ---@param buffer integer
