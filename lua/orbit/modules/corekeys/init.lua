@@ -3,7 +3,10 @@ local M = {}
 ---@alias Orbit.CorekeysBinding table<string, any>|false
 ---@alias Orbit.CorekeysOwned {mode: string, lhs: string, original: Orbit.CorekeysBinding}
 ---@alias Orbit.CorekeysAffected {mode: string, lhs: string, current: Orbit.CorekeysBinding}
----@alias Orbit.CorekeysSnapshot {owned: table<string, Orbit.CorekeysOwned>, affected: table<string, Orbit.CorekeysAffected>, order: boolean}
+---@alias Orbit.NavigationBinding {lhs: string, rhs?: string, callback?: fun(), noremap: integer, silent: integer, expr: integer, nowait: integer, desc?: string}
+---@alias Orbit.NavigationOwned {previous: Orbit.NavigationBinding|false, callback: fun()}
+---@alias Orbit.NavigationSnapshot {active: boolean, owned: table<integer, table<string, Orbit.NavigationOwned>>, current: table<integer, table<string, Orbit.NavigationBinding|false>>}
+---@alias Orbit.CorekeysSnapshot {owned: table<string, Orbit.CorekeysOwned>, affected: table<string, Orbit.CorekeysAffected>, order: boolean, navigation: Orbit.NavigationSnapshot}
 local owned = {}
 
 ---@class Orbit.CorekeysOptions # Core file and window navigation mappings.
@@ -152,6 +155,7 @@ function M.capture(opts)
     owned = vim.deepcopy(owned),
     affected = affected,
     order = require("orbit.buffers").attached("corekeys"),
+    navigation = require("orbit.modules.corekeys.navigation").capture(),
   }
 end
 
@@ -178,6 +182,7 @@ function M.restore(snapshot)
   end
   owned = vim.deepcopy(snapshot.owned)
   set_order(snapshot.order)
+  require("orbit.modules.corekeys.navigation").restore(snapshot.navigation)
 end
 
 ---@param opts? Orbit.CorekeysOptions
@@ -215,6 +220,7 @@ function M.setup(opts)
 
   owned = next_owned
   set_order(opts.enabled)
+  require("orbit.modules.corekeys.navigation").setup(opts.enabled)
 end
 
 return M

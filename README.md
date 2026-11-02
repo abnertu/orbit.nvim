@@ -128,6 +128,9 @@ Add `"$schema": "<orbit.nvim>/settings.schema.json"` to the file for editor comp
 
 Orbit never replaces a user-defined command. Each module defines its keys in its LuaDoc settings. Disabling a module restores the mappings that it replaced. `<leader>wK` lists all keys when the keyguide module is enabled.
 
+With an attached LSP, `gd`, `gD`, `gI`, `gy`, and `gR` navigate definitions, declarations, implementations, types, and references.
+Orbit restores prior buffer mappings after the last client detaches.
+
 ## Development
 
 Run the checks with [just](https://github.com/casey/just) on Linux or Windows:
