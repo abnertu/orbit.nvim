@@ -8,7 +8,7 @@ local accepted
 ---@field build_timeout? integer @default(120000) @minimum(1000) @maximum(300000) @restart(true) # Preview installer timeout in milliseconds.
 ---@field notes? boolean @default(true) @restart(true) # Enable Obsidian vault integration.
 ---@field vault? string @default("") @restart(true) # Optional Obsidian vault directory.
----@field note_highlights? boolean @default(true) @restart(true) # Keep Markdown code fences visible in notes.
+---@field note_highlights? boolean @default(true) @restart(true) # After vault activation, replace the Markdown highlight query to keep code fences visible.
 
 ---@return Orbit.MarkdownOptions?
 function M.capture()

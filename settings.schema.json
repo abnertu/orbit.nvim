@@ -1070,7 +1070,7 @@
             },
             "note_highlights": {
               "default": true,
-              "description": "Keep Markdown code fences visible in notes.",
+              "description": "After vault activation, replace the Markdown highlight query to keep code fences visible.",
               "type": "boolean",
               "x-orbit-restart": true
             },

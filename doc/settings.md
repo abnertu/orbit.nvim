@@ -10,49 +10,51 @@ Missing input uses module defaults. Reading does not create or rewrite any file.
 `settings.schema.json` is generated from LuaDoc in each module's `init.lua`.
 No per-module `schema.json` files are authored.
 
-Run `nvim --headless -u NONE -l scripts/generate_schema.lua` after changing owning-module LuaDoc.
-The read-only `schema-preview.yml` workflow also prints numbered JSON fragments, an exact byte count and a SHA256 checksum on schema-related pull requests.
-This preview uses the same Lua generator.
-It never writes the tracked schema; developers must regenerate and commit the deterministic bundle before validation will pass.
-Objects merge by field, and explicit `false` values are preserved.
-Unknown keys, invalid types, out-of-range values, and JSON null are rejected before activation.
+Run `nvim --headless -u NONE -l scripts/generate_schema.lua` after you change module LuaDoc.
+The read-only `schema-preview.yml` workflow prints numbered JSON fragments, a byte count and a SHA256 checksum on schema pull requests.
+It never writes the tracked schema. Regenerate and commit the schema before validation can pass.
 
-The public call returns `true` on success, or `false, err` on failure.
-Failed reads and validation keep the previously accepted configuration.
-Users can inspect effective options through `require("orbit").get_config()`.
+- Objects merge by field, and explicit `false` values stay.
+- Unknown keys, invalid types, out-of-range values and JSON null fail before activation.
+- The call returns `true` on success, or `false, err` on failure.
+- Failed reads and failed validation keep the accepted configuration.
+- `require("orbit").get_config()` returns the active options.
 
-## Scope
+## Activation and reload
 
-This is an explicit startup input, not automatic file watching.
-Module activation is transactional for the current editor and keymaps owners.
-A failed activation restores captured editor options and affected key bindings, without replacing the accepted configuration.
+Every module captures its state before setup and restores it when activation fails.
+A failed activation keeps the accepted configuration.
 A failed rollback reports its errors and requires a restart.
-An explicit `require("orbit").reload_from_file(path)` reads and validates the file again.
-Only changed module options are applied.
-When an editor module option changes, unrelated local option overrides remain untouched.
-Invalid input and failed activation preserve accepted options and their captured runtime values.
+
+`require("orbit").reload_from_file(path)` reads and validates the file again.
+It applies only the changed module options, so unrelated buffer and window overrides stay.
 
 ## Optional save observation
 
-Call `require("orbit").watch_settings(path)` to watch a specific settings JSON file after loading it.
-Saving that file inside Neovim triggers the same validated, transactional reload.
-An unrelated file save has no effect.
+Call `require("orbit").watch_settings(path)` to watch one settings file after you load it.
+Saving that file in Neovim starts the same validated reload.
+A save of another file has no effect.
 
-Repeated calls replace the observer rather than stacking callbacks.
-Call `require("orbit").unwatch_settings()` to remove it.
-Invalid saves produce a warning and leave accepted values active; the input file is never rewritten.
+Repeated calls replace the observer. Call `require("orbit").unwatch_settings()` to remove it.
+An invalid save shows a warning and keeps the accepted values.
 
-File watching is opt-in. Schema-linked editor commands remain separate work.
+## Writes
+
+Orbit writes the settings file only in two cases:
+
+- `:OrbitSettings` creates the file when it is missing, with a `$schema` reference.
+- A theme selected with `<leader>ut` is saved to an existing file. The write is validated and atomic, and the JSON keys are sorted.
+
+A failed write keeps the file contents and the accepted settings.
 
 ## Restart-only settings
 
-Fields marked `@restart(true)` in module LuaDoc apply on first setup. Later setup and saved-settings reload defer changed restart-only values. Other validated fields apply immediately.
+Fields marked `@restart(true)` in module LuaDoc apply on first setup.
+Later setup and reload calls defer changed restart-only values. Other validated fields apply immediately.
 
-`require("orbit").get_config()` reports active values.
-`require("orbit").get_pending_restart()` returns deferred requested values keyed by their `orbit.modules.*` paths.
-Restart Neovim to apply them.
-If a reload fails, both active and pending values remain unchanged.
+- `require("orbit").get_pending_restart()` returns the deferred values keyed by their `orbit.modules.*` paths.
+- Restart Neovim to apply them.
+- If a reload fails, the active and pending values stay unchanged.
+- Nested restart-only fields defer independently. Arrays with restart-only members defer as a whole.
 
-Nested restart-only fields defer independently. Arrays with restart-only members defer as a whole. The current preview marks the startup buffer and directory argument event options as restart-only.
-
-When loading from an explicit path, the settings command retains that path across reloads. An explicit `modules.commands.path` value in the JSON file takes precedence.
+When Orbit loads an explicit path, the settings command keeps that path across reloads. An explicit `modules.commands.path` value in the JSON file takes precedence.
