@@ -35,13 +35,13 @@ end
 
 check("terminal callbacks are owned lazily in the original modes", function()
   orbit.setup()
-  assert(package.loaded["orbit.modules.keymaps.terminal"] == nil)
+  assert(package.loaded["orbit.modules.terminal.runtime"] == nil)
   for _, target in ipairs(user_keys) do
     assert(type(map(target[1], target[2]).callback) == "function")
   end
 end)
 
-local term = require("orbit.modules.keymaps.terminal")
+local term = require("orbit.modules.terminal.runtime")
 local actual_spawn, actual_start_insert = term.spawn, term.start_insert
 local actual_is_live_terminal = term.is_live_terminal
 -- Mapping tests stub spawn(), so no real PTY exists in their buffers.

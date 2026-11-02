@@ -49,7 +49,7 @@ local definitions = {
     lhs = "<leader>h",
     mode = "n",
     rhs = function()
-      require("orbit.modules.keymaps.terminal").open("sp")
+      require("orbit.modules.terminal").open("sp")
     end,
     desc = "New horizontal terminal",
   },
@@ -57,7 +57,7 @@ local definitions = {
     lhs = "<leader>v",
     mode = "n",
     rhs = function()
-      require("orbit.modules.keymaps.terminal").open("vsp")
+      require("orbit.modules.terminal").open("vsp")
     end,
     desc = "New vertical terminal",
   },
@@ -65,7 +65,7 @@ local definitions = {
     lhs = "<M-h>",
     mode = "n",
     rhs = function()
-      require("orbit.modules.keymaps.terminal").toggle("sp", "htoggleTerm")
+      require("orbit.modules.terminal").toggle("sp", "htoggleTerm")
     end,
     desc = "Toggle horizontal terminal",
   },
@@ -73,7 +73,7 @@ local definitions = {
     lhs = "<M-h>",
     mode = "t",
     rhs = function()
-      require("orbit.modules.keymaps.terminal").toggle("sp", "htoggleTerm")
+      require("orbit.modules.terminal").toggle("sp", "htoggleTerm")
     end,
     desc = "Toggle horizontal terminal",
   },
@@ -81,7 +81,7 @@ local definitions = {
     lhs = "<M-v>",
     mode = "n",
     rhs = function()
-      require("orbit.modules.keymaps.terminal").toggle("vsp", "vtoggleTerm")
+      require("orbit.modules.terminal").toggle("vsp", "vtoggleTerm")
     end,
     desc = "Toggle vertical terminal",
   },
@@ -89,7 +89,7 @@ local definitions = {
     lhs = "<M-v>",
     mode = "t",
     rhs = function()
-      require("orbit.modules.keymaps.terminal").toggle("vsp", "vtoggleTerm")
+      require("orbit.modules.terminal").toggle("vsp", "vtoggleTerm")
     end,
     desc = "Toggle vertical terminal",
   },
@@ -97,7 +97,7 @@ local definitions = {
     lhs = "<M-i>",
     mode = "n",
     rhs = function()
-      require("orbit.modules.keymaps.terminal").toggle("float", "floatTerm")
+      require("orbit.modules.terminal").toggle("float", "floatTerm")
     end,
     desc = "Toggle floating terminal",
   },
@@ -105,7 +105,7 @@ local definitions = {
     lhs = "<M-i>",
     mode = "t",
     rhs = function()
-      require("orbit.modules.keymaps.terminal").toggle("float", "floatTerm")
+      require("orbit.modules.terminal").toggle("float", "floatTerm")
     end,
     desc = "Toggle floating terminal",
   },

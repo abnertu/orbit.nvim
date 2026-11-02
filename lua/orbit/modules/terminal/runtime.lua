@@ -1,5 +1,6 @@
 -- Native terminal windows and sessions with no external UI or shell-script glue.
 local M = {}
+---@type table<string, integer>
 local sessions = {}
 
 local kinds = { sp = true, vsp = true, float = true }
@@ -54,6 +55,8 @@ function M.start_insert()
   vim.cmd.startinsert()
 end
 
+---@param buffer integer
+---@return integer?
 local function tab_window_for(buffer)
   for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
     if vim.api.nvim_win_is_valid(win) and vim.api.nvim_win_get_buf(win) == buffer then
@@ -62,9 +65,11 @@ local function tab_window_for(buffer)
   end
 end
 
-local function float_options()
-  local width = math.max(1, math.floor(vim.o.columns * 0.8))
-  local height = math.max(1, math.floor((vim.o.lines - 2) * 0.8))
+---@param opts Orbit.TerminalOptions
+---@return vim.api.keyset.win_config
+local function float_options(opts)
+  local width = math.max(1, math.floor(vim.o.columns * opts.float_width / 100))
+  local height = math.max(1, math.floor((vim.o.lines - 2) * opts.float_height / 100))
   return {
     relative = "editor",
     row = math.max(0, math.floor((vim.o.lines - height) / 2)),
@@ -76,10 +81,15 @@ local function float_options()
   }
 end
 
-local function display(buffer, pos, on_open)
+---@param buffer integer
+---@param pos Orbit.TerminalPosition
+---@param on_open fun(win: integer)
+---@param opts Orbit.TerminalOptions
+---@return integer
+local function display(buffer, pos, on_open, opts)
   local win
   if pos == "float" then
-    win = vim.api.nvim_open_win(buffer, true, float_options())
+    win = vim.api.nvim_open_win(buffer, true, float_options(opts))
   else
     vim.cmd(pos == "sp" and "belowright split" or "belowright vsplit")
     win = vim.api.nvim_get_current_win()
@@ -91,9 +101,15 @@ local function display(buffer, pos, on_open)
   end
 
   if pos == "sp" then
-    vim.api.nvim_win_set_height(win, math.max(1, math.floor(vim.o.lines * 0.3)))
+    vim.api.nvim_win_set_height(
+      win,
+      math.max(1, math.floor(vim.o.lines * opts.horizontal_size / 100))
+    )
   elseif pos == "vsp" then
-    vim.api.nvim_win_set_width(win, math.max(1, math.floor(vim.o.columns * 0.2)))
+    vim.api.nvim_win_set_width(
+      win,
+      math.max(1, math.floor(vim.o.columns * opts.vertical_size / 100))
+    )
   end
   vim.wo[win].number = false
   vim.wo[win].relativenumber = false
@@ -129,10 +145,13 @@ function M.is_live_terminal(buffer)
 end
 
 ---Create a terminal in a new split or floating window.
----@param pos 'sp'|'vsp'|'float'
+---@param pos Orbit.TerminalPosition
 ---@param id? string
+---@param opts? Orbit.TerminalOptions
 ---@return integer
-function M.open(pos, id)
+function M.open(pos, id, opts)
+  opts = opts
+    or assert(require("orbit.modules.terminal").current_options(), "terminal is not configured")
   assert(kinds[pos], "invalid terminal position: " .. tostring(pos))
   local reuse = id and sessions[id]
   local buffer = reuse and vim.api.nvim_buf_is_valid(reuse) and reuse or nil
@@ -150,12 +169,14 @@ function M.open(pos, id)
   local ok, err = xpcall(function()
     display(buffer, pos, function(win)
       displayed = win
-    end)
+    end, opts)
     if created then
       M.spawn()
     end
     vim.bo[buffer].filetype = "Term_" .. pos
-    M.start_insert()
+    if opts.startinsert then
+      M.start_insert()
+    end
   end, debug.traceback)
 
   if not ok then
@@ -175,10 +196,11 @@ function M.open(pos, id)
 end
 
 ---Toggle an owned terminal in this tab, or open its saved buffer.
----@param pos 'sp'|'vsp'|'float'
+---@param pos Orbit.TerminalPosition
 ---@param id string
+---@param opts? Orbit.TerminalOptions
 ---@return boolean
-function M.toggle(pos, id)
+function M.toggle(pos, id, opts)
   assert(type(id) == "string" and id ~= "", "terminal id is required")
   if not M.can_toggle() then
     return false
@@ -209,7 +231,7 @@ function M.toggle(pos, id)
     vim.api.nvim_win_close(win, true)
     return true
   end
-  M.open(pos, id)
+  M.open(pos, id, opts)
   return true
 end
 

@@ -96,13 +96,13 @@ local ok, err = pcall(function()
       assert(not lua("return vim.api.nvim_get_option_info2('shell', {}).was_set"))
       assert(
         vim.deep_equal(
-          lua("return require('orbit.modules.keymaps.terminal').shell_argv()"),
+          lua("return require('orbit.modules.terminal.runtime').shell_argv()"),
           { "pwsh.exe", "-NoLogo" }
         ),
         "the default terminal must select PowerShell with profiles enabled and no logo"
       )
     end
-    assert(lua("return require('orbit.modules.keymaps.terminal').toggle('vsp', 'acceptance')"))
+    assert(lua("return require('orbit.modules.terminal.runtime').toggle('vsp', 'acceptance')"))
     session.buffer = lua("return vim.api.nvim_get_current_buf()")
     session.job = lua("return vim.b[...].terminal_job_id", session.buffer)
     assert(lua("return vim.bo[...].buftype", session.buffer) == "terminal")
@@ -139,14 +139,14 @@ local ok, err = pcall(function()
   end
 
   check("hiding returns focus to the source window and keeps the shell", function()
-    assert(lua("return require('orbit.modules.keymaps.terminal').toggle('vsp', 'acceptance')"))
+    assert(lua("return require('orbit.modules.terminal.runtime').toggle('vsp', 'acceptance')"))
     assert(lua("return vim.api.nvim_get_current_win()") == session.origin)
     assert(lua("return vim.fn.jobwait({ ... }, 0)[1]", session.job) == -1)
   end)
 
   check("another tab reuses the same live session and owns its own window", function()
     lua("vim.cmd.tabnew()")
-    assert(lua("return require('orbit.modules.keymaps.terminal').toggle('vsp', 'acceptance')"))
+    assert(lua("return require('orbit.modules.terminal.runtime').toggle('vsp', 'acceptance')"))
     assert(
       lua("return vim.api.nvim_get_current_buf()") == session.buffer,
       "the second tab started another terminal"
@@ -157,9 +157,9 @@ local ok, err = pcall(function()
       return contains(session.buffer, "orbit-second-25")
     end, "input from the second tab produced no output")
     lua("vim.cmd.tabprevious()")
-    assert(lua("return require('orbit.modules.keymaps.terminal').toggle('vsp', 'acceptance')"))
+    assert(lua("return require('orbit.modules.terminal.runtime').toggle('vsp', 'acceptance')"))
     local first_tab_window = lua("return vim.api.nvim_get_current_win()")
-    assert(lua("return require('orbit.modules.keymaps.terminal').toggle('vsp', 'acceptance')"))
+    assert(lua("return require('orbit.modules.terminal.runtime').toggle('vsp', 'acceptance')"))
     assert(not lua("return vim.api.nvim_win_is_valid(...)", first_tab_window))
     lua("vim.cmd.tabnext()")
     assert(
@@ -179,7 +179,7 @@ local ok, err = pcall(function()
       "the exited terminal buffer must remain for this check"
     )
     lua("vim.cmd.tabclose()")
-    assert(lua("return require('orbit.modules.keymaps.terminal').toggle('vsp', 'acceptance')"))
+    assert(lua("return require('orbit.modules.terminal.runtime').toggle('vsp', 'acceptance')"))
     local replacement = lua("return vim.api.nvim_get_current_buf()")
     local replacement_job = lua("return vim.b[...].terminal_job_id", replacement)
     assert(replacement ~= session.buffer and replacement_job ~= session.job)

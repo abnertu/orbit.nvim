@@ -4,7 +4,7 @@ local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
 
 local orbit = require("orbit")
-local terminal = require("orbit.modules.keymaps.terminal")
+local terminal = require("orbit.modules.terminal.runtime")
 local completed = 0
 
 local function check(label, run)

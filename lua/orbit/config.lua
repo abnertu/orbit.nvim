@@ -4,6 +4,7 @@ local M = {}
 ---@field editor? Orbit.EditorOptions
 ---@field filetypes? Orbit.FiletypesOptions
 ---@field keymaps? Orbit.KeymapsOptions
+---@field terminal? Orbit.TerminalOptions
 ---@field keyguide? Orbit.KeyguideOptions
 ---@field menu? Orbit.MenuOptions
 ---@field events? Orbit.EventsOptions

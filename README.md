@@ -83,6 +83,7 @@ require("orbit").setup({
   modules = {
     editor = { number = true, relativenumber = false, shiftwidth = 4 },
     keymaps = { leader = " ", save = "<leader>w" },
+    terminal = { horizontal_size = 30, vertical_size = 20, startinsert = true },
     theme = { colorscheme = "tokyonight-night" },
     markdown = { vault = "~/notes" },
   },
@@ -130,6 +131,9 @@ Orbit never replaces a user-defined command. Each module defines its keys in its
 
 With an attached LSP, `gd`, `gD`, `gI`, `gy`, and `gR` navigate definitions, declarations, implementations, types, and references.
 Orbit restores prior buffer mappings after the last client detaches.
+
+`<leader>x` and `<leader>bd` share Snacks buffer deletion when active. Native buffer deletion also preserves split windows.
+Set `modules.terminal.enabled = false` to disable terminal actions without stopping saved sessions.
 
 Without an explicit `shell`, Windows terminals prefer available pwsh, then Windows PowerShell.
 PowerShell loads profiles and suppresses its startup banner. Explicit shell choices and flags take priority.
