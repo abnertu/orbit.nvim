@@ -40,8 +40,9 @@ local ok, err = xpcall(function()
 
   local project = vim.fs.joinpath(vim.fs.normalize(vim.uv.fs_realpath(workspace)), "project")
   assert(vim.fn.mkdir(project, "p") == 1)
-  run({ npm, "install", "--no-audit", "--no-fund", "--prefix", project,
-    "typescript@" .. typescript_version })
+  -- cmd.exe drops the quotes around npm.cmd when another argument has spaces.
+  assert(vim.fn.writefile({ "{}" }, vim.fs.joinpath(project, "package.json")) == 0)
+  run({ npm, "install", "--no-audit", "--no-fund", "typescript@" .. typescript_version }, project)
   local tsserver = vim.fs.joinpath(project, "node_modules", "typescript", "lib", "tsserver.js")
   assert(vim.uv.fs_stat(tsserver), "TypeScript did not install " .. tsserver)
   assert(vim.fn.writefile({ '{ "compilerOptions": { "strict": true } }' },
