@@ -16,7 +16,7 @@ end
 local ok, err = xpcall(function()
   assert(vim.fn.executable("git") == 1, "Git is required")
   assert(vim.fn.mkdir(parent, "p") == 1)
-  run({ "git", "clone", "--local", "--quiet", root, installed })
+  run({ "git", "clone", "--no-hardlinks", "--quiet", root, installed })
   assert(vim.fn.filereadable(vim.fs.joinpath(installed,
     "lua", "orbit", "init.lua")) == 1)
   vim.opt.packpath:prepend(site)

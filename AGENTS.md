@@ -77,12 +77,13 @@
 - Run throwaway checks freely without committing them.
 - Test persisted settings, failure recovery and plugin boundaries through real entry points.
 - Reject tests that only compare copied source text or duplicate configuration inventories.
-- Run `nvim --headless -u NONE -l tests/schema_spec.lua` for schema changes.
-- Run `nvim --headless -u NONE -l scripts/generate_schema.lua --check` for schema changes.
+- Run `just schema` for schema changes.
 - Validate saved settings before applying them. Preserve accepted settings when file reading or validation fails.
 - On explicit reload, apply only changed option fields so unchanged buffer/window overrides survive.
 - Observe only the configured settings path and replace the watcher on repeated setup.
-- Run `nvim --headless -u NONE -l tests/settings_spec.lua` after settings changes.
+- Run `just schema` after settings changes.
+- Run `just test` before you push source changes.
+- Run tests through `scripts/test.lua` so each suite gets private XDG directories.
 - Run Neovim startup and behavior checks before claiming runtime compatibility.
 - Fail required integration checks when dependencies are unavailable.
 - Report missing prerequisites and tests that could not execute.
@@ -91,6 +92,7 @@
 
 - Keep the Linux and Windows checks on pushes, pull requests, and a daily default-branch schedule.
 - Require schema tests, generated-file checks and headless Neovim smoke tests.
+- Call test suites in CI only through the `just` recipes.
 - Add CI checks only for concrete behavior failures not covered by an existing check.
 - Run checks on pull requests and pushes to branches.
 - Keep release checks in a separate workflow for version tags.
