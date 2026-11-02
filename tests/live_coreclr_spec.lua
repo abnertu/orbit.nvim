@@ -85,7 +85,7 @@ local ok, err = xpcall(function()
       label .. " path: netcoredbg did not stop at the breakpoint (" .. path .. ")")
     assert(stopped.current_frame.line == 3,
       label .. " path stopped at line " .. tostring(stopped.current_frame.line))
-    assert(#dap.sessions() == 1, label .. " path started duplicate sessions")
+    assert(vim.tbl_count(dap.sessions()) == 1, label .. " path started duplicate sessions")
     dap.continue()
     wait(function() return terminated and next(dap.sessions()) == nil end,
       label .. " path: session did not finish")
