@@ -29,12 +29,8 @@ check("initial setup may disable devicons mock without loading plugins", functio
 end)
 
 check("registry derives plugin specs from module manifest", function()
-  local expected = require("orbit.plugins")
-  local compatible = require("plugins")
-  assert(#expected == #compatible)
   local names = {}
-  for index, spec in ipairs(expected) do
-    assert(spec == compatible[index], "compatibility import changed a feature")
+  for _, spec in ipairs(require("orbit.plugins")) do
     names[spec[1]] = (names[spec[1]] or 0) + 1
   end
   assert(names["nvim-mini/mini.icons"] == 1)

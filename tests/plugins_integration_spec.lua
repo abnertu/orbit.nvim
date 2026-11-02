@@ -33,7 +33,7 @@ local function fixture(version)
   return string.format([=[
 return {
   setup = function(specs, config)
-    assert(specs[1].import == "plugins")
+    assert(specs[1].import == "orbit.plugins")
     assert(config.defaults.lazy == true)
     local items = require(specs[1].import)
     local icons, gitsigns_spec

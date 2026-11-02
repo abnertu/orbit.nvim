@@ -39,7 +39,7 @@ require("orbit").setup({
     plugins = {
       enabled = true,
       path = vim.fn.stdpath("data") .. "/lazy/lazy.nvim",
-      import = "plugins",
+      import = "orbit.plugins",
     },
   },
 })

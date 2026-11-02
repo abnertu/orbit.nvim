@@ -18,8 +18,8 @@ end
 package.preload.lazy = function()
   return {
     setup = function(specs, config)
-      assert(specs[1].import == "plugins")
-      local entries = require("plugins")
+      assert(specs[1].import == "orbit.plugins")
+      local entries = require("orbit.plugins")
       local found = {}
       for _, entry in ipairs(entries) do found[entry[1]] = true end
       assert(found["nvim-mini/mini.icons"])
