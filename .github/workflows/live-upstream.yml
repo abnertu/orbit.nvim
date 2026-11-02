@@ -210,20 +210,10 @@ jobs:
           nvim --headless -u NONE -l tests/live_sqlfluff_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Real SQLFluff integration failed' }
 
-      - name: Run real CoreCLR debugging with the nvim-dap fork
-        env:
-          ORBIT_NVIM_DAP: fork
+      - name: Run real CoreCLR debugging
         run: |
           nvim --headless -u NONE -l tests/live_coreclr_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real CoreCLR integration failed with the fork' }
-
-      - name: Run real CoreCLR debugging with upstream nvim-dap
-        if: ${{ !cancelled() }}
-        env:
-          ORBIT_NVIM_DAP: upstream
-        run: |
-          nvim --headless -u NONE -l tests/live_coreclr_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real CoreCLR integration failed with upstream' }
+          if ($LASTEXITCODE -ne 0) { throw 'Real CoreCLR integration failed' }
 
       - name: Run pinned real Harpoon navigation integration
         run: |

@@ -3,7 +3,7 @@
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
 
-local pinned = "8aba1e3805438ee6f74207e0b7385ef951bb9945"
+local pinned = "e03a0f2b786ccbf3398ed445d9700df8ed1e7627"
 local source = "https://github.com/Orbit-Lua/nvim-dap.git"
 local directory = vim.fn.tempname() .. " live dap with spaces"
 local listener, client

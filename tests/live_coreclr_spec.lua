@@ -1,16 +1,11 @@
 -- Debug a disposable C# project with real netcoredbg through Orbit's DAP
 -- owner and dotnet-cli. Requires Git, network, the .NET SDK and netcoredbg.
--- ORBIT_NVIM_DAP selects the nvim-dap source: fork (default) or upstream.
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
 local windows = vim.fn.has("win32") == 1
-local dap_sources = {
-  fork = { "https://github.com/Orbit-Lua/nvim-dap.git", "8aba1e3805438ee6f74207e0b7385ef951bb9945" },
-  upstream = { "https://github.com/mfussenegger/nvim-dap.git", "cfa2d58f4537aca6ca83e2de1a0d9f1491121264" },
-}
-local variant = vim.env.ORBIT_NVIM_DAP or "fork"
+-- Upstream nvim-dap does not stop at forward-slash Windows paths (PR #125).
 local pins = {
-  assert(dap_sources[variant], "unknown ORBIT_NVIM_DAP: " .. variant),
+  { "https://github.com/Orbit-Lua/nvim-dap.git", "e03a0f2b786ccbf3398ed445d9700df8ed1e7627" },
   { "https://github.com/Orbit-Lua/dotnet-cli.nvim.git", "a74464a59be996b5db3e7f9480b937c9ff992471" },
 }
 local workspace = vim.fn.tempname() .. " live coreclr with spaces"
@@ -30,7 +25,6 @@ local ok, err = xpcall(function()
   for _, tool in ipairs({ "git", "dotnet", windows and "netcoredbg.exe" or "netcoredbg" }) do
     assert(vim.fn.executable(tool) == 1, tool .. " is required on PATH")
   end
-  print("nvim-dap source: " .. variant)
   for index, pin in ipairs(pins) do
     local directory = vim.fs.joinpath(workspace, "plugin" .. index)
     assert(vim.fn.mkdir(directory, "p") == 1)
@@ -63,11 +57,12 @@ local ok, err = xpcall(function()
 
   -- Native paths come from :edit; forward slashes come from pickers and
   -- vim.fs.normalize. Windows debuggers must accept both buffer names.
-  local spellings = { native = program }
+  local spellings = { { "native", program } }
   if windows then
-    spellings = { native = (program:gsub("/", "\\")), forward = (program:gsub("\\", "/")) }
+    spellings = { { "native", (program:gsub("/", "\\")) }, { "forward", (program:gsub("\\", "/")) } }
   end
-  for label, path in pairs(spellings) do
+  for _, spelling in ipairs(spellings) do
+    local label, path = spelling[1], spelling[2]
     for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
       if vim.api.nvim_buf_get_name(buffer):lower():find("program.cs", 1, true) then
         vim.api.nvim_buf_delete(buffer, { force = true })
@@ -92,7 +87,7 @@ local ok, err = xpcall(function()
       label .. " path stopped at line " .. tostring(stopped.current_frame.line))
     assert(#dap.sessions() == 1, label .. " path started duplicate sessions")
     dap.continue()
-    wait(function() return terminated and dap.session() == nil end,
+    wait(function() return terminated and next(dap.sessions()) == nil end,
       label .. " path: session did not finish")
     print("PASS real netcoredbg stops at a breakpoint with a " .. label .. " path")
   end
@@ -101,4 +96,4 @@ end, debug.traceback)
 pcall(function() require("dap").terminate() end)
 vim.fn.delete(workspace, "rf")
 assert(ok, tostring(err))
-print("Real CoreCLR integration tests passed with nvim-dap " .. variant .. ".")
+print("Real CoreCLR integration tests passed.")
