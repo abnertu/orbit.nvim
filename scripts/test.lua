@@ -80,8 +80,9 @@ for index, item in ipairs(list) do
       if data then io.stderr:write(data) end
     end,
   }):wait()
-  io.stdout:write(string.format("%s %s (%.1fs)\n", result.code == 0 and "ok" or "FAILED",
-    item.name, (vim.uv.hrtime() - started) / 1e9))
+  io.stdout:write(string.format("%s %s (%.1fs)%s\n", result.code == 0 and "ok" or "FAILED",
+    item.name, (vim.uv.hrtime() - started) / 1e9,
+    result.code == 0 and "" or string.format(" exit=%d signal=%d", result.code, result.signal)))
   if ci then io.stdout:write("::endgroup::\n") end
   if result.code ~= 0 then
     failed[#failed + 1] = item.name
