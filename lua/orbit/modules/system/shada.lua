@@ -32,16 +32,13 @@ local function inspect(directory)
   return deleted
 end
 
----Remove regular temporary files from current and legacy ShaDa directories.
+---Remove regular temporary files from the current ShaDa directory.
 ---The optional directory list is for explicit recovery and test fixtures.
 ---@param directories? string[]
 ---@return integer? count
 ---@return string? err
 function M.clear(directories)
-  directories = directories or {
-    vim.fs.joinpath(vim.fn.stdpath("state"), "shada"),
-    vim.fs.joinpath(vim.fn.stdpath("data"), "shada"),
-  }
+  directories = directories or { vim.fs.joinpath(vim.fn.stdpath("state"), "shada") }
   local seen, count = {}, 0
   for _, directory in ipairs(directories) do
     local normalized = vim.fs.normalize(directory)
