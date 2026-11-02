@@ -5,6 +5,7 @@ on:
     branches: ['**']
   pull_request:
   workflow_dispatch:
+  workflow_call:
   schedule:
     - cron: '17 2 * * *'
 
@@ -30,6 +31,9 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v4
+        with:
+          # Release runs test the tagged commit with full ancestry.
+          fetch-depth: 0
 
       - name: Install Neovim
         run: |
