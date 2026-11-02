@@ -74,6 +74,25 @@ jobs:
 
       - name: Run the offline test suites
         run: |
+          # Temporary diagnostic: compare the existing suite with screen output and direct output.
+          $original = Join-Path $env:RUNNER_TEMP 'statusline-spec-original.lua'
+          Copy-Item tests/statusline_spec.lua $original
+          $baseline = git show 8c13660:tests/statusline_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Baseline fixture read failed' }
+          $baseline | Set-Content tests/statusline_spec.lua
+          $baselineFailures = 0
+          for ($attempt = 1; $attempt -le 30; $attempt++) {
+            just test statusline
+            if ($LASTEXITCODE -ne 0) { $baselineFailures++ }
+          }
+          Copy-Item $original tests/statusline_spec.lua
+          $candidateFailures = 0
+          for ($attempt = 1; $attempt -le 30; $attempt++) {
+            just test statusline
+            if ($LASTEXITCODE -ne 0) { $candidateFailures++ }
+          }
+          Write-Output "STATUSLINE_DIAGNOSTIC baseline_failures=$baselineFailures candidate_failures=$candidateFailures"
+          if ($candidateFailures -ne 0) { throw 'Candidate statusline fixture crashed' }
           just test
           if ($LASTEXITCODE -ne 0) { throw 'Offline test suites failed' }
 
