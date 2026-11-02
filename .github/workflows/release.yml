@@ -27,6 +27,8 @@ jobs:
         run: |
           set -eu
           [[ "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::$TAG is not MAJOR.MINOR.PATCH"; exit 1; }
+          # actions/checkout can store the pushed tag as a lightweight ref.
+          git fetch --force origin "refs/tags/$TAG:refs/tags/$TAG"
           [ "$(git cat-file -t "refs/tags/$TAG")" = tag ] || { echo "::error::$TAG is not an annotated tag"; exit 1; }
           git merge-base --is-ancestor "$GITHUB_SHA" origin/main || { echo "::error::$TAG is not on main"; exit 1; }
           grep -q "^## \[$TAG\] - " CHANGELOG.md || { echo "::error::CHANGELOG.md has no $TAG section"; exit 1; }
