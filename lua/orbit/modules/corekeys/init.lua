@@ -56,7 +56,11 @@ local definitions = {
   { lhs = "jk", mode = "i", rhs = "<Esc>", desc = "Leave insert mode" },
   { lhs = "Q", mode = "n", rhs = "q", desc = "Record a macro" },
   { lhs = "q", mode = "n", rhs = "<Nop>", desc = "Reserve lowercase q" },
-  { lhs = "K", mode = "n", rhs = "<Nop>", desc = "Reserve K for an attached LSP" },
+  { lhs = "K", mode = "n", rhs = function()
+    if #vim.lsp.get_clients({ bufnr = 0, method = "textDocument/hover" }) > 0 then
+      vim.lsp.buf.hover()
+    end
+  end, desc = "Show documentation under the cursor" },
   { lhs = "<C-x>", mode = "t", rhs = "<C-\\><C-n>", desc = "Leave terminal mode" },
   { lhs = "<Tab>", mode = "n", rhs = function()
     require("orbit.modules.corekeys.buffers").next()
