@@ -94,3 +94,10 @@ The final package uses current Orbit interfaces and paths.
 It does not require another configuration checkout, framework cache, or source comparison during normal development.
 Functional regression tests, schema checks, and platform integration remain product requirements.
 Release publication follows the repository's versioning and approval rules.
+
+## Release validation
+
+Release acceptance requires passing Linux and Windows quality checks.
+Live suites run only on manual demand and do not block a release.
+The 1.0.0 acceptance retains the recorded integration and standalone installation evidence.
+Final release validation does not repeat those live sessions.

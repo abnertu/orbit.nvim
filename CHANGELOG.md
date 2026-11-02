@@ -36,6 +36,12 @@ The first stable release. It completes the modular Lua rewrite tracked in [#1](h
 
 ### Fixed
 
+- Mason-managed servers resolve before the Mason UI loads.
+- LSP hover and navigation keys use native handlers and restore complete prior buffer mappings.
+- The first semicolon opens the commandline UI, and first-demand startup completes dashboard timing.
+- Opening a file releases an unused startup buffer while preserving user scratch buffers.
+- Theme, statusline, tabline and debugger visuals preserve their configured colors and symbols.
+- Dotnet Manager colors remain independent of context menus.
 - Color previews stay cleared when the owner or hex previews disable before a queued refresh.
 - Split windows share one color swatch for each visible hex code.
 - DAP UI closes when an attach session ends.
