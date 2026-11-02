@@ -83,7 +83,7 @@ end)
 local dap = {
   adapters = {}, configurations = {},
   listeners = {
-    before = { terminate = {}, event_exited = {} },
+    before = { terminate = {}, event_exited = {}, event_terminated = {} },
   },
 }
 local ui_calls = { setup = 0, toggle = 0, restart = 0, watched = 0, closed = 0 }
