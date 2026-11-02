@@ -1,21 +1,38 @@
 local M = {}
 
----@alias Orbit.EventsSnapshot {group?: integer, active?: Orbit.EventsOptions, ui_entered: boolean, filepost_emitted: boolean, filepost_id?: integer}
+---@alias Orbit.EventsSnapshot {group?: integer, active?: Orbit.EventsOptions, ui_entered: boolean, filepost_emitted: boolean, filepost_id?: integer, startup_buffer?: integer}
 local group
 local active
 local ui_entered = false
 local filepost_emitted = false
 local filepost_id
+---@type integer?
+local startup_buffer
 
 ---@class Orbit.EventsOptions # Standalone core Neovim events.
 ---@field enabled? boolean @default(true) # Enable core event behavior.
 ---@field diagnostics_redraw? boolean @default(true) # Redraw the statusline when diagnostics change.
----@field startup_buffer? boolean @default(true) @restart(true) # Keep a listed unnamed buffer behind startup interfaces.
+---@field startup_buffer? boolean @default(true) @restart(true) # Keep a temporary unnamed buffer behind startup interfaces.
 ---@field directory_argument? boolean @default(true) @restart(true) # Change directory for a directory startup argument.
 ---@field filepost? boolean @default(true) @restart(true) # Emit a one-shot FilePost event when a normal file is ready.
 
 local function is_active(name)
   return active and active.enabled and active[name]
+end
+
+local function release_startup_buffer()
+  if not is_active("startup_buffer") then return end
+  local buffer = startup_buffer
+  if not buffer then return end
+  startup_buffer = nil
+  if not vim.api.nvim_buf_is_valid(buffer)
+    or not vim.api.nvim_buf_is_loaded(buffer)
+    or vim.bo[buffer].modified or vim.bo[buffer].buftype ~= ""
+    or vim.api.nvim_buf_get_name(buffer) ~= ""
+    or #vim.fn.win_findbuf(buffer) > 0
+    or not vim.deep_equal(vim.api.nvim_buf_get_lines(buffer, 0, -1, false), { "" })
+  then return end
+  vim.api.nvim_buf_delete(buffer, { force = false })
 end
 
 local function has_listed_unnamed_buffer()
@@ -114,6 +131,17 @@ local function register()
       end
     end,
   })
+  vim.api.nvim_create_autocmd("BufEnter", {
+    group = group,
+    desc = "Release an unused Orbit startup buffer after opening a file",
+    callback = function(event)
+      if startup_buffer and is_active("startup_buffer")
+        and vim.bo[event.buf].buftype == "" and vim.api.nvim_buf_get_name(event.buf) ~= ""
+      then
+        vim.schedule(release_startup_buffer)
+      end
+    end,
+  })
   vim.api.nvim_create_autocmd("VimEnter", {
     group = group,
     desc = "Keep an unnamed listed buffer behind the startup UI",
@@ -126,8 +154,10 @@ local function register()
       end
 
       vim.schedule(function()
-        if is_active("startup_buffer") and not has_listed_unnamed_buffer() then
-          vim.api.nvim_create_buf(true, false)
+        local current = vim.api.nvim_get_current_buf()
+        local file_ready = vim.bo[current].buftype == "" and vim.api.nvim_buf_get_name(current) ~= ""
+        if is_active("startup_buffer") and not file_ready and not has_listed_unnamed_buffer() then
+          startup_buffer = vim.api.nvim_create_buf(true, false)
         end
       end)
     end,
@@ -162,6 +192,7 @@ function M.capture()
     ui_entered = ui_entered,
     filepost_emitted = filepost_emitted,
     filepost_id = filepost_id,
+    startup_buffer = startup_buffer,
   }
 end
 
@@ -175,6 +206,7 @@ function M.restore(snapshot)
   ui_entered = snapshot.ui_entered
   filepost_emitted = snapshot.filepost_emitted
   filepost_id = snapshot.filepost_id
+  startup_buffer = snapshot.startup_buffer
   active = snapshot.active and vim.deepcopy(snapshot.active) or nil
 end
 

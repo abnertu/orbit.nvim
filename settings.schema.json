@@ -497,7 +497,7 @@
             },
             "startup_buffer": {
               "default": true,
-              "description": "Keep a listed unnamed buffer behind startup interfaces.",
+              "description": "Keep a temporary unnamed buffer behind startup interfaces.",
               "type": "boolean",
               "x-orbit-restart": true
             }

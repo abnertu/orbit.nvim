@@ -232,6 +232,8 @@ end)
     exec(string.format("vim.cmd.edit(vim.fn.fnameescape(%q)); return true", second))
     local final = snapshot()
     healthy(final)
+    local unused = vim.tbl_filter(function(b) return b.listed and b.bt == "" and b.name == "" end, final.buffers)
+    assert(#unused == 0, "opening a file left an unnamed startup buffer in the buffer list")
     assert(#events(final, "FilePost") == (posts == 0 and 1 or posts), "later file repeated FilePost")
     assert(#events(final, "BufReadPre", second) == 1)
     if plugins then

@@ -41,7 +41,7 @@ local function events(snapshot, event, path)
   end, snapshot.journal)
 end
 
----@param kind 'empty'|'interface'|'existing'|'new'|'directory'
+---@param kind 'empty'|'interface'|'modified-interface'|'existing'|'new'|'directory'
 ---@param plugins boolean
 local function check(kind, plugins)
   local base = vim.fn.tempname() .. " orbit startup with spaces"
@@ -93,7 +93,7 @@ end)
     if plugins then lazy_fixture(lazy) end
     local options = {
       root = root, lazy = lazy, plugins = plugins,
-      interface = kind == "interface",
+      interface = kind == "interface" or kind == "modified-interface",
     }
     vim.fn.writefile(vim.split(string.format("dofile(%q)(%s)",
       vim.fs.joinpath(root, "tests", "support", "startup.lua"), vim.inspect(options)), "\n"), init)
@@ -130,11 +130,13 @@ end)
     assert(initial.status == (plugins and "loaded" or "disabled"), "unexpected plugin state")
     assert(initial.lazy_loaded == plugins, "plugin opt-in was ignored")
 
-    if kind == "empty" or kind == "interface" then
+    local placeholder, user_blank
+    if kind == "empty" or kind == "interface" or kind == "modified-interface" then
       local unnamed = vim.tbl_filter(function(buffer)
         return buffer.listed and buffer.buftype == "" and buffer.name == ""
       end, initial.buffers)
       assert(#unnamed == 1, "startup must retain one unnamed listed normal buffer")
+      placeholder = unnamed[1].id
       assert(initial.fileposts == 0, "unnamed/interface startup consumed FilePost")
     elseif kind == "directory" then
       assert(canonical(initial.cwd) == canonical(project), "directory startup did not change cwd")
@@ -168,12 +170,27 @@ end)
       end
     end
 
+    if kind == "modified-interface" then
+      exec(string.format("vim.api.nvim_buf_set_lines(%d,0,-1,false,{'user scratch'}); return true", placeholder))
+    elseif kind == "interface" then
+      user_blank = exec("return vim.api.nvim_create_buf(true,false)")
+    end
+
     exec("require('orbit.tests.startup').repeat_setup(); return true")
     local repeated = snapshot()
     assert(repeated.fileposts == initial.fileposts and repeated.setups == initial.setups,
       "repeated setup repeated startup work")
     exec(string.format("require('orbit.tests.startup').edit(%q); return true", second))
     local final = snapshot()
+    if kind == "interface" then
+      assert(exec(string.format("return not vim.api.nvim_buf_is_valid(%d)", placeholder)),
+        "opening a file left Orbit's unnamed startup buffer listed")
+      assert(exec(string.format("return vim.api.nvim_buf_is_valid(%d) and vim.bo[%d].buflisted", user_blank, user_blank)),
+        "opening a file deleted a user-owned unnamed buffer")
+    elseif kind == "modified-interface" then
+      assert(exec(string.format("return vim.api.nvim_buf_is_valid(%d) and vim.bo[%d].modified", placeholder, placeholder)),
+        "opening a file deleted edited startup scratch contents")
+    end
     local expected = initial.fileposts == 0 and 1 or initial.fileposts
     assert(final.fileposts == expected and final.setups == initial.setups, "later file repeated startup work")
     assert(#events(final, "BufReadPre", second) == 1, "later read observer count changed")
@@ -202,7 +219,7 @@ end)
 end
 
 for _, plugins in ipairs({false, true}) do
-  for _, kind in ipairs({"empty", "interface", "existing", "new", "directory"}) do
+  for _, kind in ipairs({"empty", "interface", "modified-interface", "existing", "new", "directory"}) do
     check(kind, plugins)
   end
 end
