@@ -33,8 +33,20 @@ function M.spec()
       "folke/edgy.nvim",
       event = "VeryLazy",
       keys = {
-        { c.toggle_key, function() require("edgy").toggle() end, desc = "edgy toggle" },
-        { c.select_key, function() require("edgy").select() end, desc = "edgy select window" },
+        {
+          c.toggle_key,
+          function()
+            require("edgy").toggle()
+          end,
+          desc = "edgy toggle",
+        },
+        {
+          c.select_key,
+          function()
+            require("edgy").select()
+          end,
+          desc = "edgy select window",
+        },
       },
       opts = function()
         return require("orbit.modules.layout.views").build(c.size_percent / 100)

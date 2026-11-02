@@ -20,10 +20,16 @@ function M.build(opts)
       ["<C-S>"] = { "show", "show_documentation", "hide_documentation" },
       ["<C-u>"] = { "scroll_documentation_up", "fallback" },
       ["<C-d>"] = { "scroll_documentation_down", "fallback" },
-      ["<C-e>"] = { function(cmp)
-        if cmp.is_visible() then cmp.hide() else cmp.show() end
-        return true
-      end },
+      ["<C-e>"] = {
+        function(cmp)
+          if cmp.is_visible() then
+            cmp.hide()
+          else
+            cmp.show()
+          end
+          return true
+        end,
+      },
       ["<C-y>"] = { "select_and_accept" },
       ["<Tab>"] = { snippet_forward, "fallback" },
       ["<S-Tab>"] = { "snippet_backward", "fallback" },
@@ -34,18 +40,20 @@ function M.build(opts)
       list = { selection = { preselect = true, auto_insert = true } },
       menu = {
         border = "rounded",
-        draw = { treesitter = { "lsp" }, columns = {
-          { "kind_icon" },
-          { "label", "label_description", gap = 1 },
-          { "source_name" },
-        } },
+        draw = {
+          treesitter = { "lsp" },
+          columns = {
+            { "kind_icon" },
+            { "label", "label_description", gap = 1 },
+            { "source_name" },
+          },
+        },
       },
       documentation = {
         auto_show = opts.documentation_auto_show,
         auto_show_delay_ms = opts.documentation_delay,
         draw = function(options)
-          return require("orbit.modules.completion.runtime")
-            .draw_documentation(options)
+          return require("orbit.modules.completion.runtime").draw_documentation(options)
         end,
         window = { border = "rounded" },
       },
@@ -55,15 +63,18 @@ function M.build(opts)
       enabled = opts.cmdline,
       keymap = {
         preset = "cmdline",
-        ["<Right>"] = false, ["<Left>"] = false,
+        ["<Right>"] = false,
+        ["<Left>"] = false,
         ["<C-j>"] = { "select_next", "fallback" },
         ["<C-k>"] = { "select_prev", "fallback" },
       },
       completion = {
         list = { selection = { preselect = false } },
-        menu = { auto_show = function()
-          return vim.fn.getcmdtype() == ":"
-        end },
+        menu = {
+          auto_show = function()
+            return vim.fn.getcmdtype() == ":"
+          end,
+        },
         ghost_text = { enabled = true },
       },
     },
@@ -72,7 +83,8 @@ function M.build(opts)
       per_filetype = { lua = { inherit_defaults = true, "lazydev" } },
       providers = {
         lazydev = {
-          name = "LazyDev", module = "lazydev.integrations.blink",
+          name = "LazyDev",
+          module = "lazydev.integrations.blink",
           score_offset = 100,
         },
         lsp = { fallbacks = {} },

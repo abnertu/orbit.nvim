@@ -14,9 +14,13 @@ local old_global = vim.g.hangar_state_path
 
 local function run(argv)
   local result = vim.system(argv, { text = true, timeout = 120000 }):wait()
-  assert(result.code == 0,
-    "Git checkout failed: " .. vim.inspect(argv) .. ": "
-      .. tostring(result.stderr or result.stdout or result.code))
+  assert(
+    result.code == 0,
+    "Git checkout failed: "
+      .. vim.inspect(argv)
+      .. ": "
+      .. tostring(result.stderr or result.stdout or result.code)
+  )
   return result.stdout or ""
 end
 
@@ -31,21 +35,24 @@ local ok, err = xpcall(function()
   run({ "git", "init", plugin })
   run({ "git", "-C", plugin, "fetch", "--depth", "1", source, revision })
   run({ "git", "-C", plugin, "checkout", "--detach", "FETCH_HEAD" })
-  assert(vim.trim(run({ "git", "-C", plugin, "rev-parse", "HEAD" })) == revision,
-    "real Hangar checkout did not match the pinned revision")
+  assert(
+    vim.trim(run({ "git", "-C", plugin, "rev-parse", "HEAD" })) == revision,
+    "real Hangar checkout did not match the pinned revision"
+  )
   vim.opt.rtp:prepend(plugin)
 
   vim.g.hangar_state_path = decoy
   local orbit = require("orbit")
   local owner = require("orbit.modules.hangar")
   orbit.setup({ modules = { hangar = { state_file = state_path } } })
-  assert(package.loaded.hangar == nil,
-    "root setup must not load upstream Hangar")
+  assert(package.loaded.hangar == nil, "root setup must not load upstream Hangar")
   local declaration = owner.spec()[2]
   assert(declaration[1] == "Orbit-Lua/hangar.nvim")
   assert(declaration.version == "^0.3")
-  assert(vim.fn.filereadable(state_path) == 0,
-    "Hangar state must not be created by initial root setup")
+  assert(
+    vim.fn.filereadable(state_path) == 0,
+    "Hangar state must not be created by initial root setup"
+  )
 
   declaration.config()
   assert(package.loaded.hangar ~= nil, "Hangar was not loaded by its owner")
@@ -53,10 +60,11 @@ local ok, err = xpcall(function()
   local state = require("hangar.state")
   local bridge = require("orbit.hangar_bridge")
   assert(vim.api.nvim_get_commands({}).Hangar ~= nil)
-  assert(require("hangar.config").get().state_path() == state_path,
-    "explicit Orbit state path was not passed to real Hangar")
-  assert(vim.fn.filereadable(state_path) == 0,
-    "Hangar created a state file without a user action")
+  assert(
+    require("hangar.config").get().state_path() == state_path,
+    "explicit Orbit state path was not passed to real Hangar"
+  )
+  assert(vim.fn.filereadable(state_path) == 0, "Hangar created a state file without a user action")
   assert(bridge.is_enabled("lsp", "lua_ls"))
   assert(bridge.is_enabled("formatter", "ruff_fix"))
   print("PASS pinned real Hangar Lazy activation and read-only startup")
@@ -65,7 +73,9 @@ local ok, err = xpcall(function()
   assert(state.set_enabled("linter", "sqlfluff", false))
   assert(state.set_enabled("formatter", "ruff_fix", false))
   assert(state.set_order("formatter", "python", {
-    "ruff_format", "ruff_organize_imports", "ruff_fix",
+    "ruff_format",
+    "ruff_organize_imports",
+    "ruff_fix",
   }))
   assert(not bridge.is_enabled("lsp", "lua_ls"))
   assert(bridge.is_enabled("lsp", "pyright"))
@@ -73,10 +83,14 @@ local ok, err = xpcall(function()
   assert(saved().lsp.lua_ls == false)
   assert(saved().formatter.ruff_fix == false)
   assert(vim.deep_equal(saved().formatter_order.python, {
-    "ruff_format", "ruff_organize_imports", "ruff_fix",
+    "ruff_format",
+    "ruff_organize_imports",
+    "ruff_fix",
   }))
-  assert(vim.fn.filereadable(decoy) == 0,
-    "Hangar wrote the global override instead of the explicit path")
+  assert(
+    vim.fn.filereadable(decoy) == 0,
+    "Hangar wrote the global override instead of the explicit path"
+  )
   print("PASS real Hangar persists LSP/linter/formatter flags and order")
 
   local initial = {
@@ -85,19 +99,25 @@ local ok, err = xpcall(function()
     ["*"] = { "trim_whitespace" },
   }
   local fmt = bridge.filter("formatter", initial)
-  assert(vim.deep_equal(fmt.python, {
-    "ruff_format", "ruff_organize_imports",
-  }), "real Hangar did not reorder and disable configured Python formatters: "
-    .. vim.inspect(fmt.python))
+  assert(
+    vim.deep_equal(fmt.python, {
+      "ruff_format",
+      "ruff_organize_imports",
+    }),
+    "real Hangar did not reorder and disable configured Python formatters: "
+      .. vim.inspect(fmt.python)
+  )
   assert(vim.deep_equal(fmt.lua, { "stylua" }))
   assert(vim.deep_equal(fmt["*"], { "trim_whitespace" }))
-  assert(initial.python[1] == "ruff_fix",
-    "Hangar mutated Orbit's original formatter table")
+  assert(initial.python[1] == "ruff_fix", "Hangar mutated Orbit's original formatter table")
   local linters = bridge.filter("linter", {
-    sql = { "sqlfluff" }, lua = { "luacheck" },
+    sql = { "sqlfluff" },
+    lua = { "luacheck" },
   })
-  assert(vim.deep_equal(linters.sql, {}),
-    "real Hangar failed to suppress a saved disabled SQLFluff linter")
+  assert(
+    vim.deep_equal(linters.sql, {}),
+    "real Hangar failed to suppress a saved disabled SQLFluff linter"
+  )
   assert(vim.deep_equal(linters.lua, { "luacheck" }))
   print("PASS real Hangar filters Orbit formatter/linter activation and order")
 
@@ -106,28 +126,41 @@ local ok, err = xpcall(function()
   assert(not state.is_enabled("formatter", "ruff_fix"))
   assert(not state.is_enabled("linter", "sqlfluff"))
   assert(vim.deep_equal(state.get_order("formatter", "python"), {
-    "ruff_format", "ruff_organize_imports", "ruff_fix",
+    "ruff_format",
+    "ruff_organize_imports",
+    "ruff_fix",
   }))
-  assert(not bridge.is_enabled("lsp", "lua_ls"),
-    "a fresh Hangar state read lost persisted user intent")
+  assert(
+    not bridge.is_enabled("lsp", "lua_ls"),
+    "a fresh Hangar state read lost persisted user intent"
+  )
   print("PASS real Hangar reloads saved state from disk")
 
   -- The current process owns this lock, so Hangar must reject a second
   -- writer without changing its cached state or the persisted JSON.
   local content = table.concat(vim.fn.readfile(state_path), "\n")
   local lock = state_path .. ".lock"
-  vim.fn.writefile({ vim.json.encode({
-    pid = vim.uv.os_getpid(), token = "live-owner-fixture",
-  }) }, lock)
+  vim.fn.writefile(
+    { vim.json.encode({
+      pid = vim.uv.os_getpid(),
+      token = "live-owner-fixture",
+    }) },
+    lock
+  )
   local wrote, reason = state.set_enabled("lsp", "lua_ls", true)
-  assert(wrote == false and type(reason) == "string",
-    "real Hangar must refuse a concurrent active state writer")
-  assert(table.concat(vim.fn.readfile(state_path), "\n") == content,
-    "blocked Hangar update modified persisted state")
-  assert(not state.is_enabled("lsp", "lua_ls"),
-    "blocked Hangar update modified the accepted state")
-  assert(vim.json.decode(table.concat(vim.fn.readfile(lock), "\n")).token
-    == "live-owner-fixture", "Hangar stole a live writer's lock")
+  assert(
+    wrote == false and type(reason) == "string",
+    "real Hangar must refuse a concurrent active state writer"
+  )
+  assert(
+    table.concat(vim.fn.readfile(state_path), "\n") == content,
+    "blocked Hangar update modified persisted state"
+  )
+  assert(not state.is_enabled("lsp", "lua_ls"), "blocked Hangar update modified the accepted state")
+  assert(
+    vim.json.decode(table.concat(vim.fn.readfile(lock), "\n")).token == "live-owner-fixture",
+    "Hangar stole a live writer's lock"
+  )
   assert(vim.fn.delete(lock) == 0)
   print("PASS real Hangar rejects concurrent writers without losing state")
 

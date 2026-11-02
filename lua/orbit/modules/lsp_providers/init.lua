@@ -26,7 +26,9 @@ end
 
 ---@return LazySpec
 function M.spec()
-  if not accepted or not accepted.enabled then return {} end
+  if not accepted or not accepted.enabled then
+    return {}
+  end
   local c = vim.deepcopy(accepted)
   local result = {}
   if c.roslyn then
@@ -60,13 +62,15 @@ function M.spec()
     result[#result + 1] = {
       "pmizio/typescript-tools.nvim",
       ft = {
-        "typescript", "typescriptreact", "javascript", "javascriptreact",
+        "typescript",
+        "typescriptreact",
+        "javascript",
+        "javascriptreact",
         "jsx",
       },
       dependencies = { "nvim-lua/plenary.nvim", "neovim/nvim-lspconfig" },
       opts = function()
-        return require("orbit.modules.lsp_providers.runtime")
-          .typescript_options(c)
+        return require("orbit.modules.lsp_providers.runtime").typescript_options(c)
       end,
     }
   end

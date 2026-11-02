@@ -21,7 +21,9 @@ package.preload.lazy = function()
       assert(specs[1].import == "orbit.plugins")
       local entries = require("orbit.plugins")
       local found = {}
-      for _, entry in ipairs(entries) do found[entry[1]] = true end
+      for _, entry in ipairs(entries) do
+        found[entry[1]] = true
+      end
       assert(found["nvim-mini/mini.icons"])
       assert(found["lewis6991/gitsigns.nvim"])
       assert(config.defaults.lazy == true)
@@ -74,8 +76,7 @@ check("first read initializes Lazy and replays only new groups", function()
   assert(before == 1, "earlier event observer replayed")
   assert(after == 1, "new observer missed or doubled")
   assert(#package.loaders == loaders_before)
-  local exists, entries = pcall(vim.api.nvim_get_autocmds,
-    { group = "OrbitPluginDemand" })
+  local exists, entries = pcall(vim.api.nvim_get_autocmds, { group = "OrbitPluginDemand" })
   assert(not exists or #entries == 0)
 end)
 

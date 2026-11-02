@@ -53,15 +53,16 @@ function M.setup(opts)
           previous.module.restore(previous.previous)
         end, debug.traceback)
         if not restored then
-          rollback_errors[#rollback_errors + 1] =
-            previous.name .. ": " .. tostring(restore_error)
+          rollback_errors[#rollback_errors + 1] = previous.name .. ": " .. tostring(restore_error)
         end
       end
 
       local message = "orbit.setup: " .. item.name .. ": " .. tostring(apply_error)
       if #rollback_errors > 0 then
-        message = message .. "; rollback failed (" ..
-          table.concat(rollback_errors, "; ") .. "); restart required"
+        message = message
+          .. "; rollback failed ("
+          .. table.concat(rollback_errors, "; ")
+          .. "); restart required"
       end
       error(message, 0)
     end

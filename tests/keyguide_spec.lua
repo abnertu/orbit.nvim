@@ -32,12 +32,14 @@ end)
 check("configuration callback is the only external import boundary", function()
   local calls = 0
   package.preload["which-key"] = function()
-    return { setup = function(opts)
-      calls = calls + 1
-      assert(opts.preset == "helix")
-      assert(opts.win.border == "rounded")
-      assert(#opts.spec == 10)
-    end }
+    return {
+      setup = function(opts)
+        calls = calls + 1
+        assert(opts.preset == "helix")
+        assert(opts.win.border == "rounded")
+        assert(#opts.spec == 10)
+      end,
+    }
   end
   local spec = guide.spec()[1]
   spec.config(nil, spec.opts)
@@ -48,7 +50,7 @@ end)
 
 check("query key sends a single safe Ex argument and ignores cancellation", function()
   local input, command = vim.fn.input, vim.api.nvim_cmd
-  local received, called
+  local received
   vim.fn.input = function(prompt)
     assert(prompt == "WhichKey: ")
     return "n <leader>b | quit!"
@@ -61,7 +63,9 @@ check("query key sends a single safe Ex argument and ignores cancellation", func
     guide.spec()[1].keys[2][2]()
     assert(received and received.cmd == "WhichKey")
     assert(vim.deep_equal(received.args, { "n <leader>b | quit!" }))
-    vim.fn.input = function() return "" end
+    vim.fn.input = function()
+      return ""
+    end
     received = nil
     guide.query()
     assert(received == nil)

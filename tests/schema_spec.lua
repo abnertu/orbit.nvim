@@ -42,8 +42,7 @@ local function fixture(manifest, definitions, callback)
   for name, source in pairs(definitions or {}) do
     local dir = vim.fs.joinpath(modules, name)
     vim.fn.mkdir(dir, "p")
-    vim.fn.writefile(vim.split(source, "\n", { plain = true }),
-      vim.fs.joinpath(dir, "init.lua"))
+    vim.fn.writefile(vim.split(source, "\n", { plain = true }), vim.fs.joinpath(dir, "init.lua"))
   end
   local ok, err = xpcall(function()
     callback(temp)
@@ -59,24 +58,30 @@ check("generated schema matches committed file", function()
 end)
 
 check("manifest is the only module inventory", function()
-  local manifest = vim.json.decode(table.concat(vim.fn.readfile(
-    vim.fs.joinpath(root, "lua", "orbit", "modules", "manifest.json")), "\n"))
+  local manifest = vim.json.decode(
+    table.concat(
+      vim.fn.readfile(vim.fs.joinpath(root, "lua", "orbit", "modules", "manifest.json")),
+      "\n"
+    )
+  )
   local actual = schema.build(root).properties.modules.properties
   for _, name in ipairs(manifest.order) do
     assert(actual[name] and actual[name].properties.enabled)
-    assert(vim.fn.filereadable(vim.fs.joinpath(root, "lua", "orbit", "modules",
-      name, "schema.json")) == 0, "module schema.json must not be authored")
+    assert(
+      vim.fn.filereadable(vim.fs.joinpath(root, "lua", "orbit", "modules", name, "schema.json"))
+        == 0,
+      "module schema.json must not be authored"
+    )
   end
   assert(vim.tbl_count(actual) == #manifest.order)
 end)
 
 check("duplicate module names are rejected", function()
-  fixture({ order = { "editor", "editor" } }, { editor = sample("editor") },
-    function(temp)
-      expect_error(function()
-        schema.build(temp)
-      end, "unique module names")
-    end)
+  fixture({ order = { "editor", "editor" } }, { editor = sample("editor") }, function(temp)
+    expect_error(function()
+      schema.build(temp)
+    end, "unique module names")
+  end)
 end)
 
 check("invalid module names are rejected before filesystem access", function()
@@ -117,18 +122,23 @@ check("required class and field metadata are validated", function()
 end)
 
 check("optional LuaDoc field markers keep generated schema keys stable", function()
-  fixture({ order = { "sample" } }, { sample = sample("sample", {
-    "---@field enabled? boolean @default(true) # Enable this module.",
-    "---@field title? string @default(\"default\") # Optional title.",
-  }) }, function(temp)
+  fixture({ order = { "sample" } }, {
+    sample = sample("sample", {
+      "---@field enabled? boolean @default(true) # Enable this module.",
+      '---@field title? string @default("default") # Optional title.',
+    }),
+  }, function(temp)
     local built = schema.build(temp)
     local properties = built.properties.modules.properties.sample.properties
     assert(properties.enabled and properties.enabled.default == true)
     assert(properties.title and properties.title.default == "default")
     assert(properties["enabled?"] == nil and properties["title?"] == nil)
-    local options = require("orbit.config").resolve_against({ modules = {
-      sample = { title = "custom" },
-    } }, built)
+    local options = require("orbit.config").resolve_against(
+      { modules = {
+        sample = { title = "custom" },
+      } },
+      built
+    )
     assert(options.modules.sample.enabled == true)
     assert(options.modules.sample.title == "custom")
   end)
@@ -139,7 +149,7 @@ check("LuaDoc primitive metadata and literal unions become schema", function()
     sample = sample("sample", {
       "---@field enabled boolean @default(false) # Enabled.",
       "---@field indent integer @default(4) @minimum(0) @maximum(8) # Indent size.",
-      "---@field label string @default(\" \") @minLength(1) # Label text.",
+      '---@field label string @default(" ") @minLength(1) # Label text.',
       "---@field mode 'screen'|'cursor' @default(\"screen\") # Split behavior.",
     }),
   }, function(temp)
@@ -201,20 +211,25 @@ check("object overrides preserve false and replace arrays", function()
   fixture({ order = { "sample" } }, { sample = module }, function(temp)
     local node = schema.build(temp)
     local config = require("orbit.config")
-    local input = { modules = { sample = {
-      enabled = false,
-      panel = { visible = false },
-      tags = { "one", "two" },
-    } } }
+    local input = {
+      modules = {
+        sample = {
+          enabled = false,
+          panel = { visible = false },
+          tags = { "one", "two" },
+        },
+      },
+    }
     local resolved = config.resolve_against(input, node)
     assert(resolved.modules.sample.enabled == false)
     assert(resolved.modules.sample.panel.visible == false)
     assert(resolved.modules.sample.panel.count == 4)
     assert(vim.deep_equal(resolved.modules.sample.tags, { "one", "two" }))
     assert(input.modules.sample.panel.count == nil, "input must remain unchanged")
-    local replaced = config.resolve_against({ modules = { sample = {
-      tags = { "only" },
-    } } }, node)
+    local replaced =
+      config.resolve_against({ modules = { sample = {
+        tags = { "only" },
+      } } }, node)
     assert(vim.deep_equal(replaced.modules.sample.tags, { "only" }))
     assert(replaced.modules.sample.panel.visible == true)
     assert(replaced.modules.sample.panel.count == 4)
@@ -225,13 +240,13 @@ check("restart-only metadata defers nested fields and array changes", function()
   local module = sample("sample", {
     "---@field enabled boolean @default(true) # Enable.",
     "---@field live integer @default(1) # Live value.",
-    "---@field delayed string @default(\"one\") @restart(true) # Deferred value.",
+    '---@field delayed string @default("one") @restart(true) # Deferred value.',
     "---@field panel Orbit.PanelOptions @default({}) # Nested settings.",
     "---@field panels Orbit.PanelOptions[] @default([]) # Panel list.",
   }) .. "\n" .. table.concat({
     "---@class Orbit.PanelOptions # Panel settings.",
     "---@field size integer @default(2) @restart(true) # Restart-only size.",
-    "---@field title string @default(\"base\") # Live title.",
+    '---@field title string @default("base") # Live title.',
   }, "\n")
 
   fixture({ order = { "sample" } }, { sample = module }, function(temp)
@@ -242,26 +257,31 @@ check("restart-only metadata defers nested fields and array changes", function()
     assert(fields.live["x-orbit-restart"] == nil)
 
     local config = require("orbit.config")
-    local previous = config.resolve_against({ modules = { sample = {
-      panels = { { size = 2, title = "first" } },
-    } } }, built)
-    local requested = config.resolve_against({ modules = { sample = {
-      live = 3,
-      delayed = "two",
-      panel = { size = 9, title = "updated" },
-      panels = { { size = 4, title = "second" } },
-    } } }, built)
+    local previous = config.resolve_against(
+      { modules = { sample = {
+        panels = { { size = 2, title = "first" } },
+      } } },
+      built
+    )
+    local requested = config.resolve_against({
+      modules = {
+        sample = {
+          live = 3,
+          delayed = "two",
+          panel = { size = 9, title = "updated" },
+          panels = { { size = 4, title = "second" } },
+        },
+      },
+    }, built)
     local effective, pending = config.defer_restart(previous, requested, built)
     assert(effective.modules.sample.live == 3)
     assert(effective.modules.sample.delayed == "one")
     assert(effective.modules.sample.panel.size == 2)
     assert(effective.modules.sample.panel.title == "updated")
-    assert(vim.deep_equal(effective.modules.sample.panels,
-      previous.modules.sample.panels))
+    assert(vim.deep_equal(effective.modules.sample.panels, previous.modules.sample.panels))
     assert(pending["orbit.modules.sample.delayed"] == "two")
     assert(pending["orbit.modules.sample.panel.size"] == 9)
-    assert(vim.deep_equal(pending["orbit.modules.sample.panels"],
-      requested.modules.sample.panels))
+    assert(vim.deep_equal(pending["orbit.modules.sample.panels"], requested.modules.sample.panels))
     assert(vim.tbl_count(pending) == 3)
 
     local first, no_pending = config.defer_restart(nil, requested, built)
@@ -271,12 +291,11 @@ check("restart-only metadata defers nested fields and array changes", function()
 end)
 
 check("restart-only annotation must be explicitly true", function()
-  for _, value in ipairs({ "false", "1", "\"yes\"", "{}" }) do
+  for _, value in ipairs({ "false", "1", '"yes"', "{}" }) do
     fixture({ order = { "broken" } }, {
       broken = sample("broken", {
         "---@field enabled boolean @default(true) # Enabled.",
-        "---@field delayed boolean @default(true) @restart(" .. value ..
-          ") # Deferred.",
+        "---@field delayed boolean @default(true) @restart(" .. value .. ") # Deferred.",
       }),
     }, function(temp)
       expect_error(function()
@@ -295,7 +314,7 @@ check("nested LuaDoc classes and arrays compile without JSON sources", function(
   }) .. "\n" .. table.concat({
     "---@class Orbit.PanelOptions # A panel's settings.",
     "---@field width integer @default(2) @minimum(1) @maximum(9) # Width.",
-    "---@field title string @default(\"panel\") @minLength(1) # Title.",
+    '---@field title string @default("panel") @minLength(1) # Title.',
   }, "\n")
 
   fixture({ order = { "sample" } }, { sample = module }, function(temp)
@@ -314,32 +333,43 @@ check("nested LuaDoc classes and arrays compile without JSON sources", function(
     assert(vim.islist(defaults.modules.sample.labels))
 
     local configured = config.resolve_against({
-      modules = { sample = {
-        panel = { width = 4 },
-        entries = { { width = 5, title = "first" } },
-        labels = { "one", "two" },
-      } },
+      modules = {
+        sample = {
+          panel = { width = 4 },
+          entries = { { width = 5, title = "first" } },
+          labels = { "one", "two" },
+        },
+      },
     }, schema_node)
     assert(configured.modules.sample.panel.width == 4)
     assert(configured.modules.sample.entries[1].title == "first")
     assert(configured.modules.sample.labels[2] == "two")
 
     expect_error(function()
-      config.resolve_against({ modules = {
-        sample = { entries = { { width = 20 } } },
-      } }, schema_node)
+      config.resolve_against(
+        { modules = {
+          sample = { entries = { { width = 20 } } },
+        } },
+        schema_node
+      )
     end, "orbit.modules.sample.entries[1].width")
 
     expect_error(function()
-      config.resolve_against({ modules = {
-        sample = { panel = { unknown = "x" } },
-      } }, schema_node)
+      config.resolve_against(
+        { modules = {
+          sample = { panel = { unknown = "x" } },
+        } },
+        schema_node
+      )
     end, "unknown setting")
 
     expect_error(function()
-      config.resolve_against({ modules = {
-        sample = { labels = { "good", false } },
-      } }, schema_node)
+      config.resolve_against(
+        { modules = {
+          sample = { labels = { "good", false } },
+        } },
+        schema_node
+      )
     end, "orbit.modules.sample.labels[2]")
   end)
 end)

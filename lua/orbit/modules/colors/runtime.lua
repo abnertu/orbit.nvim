@@ -36,7 +36,9 @@ function M.matches(line)
     local before = start > 1 and line:sub(start - 1, start - 1) or ""
     local after = line:sub(finish, finish)
     local length = #digits
-    if not before:match("[%w_]") and not after:match("[%w_]")
+    if
+      not before:match("[%w_]")
+      and not after:match("[%w_]")
       and (length == 3 or length == 6 or length == 8)
     then
       local hex = length == 3 and digits:gsub(".", "%0%0") or digits:sub(1, 6)
@@ -50,7 +52,9 @@ end
 ---@param buffer integer
 function M.update(buffer)
   pending[buffer] = nil
-  if not hex_active or not vim.api.nvim_buf_is_valid(buffer) or vim.bo[buffer].buftype ~= "" then return end
+  if not hex_active or not vim.api.nvim_buf_is_valid(buffer) or vim.bo[buffer].buftype ~= "" then
+    return
+  end
   vim.api.nvim_buf_clear_namespace(buffer, ns, 0, -1)
   local seen = {}
   for _, win in ipairs(vim.fn.win_findbuf(buffer)) do
@@ -73,11 +77,15 @@ function M.update(buffer)
 end
 
 local function schedule(buffer)
-  if pending[buffer] then return end
+  if pending[buffer] then
+    return
+  end
   pending[buffer] = true
   local scheduled_generation = generation
   vim.schedule(function()
-    if scheduled_generation == generation then M.update(buffer) end
+    if scheduled_generation == generation then
+      M.update(buffer)
+    end
   end)
 end
 
@@ -88,34 +96,47 @@ function M.set_hex(active, opts)
   generation = generation + 1
   pending = {}
   pcall(vim.api.nvim_del_augroup_by_name, group_name)
-  if opts and not swatch_set then swatch, swatch_set = opts.swatch, true end
-  for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
-    if vim.api.nvim_buf_is_valid(buffer) then vim.api.nvim_buf_clear_namespace(buffer, ns, 0, -1) end
+  if opts and not swatch_set then
+    swatch, swatch_set = opts.swatch, true
   end
-  if not active then return end
-  local group = vim.api.nvim_create_augroup(group_name, { clear = true })
-  vim.api.nvim_create_autocmd({ "BufWinEnter", "TextChanged", "TextChangedI", "WinScrolled", "WinResized" }, {
-    group = group,
-    callback = function(args)
-      if args.event == "WinScrolled" or args.event == "WinResized" then
-        for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
-          schedule(vim.api.nvim_win_get_buf(win))
+  for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_valid(buffer) then
+      vim.api.nvim_buf_clear_namespace(buffer, ns, 0, -1)
+    end
+  end
+  if not active then
+    return
+  end
+  local preview_group = vim.api.nvim_create_augroup(group_name, { clear = true })
+  vim.api.nvim_create_autocmd(
+    { "BufWinEnter", "TextChanged", "TextChangedI", "WinScrolled", "WinResized" },
+    {
+      group = preview_group,
+      callback = function(args)
+        if args.event == "WinScrolled" or args.event == "WinResized" then
+          for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+            schedule(vim.api.nvim_win_get_buf(win))
+          end
+        else
+          schedule(args.buf)
         end
-      else
-        schedule(args.buf)
-      end
-    end,
-    desc = "Refresh Orbit color previews",
-  })
+      end,
+      desc = "Refresh Orbit color previews",
+    }
+  )
   vim.api.nvim_create_autocmd("ColorScheme", {
-    group = group,
+    group = preview_group,
     callback = function()
       defined = {}
-      for _, win in ipairs(vim.api.nvim_list_wins()) do schedule(vim.api.nvim_win_get_buf(win)) end
+      for _, win in ipairs(vim.api.nvim_list_wins()) do
+        schedule(vim.api.nvim_win_get_buf(win))
+      end
     end,
     desc = "Recreate Orbit color preview highlights",
   })
-  for _, win in ipairs(vim.api.nvim_list_wins()) do schedule(vim.api.nvim_win_get_buf(win)) end
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    schedule(vim.api.nvim_win_get_buf(win))
+  end
 end
 
 ---@type boolean?
@@ -128,11 +149,15 @@ local lsp_original
 ---@param opts Orbit.ColorsOptions
 function M.set_lsp(owned, active, opts)
   if not owned then
-    if lsp_original ~= nil then vim.lsp.document_color.enable(lsp_original) end
+    if lsp_original ~= nil then
+      vim.lsp.document_color.enable(lsp_original)
+    end
     lsp_original = nil
     return
   end
-  if lsp_original == nil then lsp_original = vim.lsp.document_color.is_enabled() end
+  if lsp_original == nil then
+    lsp_original = vim.lsp.document_color.is_enabled()
+  end
   if active and not lsp_styled then
     vim.lsp.document_color.enable(true, nil, { style = opts.swatch })
     lsp_styled = true

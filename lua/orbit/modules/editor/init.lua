@@ -59,8 +59,7 @@ local function normal_window(window)
     return false
   end
   local buffer = vim.api.nvim_win_get_buf(window)
-  return normal_buffer(buffer)
-    and vim.api.nvim_win_get_config(window).relative == ""
+  return normal_buffer(buffer) and vim.api.nvim_win_get_config(window).relative == ""
 end
 
 -- Global defaults do not update an existing buffer or window's local option.

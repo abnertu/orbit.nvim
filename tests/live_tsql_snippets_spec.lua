@@ -9,8 +9,10 @@ local luasnip
 
 local function run(args)
   local result = vim.system(args, { text = true, timeout = 120000 }):wait()
-  assert(result.code == 0, vim.inspect(args) ..
-    " failed: " .. tostring(result.stderr or result.stdout))
+  assert(
+    result.code == 0,
+    vim.inspect(args) .. " failed: " .. tostring(result.stderr or result.stdout)
+  )
   return result.stdout or ""
 end
 
@@ -75,7 +77,9 @@ local ok, err = xpcall(function()
   vim.api.nvim_buf_delete(buffer, { force = true })
 end, debug.traceback)
 
-if luasnip then pcall(luasnip.unlink_current) end
+if luasnip then
+  pcall(luasnip.unlink_current)
+end
 if vim.api.nvim_buf_is_valid(original_buffer) then
   pcall(vim.api.nvim_set_current_buf, original_buffer)
 end

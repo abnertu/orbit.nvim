@@ -27,14 +27,19 @@ function M.frontmatter(note)
   local now = os.date("%Y-%m-%d %H:%M:%S")
   -- Preserve arbitrary frontmatter metadata. The refreshed timestamp must
   -- win even when the note supplied an earlier modified value.
-  return vim.tbl_extend("force", {
-    id = note.id,
-    aliases = note.aliases,
-    tags = note.tags,
-    created = now,
-  }, type(note.metadata) == "table" and note.metadata or {}, {
-    modified = now,
-  })
+  return vim.tbl_extend(
+    "force",
+    {
+      id = note.id,
+      aliases = note.aliases,
+      tags = note.tags,
+      created = now,
+    },
+    type(note.metadata) == "table" and note.metadata or {},
+    {
+      modified = now,
+    }
+  )
 end
 
 ---@param vault string
@@ -55,12 +60,17 @@ local group
 ---@return boolean
 function M.apply_highlights()
   local path = vim.api.nvim_get_runtime_file("lua/orbit/modules/markdown/highlights.scm", false)[1]
-  if not path then return false end
+  if not path then
+    return false
+  end
   local text = table.concat(vim.fn.readfile(path), "\n")
   local ok, err = pcall(vim.treesitter.query.parse, "markdown", text)
   if not ok then
-    vim.notify("Markdown highlights unchanged: " .. tostring(err),
-      vim.log.levels.WARN, { title = "orbit.nvim notes" })
+    vim.notify(
+      "Markdown highlights unchanged: " .. tostring(err),
+      vim.log.levels.WARN,
+      { title = "orbit.nvim notes" }
+    )
     return false
   end
   vim.treesitter.query.set("markdown", "highlights", text)
@@ -91,12 +101,16 @@ function M.setup(opts, highlights)
     group = vim.api.nvim_create_augroup("OrbitMarkdownNotes", { clear = true })
     vim.api.nvim_create_autocmd({ "FileType", "BufWinEnter" }, {
       group = group,
-      callback = function(args) conceal_markdown(args.buf) end,
+      callback = function(args)
+        conceal_markdown(args.buf)
+      end,
       desc = "Conceal Markdown markup in note windows",
     })
   end
   conceal_markdown(vim.api.nvim_get_current_buf())
-  if highlights ~= false then M.apply_highlights() end
+  if highlights ~= false then
+    M.apply_highlights()
+  end
 end
 
 return M

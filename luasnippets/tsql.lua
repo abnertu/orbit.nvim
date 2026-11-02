@@ -8,15 +8,11 @@ local families = {
   require("orbit.snippets.tsql.programmable_objects"),
   require("orbit.snippets.tsql.queries_joins_ctes_and_windows"),
   require("orbit.snippets.tsql.data_modification"),
-  require(
-    "orbit.snippets.tsql.control_flow_temporary_storage_and_transactions"
-  ),
+  require("orbit.snippets.tsql.control_flow_temporary_storage_and_transactions"),
   require("orbit.snippets.tsql.dynamic_sql"),
   require("orbit.snippets.tsql.security_and_object_lifecycle"),
   require("orbit.snippets.tsql.constraint_and_column_fragments"),
-  require(
-    "orbit.snippets.tsql.common_expressions_and_statement_fragments"
-  ),
+  require("orbit.snippets.tsql.common_expressions_and_statement_fragments"),
 }
 local snippets, seen = {}, {}
 for _, family in ipairs(families) do
@@ -24,8 +20,7 @@ for _, family in ipairs(families) do
     local trigger, name, body = unpack(declaration)
     assert(not seen[trigger], "duplicate T-SQL snippet trigger: " .. trigger)
     seen[trigger] = true
-    snippets[#snippets + 1] =
-      parse({ trig = trigger, name = name, dscr = name }, vim.trim(body))
+    snippets[#snippets + 1] = parse({ trig = trigger, name = name, dscr = name }, vim.trim(body))
   end
 end
 return snippets

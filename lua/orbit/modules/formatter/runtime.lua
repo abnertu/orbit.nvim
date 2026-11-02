@@ -23,22 +23,30 @@ function M.format(buf)
     buffer = buf,
     once = true,
     callback = function()
-      if cleanup then cleanup() end
+      if cleanup then
+        cleanup()
+      end
     end,
   })
   pending[buf] = autocmd
 
   cleanup = function()
-    if pending[buf] ~= autocmd then return end
+    if pending[buf] ~= autocmd then
+      return
+    end
     pending[buf] = nil
     pcall(vim.api.nvim_del_autocmd, autocmd)
   end
 
   local ok, started = pcall(function()
     return require("conform").format({
-      async = true, bufnr = buf, quiet = true,
+      async = true,
+      bufnr = buf,
+      quiet = true,
     }, function(failure)
-      if pending[buf] ~= autocmd then return end
+      if pending[buf] ~= autocmd then
+        return
+      end
       cleanup()
       if failure then
         vim.notify("Formatting failed: " .. tostring(failure), vim.log.levels.ERROR)

@@ -33,10 +33,12 @@ function M.lighten(value, percent)
   local high, low = math.max(unpack(channels)), math.min(unpack(channels))
   local light, delta = (high + low) / 2, high - low
   local next_light = math.max(0, math.min(1, light + percent / 100))
-  local scale = delta == 0 and 0 or (1 - math.abs(2 * next_light - 1)) / (1 - math.abs(2 * light - 1))
+  local scale = delta == 0 and 0
+    or (1 - math.abs(2 * next_light - 1)) / (1 - math.abs(2 * light - 1))
   local result = 0
   for index, channel in ipairs(channels) do
-    local adjusted = math.max(0, math.min(255, math.floor(((channel - light) * scale + next_light) * 255)))
+    local adjusted =
+      math.max(0, math.min(255, math.floor(((channel - light) * scale + next_light) * 255)))
     result = result + bit.lshift(adjusted, (3 - index) * 8)
   end
   return result
@@ -51,7 +53,8 @@ function M.resolve()
   local bg = color("Normal", "bg") or (vim.o.background == "dark" and 0x1a1b26 or 0xe1e2e7)
   local fg = color("Normal", "fg") or 0xc0caf5
   local c = {
-    black = bg, white = fg,
+    black = bg,
+    white = fg,
     red = color("DiagnosticError", "fg") or 0xf7768e,
     yellow = color("DiagnosticWarn", "fg") or 0xe0af68,
     green = color("String", "fg") or 0x9ece6a,
@@ -71,11 +74,22 @@ function M.resolve()
   c.dark_purple, c.pink, c.baby_pink = c.purple, c.red, c.red
   c.teal, c.vibrant_green, c.sun = c.cyan, c.green, c.yellow
   c.base16 = {
-    base00 = bg, base01 = c.darker_black, base02 = c.one_bg3, base03 = c.grey,
-    base04 = c.grey_fg, base05 = fg, base06 = fg, base07 = fg,
-    base08 = color("Identifier", "fg") or c.cyan, base09 = c.orange,
-    base0A = color("Type", "fg") or c.cyan, base0B = c.green, base0C = c.cyan,
-    base0D = c.blue, base0E = c.purple, base0F = c.red,
+    base00 = bg,
+    base01 = c.darker_black,
+    base02 = c.one_bg3,
+    base03 = c.grey,
+    base04 = c.grey_fg,
+    base05 = fg,
+    base06 = fg,
+    base07 = fg,
+    base08 = color("Identifier", "fg") or c.cyan,
+    base09 = c.orange,
+    base0A = color("Type", "fg") or c.cyan,
+    base0B = c.green,
+    base0C = c.cyan,
+    base0D = c.blue,
+    base0E = c.purple,
+    base0F = c.red,
   }
   return c
 end

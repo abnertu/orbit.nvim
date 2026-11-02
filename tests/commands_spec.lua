@@ -31,8 +31,7 @@ check("open creates schema-linked settings without overwriting existing data", f
   if vim.fn.has("win32") == 1 then
     actual, expected = actual:lower(), expected:lower()
   end
-  assert(actual == expected,
-    "wrong settings buffer: " .. actual .. " instead of " .. expected)
+  assert(actual == expected, "wrong settings buffer: " .. actual .. " instead of " .. expected)
   local saved = vim.json.decode(table.concat(vim.fn.readfile(path), "\n"))
   local schema = assert(vim.api.nvim_get_runtime_file("settings.schema.json", false)[1])
   assert(saved["$schema"] == vim.uri_from_fname(schema))
@@ -59,10 +58,15 @@ check("invalid reload warns but preserves prior configuration", function()
   local ok, err = pcall(vim.cmd, "OrbitSettings reload")
   vim.notify = original
   assert(ok, tostring(err))
-  assert(#notified == 1 and notified[1][2] == vim.log.levels.WARN,
-    "expected warning, got " .. vim.inspect(notified) ..
-      "; file=" .. table.concat(vim.fn.readfile(path), "\\n") ..
-      "; path=" .. path)
+  assert(
+    #notified == 1 and notified[1][2] == vim.log.levels.WARN,
+    "expected warning, got "
+      .. vim.inspect(notified)
+      .. "; file="
+      .. table.concat(vim.fn.readfile(path), "\\n")
+      .. "; path="
+      .. path
+  )
   assert(vim.deep_equal(orbit.get_config(), before))
 end)
 
@@ -88,9 +92,12 @@ check("failure after creation restores previous command", function()
     original(opts)
     error("injected command failure")
   end
-  local ok, err = pcall(orbit.setup, { modules = {
-    commands = { name = "OrbitBroken", path = path },
-  } })
+  local ok, err = pcall(
+    orbit.setup,
+    { modules = {
+      commands = { name = "OrbitBroken", path = path },
+    } }
+  )
   commands.setup = original
   assert(not ok and tostring(err):find("injected command failure", 1, true))
   assert(exists("OrbitConfig") and not exists("OrbitBroken"))
@@ -100,9 +107,12 @@ end)
 check("existing third-party commands cannot be overwritten", function()
   vim.api.nvim_create_user_command("OrbitReserved", function() end, {})
   local accepted = orbit.get_config()
-  local ok, err = pcall(orbit.setup, { modules = {
-    commands = { name = "OrbitReserved", path = path },
-  } })
+  local ok, err = pcall(
+    orbit.setup,
+    { modules = {
+      commands = { name = "OrbitReserved", path = path },
+    } }
+  )
   assert(not ok and tostring(err):find("refusing to overwrite", 1, true))
   assert(exists("OrbitReserved") and exists("OrbitConfig"))
   assert(vim.deep_equal(orbit.get_config(), accepted))

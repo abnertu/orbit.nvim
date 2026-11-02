@@ -56,7 +56,8 @@ return function(opts)
   ---@param buffer integer
   local function record(event, buffer)
     journal[#journal + 1] = {
-      event = event, buffer = buffer,
+      event = event,
+      buffer = buffer,
       name = vim.api.nvim_buf_get_name(buffer),
       ui = #vim.api.nvim_list_uis() > 0,
       shiftwidth = vim.bo[buffer].shiftwidth,
@@ -69,7 +70,12 @@ return function(opts)
     end
   end
   vim.api.nvim_create_autocmd({
-    "VimEnter", "UIEnter", "BufReadPre", "BufReadPost", "BufNewFile", "FileType",
+    "VimEnter",
+    "UIEnter",
+    "BufReadPre",
+    "BufReadPost",
+    "BufNewFile",
+    "FileType",
   }, {
     group = group,
     callback = function(event)
@@ -82,7 +88,8 @@ return function(opts)
     end,
   })
   vim.api.nvim_create_autocmd("User", {
-    group = group, pattern = "FilePost",
+    group = group,
+    pattern = "FilePost",
     callback = function(event)
       fileposts = fileposts + 1
       first_file = event.buf
@@ -100,7 +107,8 @@ return function(opts)
 
   if opts.interface then
     vim.api.nvim_create_autocmd("VimEnter", {
-      group = group, once = true,
+      group = group,
+      once = true,
       callback = function()
         vim.bo.buftype = "nofile"
         vim.bo.buflisted = false
@@ -110,9 +118,14 @@ return function(opts)
   end
 
   local orbit = require("orbit")
-  local options = { modules = { plugins = {
-    enabled = opts.plugins, path = opts.plugins and opts.lazy or "",
-  } } }
+  local options = {
+    modules = {
+      plugins = {
+        enabled = opts.plugins,
+        path = opts.plugins and opts.lazy or "",
+      },
+    },
+  }
   orbit.setup(options)
 
   -- RPC requests access closure-owned state without adding internal globals.
@@ -122,7 +135,9 @@ return function(opts)
       setups = setups + 1
       vim.api.nvim_create_autocmd("BufReadPre", {
         group = vim.api.nvim_create_augroup("OrbitTestLazyRead", {}),
-        callback = function(event) record("LazyRead", event.buf) end,
+        callback = function(event)
+          record("LazyRead", event.buf)
+        end,
       })
     end,
     ---@return Orbit.StartupTestSnapshot
@@ -131,20 +146,28 @@ return function(opts)
       local buffers = {}
       for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
         buffers[#buffers + 1] = {
-          id = buffer, name = vim.api.nvim_buf_get_name(buffer),
-          listed = vim.bo[buffer].buflisted, buftype = vim.bo[buffer].buftype,
+          id = buffer,
+          name = vim.api.nvim_buf_get_name(buffer),
+          listed = vim.bo[buffer].buflisted,
+          buftype = vim.bo[buffer].buftype,
         }
       end
       return {
         entered = vim.v.vim_did_enter == 1,
-        journal = journal, buffers = buffers,
-        current = vim.api.nvim_get_current_buf(), name = vim.api.nvim_buf_get_name(0),
-        lines = vim.api.nvim_buf_get_lines(0, 0, -1, false), cwd = vim.fn.getcwd(),
-        fileposts = fileposts, setups = setups,
+        journal = journal,
+        buffers = buffers,
+        current = vim.api.nvim_get_current_buf(),
+        name = vim.api.nvim_buf_get_name(0),
+        lines = vim.api.nvim_buf_get_lines(0, 0, -1, false),
+        cwd = vim.fn.getcwd(),
+        fileposts = fileposts,
+        setups = setups,
         status = require("orbit.modules.plugins").status(),
         lazy_loaded = package.loaded.lazy ~= nil,
-        shiftwidth = vim.bo.shiftwidth, tabstop = vim.bo.tabstop,
-        errors = errors, errmsg = vim.v.errmsg,
+        shiftwidth = vim.bo.shiftwidth,
+        tabstop = vim.bo.tabstop,
+        errors = errors,
+        errmsg = vim.v.errmsg,
       }
     end,
     repeat_setup = function()
@@ -152,6 +175,8 @@ return function(opts)
       orbit.setup(options)
     end,
     ---@param path string
-    edit = function(path) vim.cmd.edit(vim.fn.fnameescape(path)) end,
+    edit = function(path)
+      vim.cmd.edit(vim.fn.fnameescape(path))
+    end,
   }
 end

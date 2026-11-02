@@ -8,8 +8,10 @@ local directory = vim.fn.tempname() .. " live Trouble with spaces"
 
 local function run(argv)
   local result = vim.system(argv, { text = true, timeout = 120000 }):wait()
-  assert(result.code == 0, vim.inspect(argv) ..
-    " failed: " .. tostring(result.stderr or result.stdout))
+  assert(
+    result.code == 0,
+    vim.inspect(argv) .. " failed: " .. tostring(result.stderr or result.stdout)
+  )
   return result.stdout or ""
 end
 
@@ -19,22 +21,22 @@ local ok, err = xpcall(function()
   run({ "git", "init", directory })
   run({ "git", "-C", directory, "fetch", "--depth", "1", upstream, pinned })
   run({ "git", "-C", directory, "checkout", "--detach", "FETCH_HEAD" })
-  assert(vim.trim(run({ "git", "-C", directory, "rev-parse", "HEAD" })) == pinned,
-    "upstream Trouble revision mismatch")
+  assert(
+    vim.trim(run({ "git", "-C", directory, "rev-parse", "HEAD" })) == pinned,
+    "upstream Trouble revision mismatch"
+  )
   vim.opt.rtp:prepend(directory)
 
   local orbit = require("orbit")
   local diagnostics = require("orbit.modules.diagnostics_plugins")
   orbit.setup()
-  assert(package.loaded.trouble == nil,
-    "root setup imported Trouble before Lazy activation")
+  assert(package.loaded.trouble == nil, "root setup imported Trouble before Lazy activation")
   local spec = diagnostics.spec()[1]
   assert(spec and spec[1] == "folke/trouble.nvim")
   assert(spec.cmd == "Trouble")
   local trouble = require("trouble")
   trouble.setup(spec.opts)
-  assert(vim.api.nvim_get_commands({}).Trouble ~= nil,
-    "real Trouble command registration missing")
+  assert(vim.api.nvim_get_commands({}).Trouble ~= nil, "real Trouble command registration missing")
 
   local custom = require("trouble.config").get("diagnostic_preview_float")
   assert(custom.mode == "diagnostic_preview_float")
@@ -47,30 +49,46 @@ local ok, err = xpcall(function()
   local ns = vim.api.nvim_create_namespace("orbit.live.trouble")
   vim.api.nvim_buf_set_lines(buffer, 0, -1, false, { "local value = 1" })
   vim.diagnostic.set(ns, buffer, {
-    { lnum = 0, col = 0, message = "live Trouble diagnostic",
-      severity = vim.diagnostic.severity.WARN },
+    {
+      lnum = 0,
+      col = 0,
+      message = "live Trouble diagnostic",
+      severity = vim.diagnostic.severity.WARN,
+    },
   })
   local view = trouble.open({
-    mode = "diagnostics", focus = false, auto_preview = false,
+    mode = "diagnostics",
+    focus = false,
+    auto_preview = false,
     win = { position = "bottom" },
   })
-  assert(view and trouble.is_open("diagnostics"),
-    "real Trouble diagnostics view did not open")
-  assert(vim.wait(10000, function()
-    for _, item in ipairs(trouble.get_items("diagnostics")) do
-      if item.message == "live Trouble diagnostic" then return true end
-    end
-    return false
-  end, 50), "real Trouble did not consume a Neovim diagnostic")
+  assert(view and trouble.is_open("diagnostics"), "real Trouble diagnostics view did not open")
+  assert(
+    vim.wait(10000, function()
+      for _, item in ipairs(trouble.get_items("diagnostics")) do
+        if item.message == "live Trouble diagnostic" then
+          return true
+        end
+      end
+      return false
+    end, 50),
+    "real Trouble did not consume a Neovim diagnostic"
+  )
   -- Trouble counts an opening view as open until its first update settles.
   -- Close after the asynchronous initial view lifecycle has completed.
-  assert(vim.wait(10000, function()
-    return view:is_open() and not view.first_update:is_pending()
-  end, 50), "Trouble initial view update did not finish")
+  assert(
+    vim.wait(10000, function()
+      return view:is_open() and not view.first_update:is_pending()
+    end, 50),
+    "Trouble initial view update did not finish"
+  )
   trouble.close("diagnostics")
-  assert(vim.wait(10000, function()
-    return not trouble.is_open("diagnostics")
-  end, 50), "Trouble diagnostics view stayed open after close")
+  assert(
+    vim.wait(10000, function()
+      return not trouble.is_open("diagnostics")
+    end, 50),
+    "Trouble diagnostics view stayed open after close"
+  )
   vim.diagnostic.reset(ns, buffer)
   print("PASS real Trouble diagnostic source, view and close lifecycle")
 
@@ -95,20 +113,35 @@ local ok, err = xpcall(function()
             elseif method == "textDocument/documentSymbol" then
               symbol_requests = symbol_requests + 1
               local function symbol(name, kind, first, children)
-                local range = { start = { line = first, character = 0 }, ["end"] = { line = 3, character = 3 } }
-                return { name = name, kind = kind, range = range, selectionRange = range, children = children }
+                local range =
+                  { start = { line = first, character = 0 }, ["end"] = { line = 3, character = 3 } }
+                return {
+                  name = name,
+                  kind = kind,
+                  range = range,
+                  selectionRange = range,
+                  children = children,
+                }
               end
-              result = { symbol("OrbitNamespace", 3, 0, {
-                symbol("OrbitClass", 5, 1, { symbol("OrbitMethod", 6, 2) }),
-              }) }
+              result = {
+                symbol("OrbitNamespace", 3, 0, {
+                  symbol("OrbitClass", 5, 1, { symbol("OrbitMethod", 6, 2) }),
+                }),
+              }
             end
             callback(nil, result, id)
-            if notify_reply then notify_reply(id) end
+            if notify_reply then
+              notify_reply(id)
+            end
           end)
           return true, id
         end,
-        notify = function() return true end,
-        is_closing = function() return closing end,
+        notify = function()
+          return true
+        end,
+        is_closing = function()
+          return closing
+        end,
         terminate = function()
           closing = true
           dispatchers.on_exit(0, 0)
@@ -117,11 +150,15 @@ local ok, err = xpcall(function()
     end,
   }))
   local text = ""
-  assert(vim.wait(10000, function()
-    text = vim.api.nvim_eval_statusline(vim.go.statusline, { maxwidth = 300 }).str
-    return text:find("OrbitNamespace", 1, true)
-      and text:find("OrbitClass", 1, true) and text:find("OrbitMethod", 1, true)
-  end, 20), "Trouble symbols did not reach the statusline: " .. text)
+  assert(
+    vim.wait(10000, function()
+      text = vim.api.nvim_eval_statusline(vim.go.statusline, { maxwidth = 300 }).str
+      return text:find("OrbitNamespace", 1, true)
+        and text:find("OrbitClass", 1, true)
+        and text:find("OrbitMethod", 1, true)
+    end, 20),
+    "Trouble symbols did not reach the statusline: " .. text
+  )
   assert(symbol_requests > 0 and text:find("  ", 1, true), text)
   assert(not text:find("\31", 1, true), "symbol boundaries leaked into the statusline")
   vim.lsp.get_client_by_id(client_id):stop(true)

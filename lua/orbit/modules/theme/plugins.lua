@@ -155,7 +155,9 @@ return function(c)
     ["NvimTreeGitDirty"] = { fg = c.red },
     ["NvimTreeGitIgnored"] = { fg = c.light_grey },
     ["NvimTreeGitNew"] = { fg = c.yellow },
-    ["NvimTreeIndentMarker"] = { fg = vim.o.background == "dark" and palette.lighten(c.line, -2) or c.one_bg2 },
+    ["NvimTreeIndentMarker"] = {
+      fg = vim.o.background == "dark" and palette.lighten(c.line, -2) or c.one_bg2,
+    },
     ["NvimTreeNormal"] = { bg = c.darker_black },
     ["NvimTreeNormalNC"] = { bg = c.darker_black },
     ["NvimTreeOpenedFolderName"] = { fg = c.folder_bg },

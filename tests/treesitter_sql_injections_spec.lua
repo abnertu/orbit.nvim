@@ -2,7 +2,7 @@
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
 local orbit = require("orbit")
-local feature = require("orbit.modules.treesitter_plugins")
+require("orbit.modules.treesitter_plugins")
 local runtime = require("orbit.modules.treesitter_plugins.runtime")
 local passed = 0
 local function check(name, fn)
@@ -27,16 +27,22 @@ end
 
 local function node(kind, value, children)
   local current = { value = value }
-  function current:type() return kind end
-  function current:iter_children()
+  function current.type()
+    return kind
+  end
+  function current.iter_children()
     local index = 0
     return function()
       index = index + 1
       return (children or {})[index]
     end
   end
-  function current:parent() return current.up end
-  function current:prev_named_sibling() return current.previous end
+  function current.parent()
+    return current.up
+  end
+  function current.prev_named_sibling()
+    return current.previous
+  end
   return current
 end
 local function run(name, captured)
@@ -47,8 +53,12 @@ end
 check("schema settings use LuaDoc defaults, with no eager predicate import", function()
   assert(package.loaded["orbit.modules.treesitter_plugins.predicates"] == nil)
   orbit.setup()
-  assert(vim.deep_equal(orbit.get_config().modules.treesitter_plugins.sql_injections,
-    { comment = true, auto = true }))
+  assert(
+    vim.deep_equal(
+      orbit.get_config().modules.treesitter_plugins.sql_injections,
+      { comment = true, auto = true }
+    )
+  )
 end)
 
 check("Tree-sitter startup registers exactly three runtime predicates once", function()
@@ -80,20 +90,23 @@ check("auto injection recognizes sql prefixes and avoids duplicate marked litera
   assert(run("auto-injection-enabled", sql))
 end)
 
-check("string support excludes escapes, doubled verbatim quotes and interpolation escapes", function()
-  assert(run("string-supported", node("raw_string_literal", '"""SELECT 1"""')))
-  assert(run("string-supported", node("verbatim_string_literal", '@"SELECT 1"')))
-  assert(not run("string-supported", node("verbatim_string_literal", '@"SELECT ""a"""')))
-  assert(not run("string-supported", node("interpolated_string_expression", '$@"SELECT ""a"""')))
-  assert(run("string-supported", node("interpolated_string_expression", '$"SELECT {table}"')))
-  local escaped = node("string_literal", '"SELECT \\n"', { node("escape_sequence", "\\n") })
-  assert(not run("string-supported", escaped))
-  local nested = node("interpolated_string_expression", '$"SELECT {table}"', {
-    node("string_content", "SELECT ", { node("escape_sequence", "\\t") }),
-  })
-  assert(not run("string-supported", nested))
-  assert(not run("string-supported", nil))
-end)
+check(
+  "string support excludes escapes, doubled verbatim quotes and interpolation escapes",
+  function()
+    assert(run("string-supported", node("raw_string_literal", '"""SELECT 1"""')))
+    assert(run("string-supported", node("verbatim_string_literal", '@"SELECT 1"')))
+    assert(not run("string-supported", node("verbatim_string_literal", '@"SELECT ""a"""')))
+    assert(not run("string-supported", node("interpolated_string_expression", '$@"SELECT ""a"""')))
+    assert(run("string-supported", node("interpolated_string_expression", '$"SELECT {table}"')))
+    local escaped = node("string_literal", '"SELECT \\n"', { node("escape_sequence", "\\n") })
+    assert(not run("string-supported", escaped))
+    local nested = node("interpolated_string_expression", '$"SELECT {table}"', {
+      node("string_content", "SELECT ", { node("escape_sequence", "\\t") }),
+    })
+    assert(not run("string-supported", nested))
+    assert(not run("string-supported", nil))
+  end
+)
 
 check("disabled marker and auto injection options are independently respected", function()
   package.loaded["orbit.modules.treesitter_plugins.predicates"] = nil
@@ -122,7 +135,9 @@ check("source query references the registered predicate names", function()
   assert(source:find("(raw_string_literal", 1, true))
   assert(source:find("(interpolated_string_expression", 1, true))
   for _, name in ipairs({
-    "string-supported", "comment-injection-enabled", "auto-injection-enabled",
+    "string-supported",
+    "comment-injection-enabled",
+    "auto-injection-enabled",
   }) do
     assert(source:find("#orbit-sql-" .. name .. "?", 1, true))
   end
@@ -130,9 +145,12 @@ end)
 
 check("invalid saved injection options preserve accepted state", function()
   local before = orbit.get_config()
-  local ok, err = pcall(orbit.setup, { modules = {
-    treesitter_plugins = { sql_injections = { comment = "bad" } },
-  } })
+  local ok, err = pcall(
+    orbit.setup,
+    { modules = {
+      treesitter_plugins = { sql_injections = { comment = "bad" } },
+    } }
+  )
   assert(not ok and tostring(err):find("comment", 1, true))
   assert(vim.deep_equal(orbit.get_config(), before))
   orbit.setup({ modules = {

@@ -51,7 +51,9 @@ local function conceals_fences()
   local query = vim.treesitter.query.get("markdown", "highlights")
   for _, directives in pairs(query.info.patterns) do
     for _, directive in ipairs(directives) do
-      if directive[2] == "conceal" then return true end
+      if directive[2] == "conceal" then
+        return true
+      end
     end
   end
   return false
@@ -59,11 +61,13 @@ end
 
 local function obsidian_stub(counter)
   package.preload.obsidian = function()
-    return { setup = function(opts)
-      assert(opts.workspaces[1].path == vault)
-      assert(opts.frontmatter.func == notes.frontmatter)
-      counter.calls = counter.calls + 1
-    end }
+    return {
+      setup = function(opts)
+        assert(opts.workspaces[1].path == vault)
+        assert(opts.frontmatter.func == notes.frontmatter)
+        counter.calls = counter.calls + 1
+      end,
+    }
   end
 end
 
@@ -101,8 +105,12 @@ check("note highlights can be disabled and invalid queries leave upstream", func
   assert(counter.calls == 1 and conceals_fences(), "disabled highlights must keep upstream")
 
   local parse, notify, warned = vim.treesitter.query.parse, vim.notify, nil
-  vim.treesitter.query.parse = function() error("missing parser") end
-  vim.notify = function(message) warned = message end
+  vim.treesitter.query.parse = function()
+    error("missing parser")
+  end
+  vim.notify = function(message)
+    warned = message
+  end
   local applied = notes.apply_highlights()
   vim.treesitter.query.parse, vim.notify = parse, notify
   assert(not applied and warned:find("missing parser", 1, true))
@@ -115,7 +123,9 @@ check("frontmatter preserves note metadata and refreshes modified time", functio
     assert(vim.tbl_isempty(notes.frontmatter({ id = id })))
   end
   local frontmatter = notes.frontmatter({
-    id = "daily", aliases = { "day" }, tags = { "journal" },
+    id = "daily",
+    aliases = { "day" },
+    tags = { "journal" },
     metadata = { created = "2020-01-01", modified = "old", custom = "yes" },
   })
   assert(frontmatter.id == "daily")
@@ -129,12 +139,16 @@ end)
 
 check("frontmatter overlay preserves explicit metadata and source ownership", function()
   local metadata = {
-    id = "metadata-id", aliases = { "metadata alias" },
-    created = "2020-02-03", modified = "past",
+    id = "metadata-id",
+    aliases = { "metadata alias" },
+    created = "2020-02-03",
+    modified = "past",
     custom = false,
   }
   local value = notes.frontmatter({
-    id = "note-id", aliases = { "note alias" }, metadata = metadata,
+    id = "note-id",
+    aliases = { "note alias" },
+    metadata = metadata,
   })
   assert(value.id == "metadata-id")
   assert(vim.deep_equal(value.aliases, { "metadata alias" }))

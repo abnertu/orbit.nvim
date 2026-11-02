@@ -43,34 +43,79 @@ local definitions = {
   { lhs = "<", mode = "x", rhs = "<gv", desc = "Decrease indent and keep selection" },
   { lhs = ">", mode = "x", rhs = ">gv", desc = "Increase indent and keep selection" },
   { lhs = "p", mode = "x", rhs = "P", desc = "Paste without replacing the unnamed register" },
-  { lhs = "J", mode = "x", rhs = function() move_visual("down") end,
-    desc = "Move selected lines down" },
-  { lhs = "K", mode = "x", rhs = function() move_visual("up") end,
-    desc = "Move selected lines up" },
-  { lhs = "<Esc>", mode = "n", rhs = function()
-    return require("orbit.modules.corekeys.escape").escape()
-  end, expr = true, desc = "Clear search and stop an active snippet" },
-  { lhs = "<Esc>", mode = "i", rhs = function()
-    return require("orbit.modules.corekeys.escape").escape()
-  end, expr = true, desc = "Leave insert and close active menus" },
-  { lhs = "<Esc>", mode = "s", rhs = function()
-    return require("orbit.modules.corekeys.escape").escape()
-  end, expr = true, desc = "Leave select and close active menus" },
+  {
+    lhs = "J",
+    mode = "x",
+    rhs = function()
+      move_visual("down")
+    end,
+    desc = "Move selected lines down",
+  },
+  {
+    lhs = "K",
+    mode = "x",
+    rhs = function()
+      move_visual("up")
+    end,
+    desc = "Move selected lines up",
+  },
+  {
+    lhs = "<Esc>",
+    mode = "n",
+    rhs = function()
+      return require("orbit.modules.corekeys.escape").escape()
+    end,
+    expr = true,
+    desc = "Clear search and stop an active snippet",
+  },
+  {
+    lhs = "<Esc>",
+    mode = "i",
+    rhs = function()
+      return require("orbit.modules.corekeys.escape").escape()
+    end,
+    expr = true,
+    desc = "Leave insert and close active menus",
+  },
+  {
+    lhs = "<Esc>",
+    mode = "s",
+    rhs = function()
+      return require("orbit.modules.corekeys.escape").escape()
+    end,
+    expr = true,
+    desc = "Leave select and close active menus",
+  },
   { lhs = "jk", mode = "i", rhs = "<Esc>", desc = "Leave insert mode" },
   { lhs = "Q", mode = "n", rhs = "q", desc = "Record a macro" },
   { lhs = "q", mode = "n", rhs = "<Nop>", desc = "Reserve lowercase q" },
-  { lhs = "K", mode = "n", rhs = function()
-    if #vim.lsp.get_clients({ bufnr = 0, method = "textDocument/hover" }) > 0 then
-      vim.lsp.buf.hover()
-    end
-  end, desc = "Show documentation under the cursor" },
+  {
+    lhs = "K",
+    mode = "n",
+    rhs = function()
+      if #vim.lsp.get_clients({ bufnr = 0, method = "textDocument/hover" }) > 0 then
+        vim.lsp.buf.hover()
+      end
+    end,
+    desc = "Show documentation under the cursor",
+  },
   { lhs = "<C-x>", mode = "t", rhs = "<C-\\><C-n>", desc = "Leave terminal mode" },
-  { lhs = "<Tab>", mode = "n", rhs = function()
-    require("orbit.modules.corekeys.buffers").next()
-  end, desc = "Go to next listed buffer" },
-  { lhs = "<S-Tab>", mode = "n", rhs = function()
-    require("orbit.modules.corekeys.buffers").prev()
-  end, desc = "Go to previous listed buffer" },
+  {
+    lhs = "<Tab>",
+    mode = "n",
+    rhs = function()
+      require("orbit.modules.corekeys.buffers").next()
+    end,
+    desc = "Go to next listed buffer",
+  },
+  {
+    lhs = "<S-Tab>",
+    mode = "n",
+    rhs = function()
+      require("orbit.modules.corekeys.buffers").prev()
+    end,
+    desc = "Go to previous listed buffer",
+  },
 }
 
 local function identity(mode, lhs)
@@ -128,7 +173,11 @@ end
 ---@param active boolean
 local function set_order(active)
   local buffers = require("orbit.buffers")
-  if active then buffers.attach("corekeys") else buffers.detach("corekeys") end
+  if active then
+    buffers.attach("corekeys")
+  else
+    buffers.detach("corekeys")
+  end
 end
 
 ---Capture effective bindings at both existing and proposed key sequences.
@@ -205,8 +254,7 @@ function M.setup(opts)
   local next_owned = {}
   for _, target in ipairs(next_targets) do
     local previous = owned[target.key]
-    local original = previous and previous.original or
-      mapping(target.mode, target.lhs)
+    local original = previous and previous.original or mapping(target.mode, target.lhs)
     vim.keymap.set(target.mode, target.lhs, target.rhs, {
       desc = target.desc,
       -- A silent colon suppresses cmdline_show until command text arrives.

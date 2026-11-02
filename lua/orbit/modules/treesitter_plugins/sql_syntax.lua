@@ -37,8 +37,12 @@ end
 ---@param opts Orbit.TreesitterPluginsOptions
 ---@return boolean
 function M.apply(buf, opts)
-  if not opts.sql_syntax_fallback then return false end
-  if not vim.api.nvim_buf_is_valid(buf) then return false end
+  if not opts.sql_syntax_fallback then
+    return false
+  end
+  if not vim.api.nvim_buf_is_valid(buf) then
+    return false
+  end
   local filetype = vim.api.nvim_get_option_value("filetype", { buf = buf })
   if filetype == "sql" then
     if vim.b[buf].sql_type_override == nil and vim.g.sql_type_default == nil then

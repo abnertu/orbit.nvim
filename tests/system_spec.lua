@@ -63,7 +63,9 @@ end)
 check("repeated setup never duplicates or overwrites recovery command", function()
   orbit.setup()
   assert((vim.api.nvim_get_commands({}).ClearShada ~= nil) == windows)
-  if not windows then return end
+  if not windows then
+    return
+  end
 
   local snapshot = system.capture()
   system.setup({ enabled = false })

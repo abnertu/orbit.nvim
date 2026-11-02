@@ -26,7 +26,9 @@ end
 
 ---@return LazySpec
 function M.spec()
-  if not accepted or not accepted.enabled then return {} end
+  if not accepted or not accepted.enabled then
+    return {}
+  end
   local opts = vim.deepcopy(accepted)
   local specs = {
     {
@@ -43,7 +45,9 @@ function M.spec()
       },
       config = function()
         require("orbit.modules.dap.runtime").setup(
-          require("dap"), require("orbit.modules.dap.definitions").build(opts))
+          require("dap"),
+          require("orbit.modules.dap.definitions").build(opts)
+        )
       end,
     },
   }
@@ -52,11 +56,27 @@ function M.spec()
       "rcarriga/nvim-dap-ui",
       dependencies = { "Orbit-Lua/nvim-dap", "nvim-neotest/nvim-nio" },
       keys = {
-        { "<leader>du", function() require("dapui").toggle() end, desc = "dap toggle ui" },
-        { "<leader>dr", function() require("dap").restart() end, desc = "dap restart" },
-        { "<leader>dw", function()
-          require("dapui").float_element("watches", { enter = true })
-        end, desc = "dap open watch window" },
+        {
+          "<leader>du",
+          function()
+            require("dapui").toggle()
+          end,
+          desc = "dap toggle ui",
+        },
+        {
+          "<leader>dr",
+          function()
+            require("dap").restart()
+          end,
+          desc = "dap restart",
+        },
+        {
+          "<leader>dw",
+          function()
+            require("dapui").float_element("watches", { enter = true })
+          end,
+          desc = "dap open watch window",
+        },
       },
       config = function(_, ui_opts)
         require("orbit.modules.dap.runtime").setup_ui(ui_opts)

@@ -20,72 +20,166 @@ local function expand_leader(lhs, leader)
 end
 
 local definitions = {
-  { name = "save", mode = "n", rhs = "<cmd>write<cr>",
-    desc = "Save the current buffer" },
-  { lhs = "<leader>bn", mode = "n", rhs = function() vim.cmd.enew() end,
-    desc = "Open a new buffer" },
-  { lhs = "<leader>bD", mode = "n", rhs = function()
-    require("orbit.modules.keymaps.buffer_actions").close_others()
-  end, desc = "Close other unmodified listed buffers" },
-  { lhs = "<leader>x", mode = "n", rhs = function()
-    require("orbit.modules.keymaps.buffer_actions").close_current()
-  end, desc = "Close the current unmodified buffer" },
-  { lhs = "<leader>h", mode = "n", rhs = function()
-    require("orbit.modules.keymaps.terminal").open("sp")
-  end, desc = "New horizontal terminal" },
-  { lhs = "<leader>v", mode = "n", rhs = function()
-    require("orbit.modules.keymaps.terminal").open("vsp")
-  end, desc = "New vertical terminal" },
-  { lhs = "<M-h>", mode = "n", rhs = function()
-    require("orbit.modules.keymaps.terminal").toggle("sp", "htoggleTerm")
-  end, desc = "Toggle horizontal terminal" },
-  { lhs = "<M-h>", mode = "t", rhs = function()
-    require("orbit.modules.keymaps.terminal").toggle("sp", "htoggleTerm")
-  end, desc = "Toggle horizontal terminal" },
-  { lhs = "<M-v>", mode = "n", rhs = function()
-    require("orbit.modules.keymaps.terminal").toggle("vsp", "vtoggleTerm")
-  end, desc = "Toggle vertical terminal" },
-  { lhs = "<M-v>", mode = "t", rhs = function()
-    require("orbit.modules.keymaps.terminal").toggle("vsp", "vtoggleTerm")
-  end, desc = "Toggle vertical terminal" },
-  { lhs = "<M-i>", mode = "n", rhs = function()
-    require("orbit.modules.keymaps.terminal").toggle("float", "floatTerm")
-  end, desc = "Toggle floating terminal" },
-  { lhs = "<M-i>", mode = "t", rhs = function()
-    require("orbit.modules.keymaps.terminal").toggle("float", "floatTerm")
-  end, desc = "Toggle floating terminal" },
-  { lhs = "<leader>fd", mode = "n", rhs = function()
-    require("orbit.modules.keymaps.project").cd_to_root()
-  end, desc = "Change directory to the current project root" },
-  { lhs = "<leader>tf", mode = "n", rhs = function()
-    vim.diagnostic.open_float()
-  end, desc = "Show diagnostics in a floating window" },
-  { lhs = "<leader>ut", mode = "n", rhs = function()
-    require("orbit.modules.keymaps.theme").select()
-  end, desc = "Select an installed colorscheme" },
-  { lhs = "<leader>ur", mode = "n", rhs = function()
-    require("orbit.modules.keymaps.theme").reload()
-  end, desc = "Reload the active colorscheme" },
-  { lhs = "<leader>fu", mode = "n", rhs = function()
-    require("orbit.modules.keymaps.conversion").dos_to_unix()
-  end, desc = "Convert DOS line endings to Unix" },
-  { lhs = "<leader>fi", mode = "n", rhs = function()
-    require("orbit.modules.keymaps.conversion").big5_to_utf8()
-  end, desc = "Convert Big5 file encoding to UTF-8" },
-  { lhs = "<leader>uc", mode = "n", rhs = function()
-    local config = require("orbit").get_config()
-    local commands = config and config.modules.commands
-    if not commands or not commands.enabled then
-      vim.notify("orbit.nvim settings command is disabled", vim.log.levels.WARN)
-      return
-    end
-    -- Resolve the command on demand so renaming it does not orphan this key.
-    vim.cmd[commands.name]()
-  end, desc = "Open orbit.nvim settings" },
-  { lhs = "<leader>/", mode = "n", rhs = "gcc", remap = true,
-    desc = "Toggle line comment" },
-  { lhs = "<leader>/", mode = "v", rhs = "gc", remap = true,
-    desc = "Toggle selected comments" },
+  { name = "save", mode = "n", rhs = "<cmd>write<cr>", desc = "Save the current buffer" },
+  {
+    lhs = "<leader>bn",
+    mode = "n",
+    rhs = function()
+      vim.cmd.enew()
+    end,
+    desc = "Open a new buffer",
+  },
+  {
+    lhs = "<leader>bD",
+    mode = "n",
+    rhs = function()
+      require("orbit.modules.keymaps.buffer_actions").close_others()
+    end,
+    desc = "Close other unmodified listed buffers",
+  },
+  {
+    lhs = "<leader>x",
+    mode = "n",
+    rhs = function()
+      require("orbit.modules.keymaps.buffer_actions").close_current()
+    end,
+    desc = "Close the current unmodified buffer",
+  },
+  {
+    lhs = "<leader>h",
+    mode = "n",
+    rhs = function()
+      require("orbit.modules.keymaps.terminal").open("sp")
+    end,
+    desc = "New horizontal terminal",
+  },
+  {
+    lhs = "<leader>v",
+    mode = "n",
+    rhs = function()
+      require("orbit.modules.keymaps.terminal").open("vsp")
+    end,
+    desc = "New vertical terminal",
+  },
+  {
+    lhs = "<M-h>",
+    mode = "n",
+    rhs = function()
+      require("orbit.modules.keymaps.terminal").toggle("sp", "htoggleTerm")
+    end,
+    desc = "Toggle horizontal terminal",
+  },
+  {
+    lhs = "<M-h>",
+    mode = "t",
+    rhs = function()
+      require("orbit.modules.keymaps.terminal").toggle("sp", "htoggleTerm")
+    end,
+    desc = "Toggle horizontal terminal",
+  },
+  {
+    lhs = "<M-v>",
+    mode = "n",
+    rhs = function()
+      require("orbit.modules.keymaps.terminal").toggle("vsp", "vtoggleTerm")
+    end,
+    desc = "Toggle vertical terminal",
+  },
+  {
+    lhs = "<M-v>",
+    mode = "t",
+    rhs = function()
+      require("orbit.modules.keymaps.terminal").toggle("vsp", "vtoggleTerm")
+    end,
+    desc = "Toggle vertical terminal",
+  },
+  {
+    lhs = "<M-i>",
+    mode = "n",
+    rhs = function()
+      require("orbit.modules.keymaps.terminal").toggle("float", "floatTerm")
+    end,
+    desc = "Toggle floating terminal",
+  },
+  {
+    lhs = "<M-i>",
+    mode = "t",
+    rhs = function()
+      require("orbit.modules.keymaps.terminal").toggle("float", "floatTerm")
+    end,
+    desc = "Toggle floating terminal",
+  },
+  {
+    lhs = "<leader>fd",
+    mode = "n",
+    rhs = function()
+      require("orbit.modules.keymaps.project").cd_to_root()
+    end,
+    desc = "Change directory to the current project root",
+  },
+  {
+    lhs = "<leader>tf",
+    mode = "n",
+    rhs = function()
+      vim.diagnostic.open_float()
+    end,
+    desc = "Show diagnostics in a floating window",
+  },
+  {
+    lhs = "<leader>ut",
+    mode = "n",
+    rhs = function()
+      require("orbit.modules.keymaps.theme").select()
+    end,
+    desc = "Select an installed colorscheme",
+  },
+  {
+    lhs = "<leader>ur",
+    mode = "n",
+    rhs = function()
+      require("orbit.modules.keymaps.theme").reload()
+    end,
+    desc = "Reload the active colorscheme",
+  },
+  {
+    lhs = "<leader>fu",
+    mode = "n",
+    rhs = function()
+      require("orbit.modules.keymaps.conversion").dos_to_unix()
+    end,
+    desc = "Convert DOS line endings to Unix",
+  },
+  {
+    lhs = "<leader>fi",
+    mode = "n",
+    rhs = function()
+      require("orbit.modules.keymaps.conversion").big5_to_utf8()
+    end,
+    desc = "Convert Big5 file encoding to UTF-8",
+  },
+  {
+    lhs = "<leader>uc",
+    mode = "n",
+    rhs = function()
+      local config = require("orbit").get_config()
+      local commands = config and config.modules.commands
+      if not commands or not commands.enabled then
+        vim.notify("orbit.nvim settings command is disabled", vim.log.levels.WARN)
+        return
+      end
+      -- Resolve the command on demand so renaming it does not orphan this key.
+      vim.cmd[commands.name]()
+    end,
+    desc = "Open orbit.nvim settings",
+  },
+  { lhs = "<leader>/", mode = "n", rhs = "gcc", remap = true, desc = "Toggle line comment" },
+  {
+    lhs = "<leader>/",
+    mode = "v",
+    rhs = "gc",
+    remap = true,
+    desc = "Toggle selected comments",
+  },
 }
 
 local function identity(mode, lhs)
@@ -102,7 +196,9 @@ end
 
 local function restore_mapping(mode, lhs, mapping)
   pcall(vim.keymap.del, mode, lhs)
-  if mapping == false then return end
+  if mapping == false then
+    return
+  end
   vim.keymap.set(mode, lhs, mapping.callback or mapping.rhs, {
     remap = mapping.noremap == 0,
     silent = mapping.silent == 1,
@@ -114,7 +210,9 @@ end
 
 local function targets(opts)
   local result, seen = {}, {}
-  if not opts.enabled then return result end
+  if not opts.enabled then
+    return result
+  end
   for _, definition in ipairs(definitions) do
     local lhs = expand_leader(definition.lhs or opts[definition.name], opts.leader)
     local mode = definition.mode
@@ -122,7 +220,9 @@ local function targets(opts)
     assert(not seen[key], "duplicate leader mapping: " .. lhs)
     seen[key] = true
     result[#result + 1] = {
-      key = key, mode = mode, lhs = lhs,
+      key = key,
+      mode = mode,
+      lhs = lhs,
       rhs = definition.rhs,
       desc = definition.desc,
       remap = definition.remap,
@@ -176,27 +276,32 @@ function M.setup(opts)
   opts = require("orbit.config").resolve_module("keymaps", opts)
   local next_targets = targets(opts)
   local desired = {}
-  for _, target in ipairs(next_targets) do desired[target.key] = true end
+  for _, target in ipairs(next_targets) do
+    desired[target.key] = true
+  end
 
   for key, entry in pairs(owned) do
     if not desired[key] then
       restore_mapping(entry.mode, entry.lhs, entry.original)
     end
   end
-  if opts.enabled then vim.g.mapleader = opts.leader end
+  if opts.enabled then
+    vim.g.mapleader = opts.leader
+  end
 
   local next_owned = {}
   for _, target in ipairs(next_targets) do
     local previous = owned[target.key]
-    local original = previous and previous.original or
-      mapping_at(target.mode, target.lhs)
+    local original = previous and previous.original or mapping_at(target.mode, target.lhs)
     vim.keymap.set(target.mode, target.lhs, target.rhs, {
       remap = target.remap == true,
       desc = target.desc,
       silent = true,
     })
     next_owned[target.key] = {
-      mode = target.mode, lhs = target.lhs, original = original,
+      mode = target.mode,
+      lhs = target.lhs,
+      original = original,
     }
   end
   owned = next_owned

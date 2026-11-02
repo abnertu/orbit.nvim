@@ -34,11 +34,16 @@ local python = defs.adapters.python
 
 check("Python attach keeps the default server host and port", function()
   local received
-  python(function(spec) received = spec end, { request = "attach" })
+  python(function(spec)
+    received = spec
+  end, { request = "attach" })
   assert(received.type == "server")
   assert(received.host == "127.0.0.1" and received.port == "8001")
-  python(function(spec) received = spec end, {
-    request = "attach", connect = { host = "localhost", port = "5432" },
+  python(function(spec)
+    received = spec
+  end, {
+    request = "attach",
+    connect = { host = "localhost", port = "5432" },
   })
   assert(received.host == "localhost" and received.port == "5432")
 end)
@@ -52,7 +57,9 @@ check("launch without an active venv does not start an adapter", function()
     warnings[#warnings + 1] = message
   end
   local called = false
-  python(function() called = true end, { request = "launch" })
+  python(function()
+    called = true
+  end, { request = "launch" })
   vim.notify = old_notify
   vim.env.VIRTUAL_ENV = original
   assert(not called and #warnings == 1)
@@ -81,7 +88,8 @@ check("Python launch chooses platform-aware virtual environment executables", fu
 end)
 
 local dap = {
-  adapters = {}, configurations = {},
+  adapters = {},
+  configurations = {},
   listeners = {
     before = { terminate = {}, event_exited = {}, event_terminated = {} },
   },
@@ -89,18 +97,26 @@ local dap = {
 local ui_calls = { setup = 0, toggle = 0, restart = 0, watched = 0, closed = 0 }
 
 package.preload.dap = function()
-  dap.restart = function() ui_calls.restart = ui_calls.restart + 1 end
+  dap.restart = function()
+    ui_calls.restart = ui_calls.restart + 1
+  end
   return dap
 end
 package.preload.dapui = function()
   return {
-    setup = function() ui_calls.setup = ui_calls.setup + 1 end,
-    toggle = function() ui_calls.toggle = ui_calls.toggle + 1 end,
-    float_element = function(name, opts)
-      assert(name == "watches" and opts.enter == true)
+    setup = function()
+      ui_calls.setup = ui_calls.setup + 1
+    end,
+    toggle = function()
+      ui_calls.toggle = ui_calls.toggle + 1
+    end,
+    float_element = function(name, options)
+      assert(name == "watches" and options.enter == true)
       ui_calls.watched = ui_calls.watched + 1
     end,
-    close = function() ui_calls.closed = ui_calls.closed + 1 end,
+    close = function()
+      ui_calls.closed = ui_calls.closed + 1
+    end,
   }
 end
 
@@ -131,7 +147,11 @@ check("debugger signs retain Orbit icons and diagnostic highlights", function()
   local breakpoint = vim.fn.sign_getdefined("DapBreakpoint")[1]
   assert(stopped and stopped.text == "󰁕 " and stopped.texthl == "DiagnosticWarn")
   assert(stopped.linehl == "DiagnosticVirtualTextWarn")
-  assert(breakpoint and breakpoint.text:find("●", 1, true) and breakpoint.texthl == "DapBreakpointColor")
+  assert(
+    breakpoint
+      and breakpoint.text:find("●", 1, true)
+      and breakpoint.texthl == "DapBreakpointColor"
+  )
 end)
 
 check("adapter toggles do not create duplicates or delete unrelated adapters", function()

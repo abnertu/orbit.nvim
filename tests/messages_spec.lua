@@ -18,11 +18,17 @@ check("message module imports without plugin startup side effects", function()
 end)
 
 check("restart-only message options build one VeryLazy Noice spec", function()
-  orbit.setup({ modules = { messages = {
-    cmdline = false, popupmenu = false,
-    hover = false, doc_max_width = 72,
-    doc_max_height = 18,
-  } } })
+  orbit.setup({
+    modules = {
+      messages = {
+        cmdline = false,
+        popupmenu = false,
+        hover = false,
+        doc_max_width = 72,
+        doc_max_height = 18,
+      },
+    },
+  })
   assert(package.loaded.noice == nil)
   local spec = messages.spec()
   assert(#spec == 1 and spec[1][1] == "folke/noice.nvim")
@@ -57,8 +63,7 @@ check("formatter and ignored-message routes keep their behavior", function()
   assert(progress.opts.skip == true and #progress.filter.any >= 2)
   assert(opts.presets.command_palette and opts.presets.bottom_search)
   assert(opts.lsp.override["vim.lsp.util.stylize_markdown"])
-  assert(opts.views.formatter_progress.format[1].hl_group ==
-    "NoiceLspProgressSpinner")
+  assert(opts.views.formatter_progress.format[1].hl_group == "NoiceLspProgressSpinner")
 end)
 
 check("external Noice is required only when its config callback runs", function()
@@ -90,8 +95,7 @@ end)
 check("runtime settings cannot restart activated message plugins", function()
   orbit.setup({ modules = { messages = { enabled = false } } })
   assert(orbit.get_config().modules.messages.enabled == true)
-  assert(orbit.get_pending_restart()
-    ["orbit.modules.messages.enabled"] == false)
+  assert(orbit.get_pending_restart()["orbit.modules.messages.enabled"] == false)
 end)
 
 print(string.format("%d Noice owner tests passed.", passed))

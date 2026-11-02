@@ -8,13 +8,16 @@ local source = "https://github.com/nvim-mini/mini.icons.git"
 local directory = vim.fn.tempname() .. " live mini icons"
 
 local function run(argv)
-  local result = vim.system(argv, {
-    text = true,
-    timeout = 120000,
-  }):wait()
-  assert(result.code == 0,
-    vim.inspect(argv) .. " failed: " ..
-      tostring(result.stderr or result.stdout or result.code))
+  local result = vim
+    .system(argv, {
+      text = true,
+      timeout = 120000,
+    })
+    :wait()
+  assert(
+    result.code == 0,
+    vim.inspect(argv) .. " failed: " .. tostring(result.stderr or result.stdout or result.code)
+  )
   return result.stdout or ""
 end
 
@@ -24,8 +27,7 @@ local ok, err = xpcall(function()
   run({ "git", "init", directory })
   run({ "git", "-C", directory, "fetch", "--depth", "1", source, pinned })
   run({ "git", "-C", directory, "checkout", "--detach", "FETCH_HEAD" })
-  local sha = run({ "git", "-C", directory, "rev-parse", "HEAD" })
-    :gsub("%s+$", "")
+  local sha = run({ "git", "-C", directory, "rev-parse", "HEAD" }):gsub("%s+$", "")
   assert(sha == pinned, "upstream mini.icons checkout is not pinned")
 
   vim.opt.rtp:prepend(directory)
@@ -34,8 +36,10 @@ local ok, err = xpcall(function()
   orbit.setup({ modules = {
     icons = { enabled = true, mock_devicons = true },
   } })
-  assert(package.loaded["mini.icons"] == nil,
-    "setup unexpectedly imported the upstream icon plugin")
+  assert(
+    package.loaded["mini.icons"] == nil,
+    "setup unexpectedly imported the upstream icon plugin"
+  )
   local spec = icons.spec()[1]
   assert(spec[1] == "nvim-mini/mini.icons")
   assert(type(spec.config) == "function")
@@ -47,10 +51,8 @@ local ok, err = xpcall(function()
   assert(type(group) == "string" and group ~= "", "missing icon highlight")
 
   local devicons = require("nvim-web-devicons")
-  assert(type(devicons.get_icon) == "function",
-    "upstream devicons compatibility adapter missing")
-  local compatible, compatible_hl = devicons.get_icon("init.lua", "lua",
-    { default = true })
+  assert(type(devicons.get_icon) == "function", "upstream devicons compatibility adapter missing")
+  local compatible, compatible_hl = devicons.get_icon("init.lua", "lua", { default = true })
   assert(type(compatible) == "string" and compatible ~= "")
   assert(type(compatible_hl) == "string" and compatible_hl ~= "")
 

@@ -22,7 +22,9 @@ local function suppress(events, callback)
   generations[events] = generation
   local before = vim.fn.getcmdpos()
   callback()
-  if vim.api.nvim_get_mode().mode ~= "c" then return end
+  if vim.api.nvim_get_mode().mode ~= "c" then
+    return
+  end
   events.ignore_next_cursor_moved = true
   if vim.fn.getcmdpos() == before then
     vim.defer_fn(function()
@@ -41,7 +43,9 @@ local function recover_first_input(events)
   local revision = 0
   vim.api.nvim_create_autocmd({ "CmdlineEnter", "CmdlineLeave", "CmdlineChanged" }, {
     group = group,
-    callback = function() revision = revision + 1 end,
+    callback = function()
+      revision = revision + 1
+    end,
   })
   local listen = events.listen
   events.listen = function(self, listeners)
@@ -51,13 +55,20 @@ local function recover_first_input(events)
     local text, position = vim.fn.getcmdline(), vim.fn.getcmdpos()
     vim.schedule(function()
       vim.api.nvim_clear_autocmds({ group = group })
-      if pending ~= revision or vim.api.nvim_get_mode().mode ~= "c"
-        or vim.fn.getcmdtype() ~= ":" or vim.fn.getcmdline() ~= text
+      if
+        pending ~= revision
+        or vim.api.nvim_get_mode().mode ~= "c"
+        or vim.fn.getcmdtype() ~= ":"
+        or vim.fn.getcmdline() ~= text
         or vim.fn.getcmdpos() ~= position
-      then return end
+      then
+        return
+      end
       local prefix = text:sub(1, position - 1)
       local char = vim.fn.strcharpart(prefix, vim.fn.strchars(prefix) - 1, 1)
-      if char ~= "" then listeners.on_char_added(char, false) end
+      if char ~= "" then
+        listeners.on_char_added(char, false)
+      end
     end)
   end
 end
@@ -66,8 +77,10 @@ end
 ---@param cmdline_enabled boolean
 function M.install(cmdline_enabled)
   local events = require("blink.cmp.lib.cmdline_events")
-  assert(type(events.suppress_events_for_callback) == "function",
-    "unsupported Blink commandline event API")
+  assert(
+    type(events.suppress_events_for_callback) == "function",
+    "unsupported Blink commandline event API"
+  )
   events.suppress_events_for_callback = suppress
   if cmdline_enabled then
     assert(type(events.listen) == "function", "unsupported Blink commandline listener API")

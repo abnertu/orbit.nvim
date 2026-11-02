@@ -13,8 +13,10 @@ local site = vim.fn.tempname() .. " pinned parsers site with spaces"
 
 local function run(argv)
   local result = vim.system(argv, { text = true, timeout = 120000 }):wait()
-  assert(result.code == 0, vim.inspect(argv) .. " failed: "
-    .. tostring(result.stderr or result.stdout or result.code))
+  assert(
+    result.code == 0,
+    vim.inspect(argv) .. " failed: " .. tostring(result.stderr or result.stdout or result.code)
+  )
   return result.stdout or ""
 end
 
@@ -25,15 +27,16 @@ local ok, err = xpcall(function()
   run({ "git", "init", plugin })
   run({ "git", "-C", plugin, "fetch", "--depth", "1", source, pinned })
   run({ "git", "-C", plugin, "checkout", "--detach", "FETCH_HEAD" })
-  assert(vim.trim(run({ "git", "-C", plugin, "rev-parse", "HEAD" })) == pinned,
-    "Tree-sitter manager source checkout mismatch")
+  assert(
+    vim.trim(run({ "git", "-C", plugin, "rev-parse", "HEAD" })) == pinned,
+    "Tree-sitter manager source checkout mismatch"
+  )
   vim.opt.rtp:prepend(plugin)
 
   local orbit = require("orbit")
   local feature = require("orbit.modules.treesitter_plugins")
   orbit.setup()
-  assert(package.loaded["nvim-treesitter"] == nil,
-    "root setup eagerly imported nvim-treesitter")
+  assert(package.loaded["nvim-treesitter"] == nil, "root setup eagerly imported nvim-treesitter")
   local spec = feature.spec()[1]
   assert(spec and spec[1] == "nvim-treesitter/nvim-treesitter")
   assert(spec.branch == "main")
@@ -43,8 +46,10 @@ local ok, err = xpcall(function()
   -- C# v0.23.5 and SQL gh-pages 174cebb880f10bc7c5a24aa289431949d26d3c09.
   local ts = require("nvim-treesitter")
   ts.setup({ install_dir = site })
-  assert(ts.install({ "c_sharp", "sql" }):wait(240000),
-    "pinned Tree-sitter grammar compilation or installation failed")
+  assert(
+    ts.install({ "c_sharp", "sql" }):wait(240000),
+    "pinned Tree-sitter grammar compilation or installation failed"
+  )
   local installed = ts.get_installed()
   assert(vim.list_contains(installed, "c_sharp"))
   assert(vim.list_contains(installed, "sql"))
@@ -67,21 +72,22 @@ local ok, err = xpcall(function()
   vim.api.nvim_set_option_value("filetype", "cs", { buf = buffer })
   local parser = assert(vim.treesitter.get_parser(buffer, "c_sharp"))
   local query_files = vim.treesitter.query.get_files("c_sharp", "injections")
-  local extension = vim.fs.normalize(vim.fs.joinpath(root,
-    "after", "queries", "c_sharp", "injections.scm"))
+  local extension =
+    vim.fs.normalize(vim.fs.joinpath(root, "after", "queries", "c_sharp", "injections.scm"))
   local found_extension = false
   for _, file in ipairs(query_files) do
     if vim.fs.normalize(file) == extension then
       found_extension = true
     end
   end
-  assert(found_extension, "Orbit C# extension query was not loaded: "
-    .. vim.inspect(query_files))
-  local query = assert(vim.treesitter.query.get("c_sharp", "injections"),
-    "merged upstream/Orbit C# injections query is unavailable")
+  assert(found_extension, "Orbit C# extension query was not loaded: " .. vim.inspect(query_files))
+  local query = assert(
+    vim.treesitter.query.get("c_sharp", "injections"),
+    "merged upstream/Orbit C# injections query is unavailable"
+  )
   local matches = {}
-  for _, match, metadata in query:iter_matches(
-    parser:parse()[1]:root(), buffer, 0, -1, { all = true })
+  for _, match, metadata in
+    query:iter_matches(parser:parse()[1]:root(), buffer, 0, -1, { all = true })
   do
     if metadata["injection.language"] == "sql" then
       for capture, nodes in pairs(match) do
@@ -97,20 +103,25 @@ local ok, err = xpcall(function()
     end
   end
   if not matches["SELECT 10"] then
-    print("DEBUG C# query files: " .. vim.inspect(
-      vim.treesitter.query.get_files("c_sharp", "injections")))
+    print(
+      "DEBUG C# query files: "
+        .. vim.inspect(vim.treesitter.query.get_files("c_sharp", "injections"))
+    )
     print("DEBUG C# query captures: " .. vim.inspect(query.captures))
     print("DEBUG collected SQL matches: " .. vim.inspect(matches))
   end
-  assert(matches["SELECT 10"] == 1,
-    "comment-annotated raw SQL was not injected exactly once: "
-      .. vim.inspect(matches))
-  assert(matches["SELECT 20"] == 1,
-    "sql-prefixed raw SQL was not injected exactly once: "
-      .. vim.inspect(matches))
-  assert(matches["SELECT 30"] == 1,
-    "sql-prefixed ordinary string was not injected exactly once: "
-      .. vim.inspect(matches))
+  assert(
+    matches["SELECT 10"] == 1,
+    "comment-annotated raw SQL was not injected exactly once: " .. vim.inspect(matches)
+  )
+  assert(
+    matches["SELECT 20"] == 1,
+    "sql-prefixed raw SQL was not injected exactly once: " .. vim.inspect(matches)
+  )
+  assert(
+    matches["SELECT 30"] == 1,
+    "sql-prefixed ordinary string was not injected exactly once: " .. vim.inspect(matches)
+  )
   print("PASS real C# SQL query predicates accept raw and ordinary string literals")
 
   -- Neovim only computes injected LanguageTrees for an explicit parse range.
@@ -122,10 +133,11 @@ local ok, err = xpcall(function()
       sql_tree_count = sql_tree_count + 1
     end
   end)
-  assert(sql_tree_count > 0,
-    "real LanguageTree failed to build an injected SQL parser")
-  assert(vim.treesitter.query.get("sql", "highlights"),
-    "merged SQL highlight queries failed to compile")
+  assert(sql_tree_count > 0, "real LanguageTree failed to build an injected SQL parser")
+  assert(
+    vim.treesitter.query.get("sql", "highlights"),
+    "merged SQL highlight queries failed to compile"
+  )
   print("PASS parsed SQL child LanguageTree and real SQL highlight query")
 
   vim.api.nvim_buf_delete(buffer, { force = true })

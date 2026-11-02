@@ -4,7 +4,10 @@ local M = {}
 ---@param path? string
 ---@return string
 function M.path(path)
-  assert(path == nil or (type(path) == "string" and path ~= ""), "settings path must be a nonempty string")
+  assert(
+    path == nil or (type(path) == "string" and path ~= ""),
+    "settings path must be a nonempty string"
+  )
   local selected = path or (vim.fn.stdpath("data") .. "/settings.json")
   return vim.fs.normalize(vim.fn.fnamemodify(selected, ":p"))
 end
@@ -76,7 +79,9 @@ function M.update(path, keys, value)
   local node = raw
   for index = 1, #keys - 1 do
     local key = keys[index]
-    if node[key] == nil then node[key] = vim.empty_dict() end
+    if node[key] == nil then
+      node[key] = vim.empty_dict()
+    end
     if type(node[key]) ~= "table" then
       return false, "settings key is not an object: " .. table.concat(keys, ".", 1, index)
     end

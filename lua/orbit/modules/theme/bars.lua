@@ -38,8 +38,15 @@ return function(c)
     groups["OrbitSt" .. suffix] = { fg = color, bg = status }
   end
   for mode, color in pairs({
-    Normal = c.nord_blue, Visual = c.cyan, Insert = c.dark_purple, Terminal = c.green,
-    NTerminal = c.yellow, Replace = c.orange, Confirm = c.teal, Command = c.green, Select = c.blue,
+    Normal = c.nord_blue,
+    Visual = c.cyan,
+    Insert = c.dark_purple,
+    Terminal = c.green,
+    NTerminal = c.yellow,
+    Replace = c.orange,
+    Confirm = c.teal,
+    Command = c.green,
+    Select = c.blue,
   }) do
     groups["OrbitStMode" .. mode] = { fg = c.black, bg = color, bold = true }
     groups["OrbitStMode" .. mode .. "Sep"] = { fg = color, bg = status }

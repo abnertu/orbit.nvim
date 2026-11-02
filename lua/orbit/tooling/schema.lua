@@ -51,8 +51,7 @@ local function attributes(source, location)
     assert(result[name] == nil, location .. ": duplicate metadata " .. name)
 
     local valid, value = pcall(vim.json.decode, raw:sub(2, -2))
-    assert(valid and value ~= vim.NIL,
-      location .. ": metadata " .. name .. " needs a JSON value")
+    assert(valid and value ~= vim.NIL, location .. ": metadata " .. name .. " needs a JSON value")
 
     result[name] = value
     source = remainder
@@ -75,9 +74,7 @@ local function field_type(source, location, classes, stack)
     return { type = "array", items = field_type(base, location, classes, stack) }
   end
 
-  if source == "boolean" or source == "string" or
-    source == "number" or source == "integer"
-  then
+  if source == "boolean" or source == "string" or source == "number" or source == "integer" then
     return { type = source }
   end
 
@@ -93,8 +90,12 @@ local function field_type(source, location, classes, stack)
     }
     for _, field in ipairs(definition.fields) do
       result.properties[field.name] = compile_field(
-        field.type_name, field.metadata, field.description,
-        field.location, classes, stack
+        field.type_name,
+        field.metadata,
+        field.description,
+        field.location,
+        classes,
+        stack
       )
     end
     stack[source] = nil
@@ -109,8 +110,10 @@ local function field_type(source, location, classes, stack)
     values[#values + 1] = value
     exact[#exact + 1] = "'" .. value .. "'"
   end
-  assert(#values > 0 and table.concat(exact, "|") == source,
-    location .. ": unsupported LuaDoc type " .. source)
+  assert(
+    #values > 0 and table.concat(exact, "|") == source,
+    location .. ": unsupported LuaDoc type " .. source
+  )
   return { type = "string", enum = values }
 end
 
@@ -125,15 +128,21 @@ compile_field = function(type_name, metadata, description, location, classes, st
   end
 
   if node.type == "integer" then
-    assert(type(node.default) == "number" and node.default == math.floor(node.default),
-      location .. ": default must be an integer")
+    assert(
+      type(node.default) == "number" and node.default == math.floor(node.default),
+      location .. ": default must be an integer"
+    )
   elseif node.type == "object" then
     -- Empty defaults mean "derive nested field defaults", not "drop fields".
-    assert(type(node.default) == "table" and next(node.default) == nil,
-      location .. ": object default must be {}")
+    assert(
+      type(node.default) == "table" and next(node.default) == nil,
+      location .. ": object default must be {}"
+    )
   elseif node.type == "array" then
-    assert(type(node.default) == "table" and next(node.default) == nil,
-      location .. ": array default must be []")
+    assert(
+      type(node.default) == "table" and next(node.default) == nil,
+      location .. ": array default must be []"
+    )
   else
     assert(type(node.default) == node.type, location .. ": invalid default type")
   end
@@ -141,20 +150,26 @@ compile_field = function(type_name, metadata, description, location, classes, st
   for _, name in ipairs({ "minimum", "maximum", "minLength" }) do
     local value = attr[name]
     if value ~= nil then
-      assert(type(value) == "number" and value >= 0 and value == math.floor(value),
-        location .. ": " .. name .. " must be a nonnegative integer")
+      assert(
+        type(value) == "number" and value >= 0 and value == math.floor(value),
+        location .. ": " .. name .. " must be a nonnegative integer"
+      )
       if name == "minLength" then
         assert(node.type == "string", location .. ": minLength requires string")
       else
-        assert(node.type == "integer" or node.type == "number",
-          location .. ": " .. name .. " requires a numeric type")
+        assert(
+          node.type == "integer" or node.type == "number",
+          location .. ": " .. name .. " requires a numeric type"
+        )
       end
       node[name] = value
     end
   end
 
-  assert(not node.minimum or not node.maximum or node.minimum <= node.maximum,
-    location .. ": minimum exceeds maximum")
+  assert(
+    not node.minimum or not node.maximum or node.minimum <= node.maximum,
+    location .. ": minimum exceeds maximum"
+  )
   if node.minimum then
     assert(node.default >= node.minimum, location .. ": default is below minimum")
   end
@@ -162,12 +177,13 @@ compile_field = function(type_name, metadata, description, location, classes, st
     assert(node.default <= node.maximum, location .. ": default exceeds maximum")
   end
   if node.minLength then
-    assert(vim.fn.strchars(node.default) >= node.minLength,
-      location .. ": default is too short")
+    assert(vim.fn.strchars(node.default) >= node.minLength, location .. ": default is too short")
   end
   if node.enum then
-    assert(vim.tbl_contains(node.enum, node.default),
-      location .. ": default is not in the literal union")
+    assert(
+      vim.tbl_contains(node.enum, node.default),
+      location .. ": default is not in the literal union"
+    )
   end
 
   return node
@@ -188,8 +204,10 @@ function M.parse_module(path, name)
     if annotated_class then
       active = nil
       if annotated_class:match("^Orbit%.") then
-        assert(not classes[annotated_class],
-          path .. ":" .. number .. ": duplicate class " .. annotated_class)
+        assert(
+          not classes[annotated_class],
+          path .. ":" .. number .. ": duplicate class " .. annotated_class
+        )
         local description = trailing:match("^#%s*(.-)%s*$")
         classes[annotated_class] = { description = description, fields = {}, names = {} }
         active = classes[annotated_class]
@@ -199,9 +217,12 @@ function M.parse_module(path, name)
         line:match("^%s*%-%-%-@field%s+([%w_?]+)%s+(%S+)%s+(.+)$")
       local field = declaration and declaration:gsub("%?$", "")
       local location = path .. ":" .. number
-      assert(field and field:match("^[a-z][a-z0-9_]*$") and
-        (declaration == field or declaration == field .. "?"),
-        location .. ": malformed LuaDoc field")
+      assert(
+        field
+          and field:match("^[a-z][a-z0-9_]*$")
+          and (declaration == field or declaration == field .. "?"),
+        location .. ": malformed LuaDoc field"
+      )
       assert(not active.names[field], location .. ": duplicate field " .. field)
 
       local metadata, description = rest:match("^(.-)%s*#%s+(.+)$")
@@ -220,12 +241,13 @@ function M.parse_module(path, name)
   local target = class_name(name)
   local root = classes[target]
   assert(root, path .. ": required LuaDoc class " .. target .. " is missing")
-  assert(root.description and root.description ~= "",
-    path .. ": class description is required")
+  assert(root.description and root.description ~= "", path .. ": class description is required")
 
   local result = field_type(target, path, classes, {})
-  assert(result.properties.enabled and result.properties.enabled.type == "boolean",
-    path .. ": module needs a boolean enabled field")
+  assert(
+    result.properties.enabled and result.properties.enabled.type == "boolean",
+    path .. ": module needs a boolean enabled field"
+  )
   return result
 end
 
@@ -235,8 +257,7 @@ end
 function M.build(root)
   local modules = module_root(root)
   local manifest = read_json(vim.fs.joinpath(modules, "manifest.json"))
-  assert(type(manifest) == "table" and vim.islist(manifest.order),
-    "module order must be a list")
+  assert(type(manifest) == "table" and vim.islist(manifest.order), "module order must be a list")
   assert(#manifest.order > 0, "module order must not be empty")
 
   local seen, properties = {}, {}
@@ -288,7 +309,9 @@ local function encode_pretty(value, depth)
   table.sort(keys)
   for _, key in ipairs(keys) do
     entries[#entries + 1] = next_indent
-      .. vim.json.encode(key) .. ": " .. encode_pretty(value[key], depth + 1)
+      .. vim.json.encode(key)
+      .. ": "
+      .. encode_pretty(value[key], depth + 1)
   end
   if #entries == 0 then
     return "{}"
@@ -320,9 +343,8 @@ end
 ---@param root string
 function M.write(root)
   local path = vim.fs.joinpath(root, "settings.schema.json")
-  local result = vim.fn.writefile(
-    vim.split(M.generate(root):gsub("\n$", ""), "\n", { plain = true }), path
-  )
+  local result =
+    vim.fn.writefile(vim.split(M.generate(root):gsub("\n$", ""), "\n", { plain = true }), path)
   assert(result == 0, "failed to write generated schema: " .. path)
 end
 

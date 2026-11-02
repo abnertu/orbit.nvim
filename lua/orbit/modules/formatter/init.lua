@@ -60,13 +60,19 @@ function M.spec()
       "stevearc/conform.nvim",
       event = { "BufWritePost", "BufReadPost", "InsertLeave" },
       keys = {
-        { c.key, function()
-          require("orbit.modules.formatter.runtime").format()
-        end, desc = "format file", mode = { "n", "x" } },
+        {
+          c.key,
+          function()
+            require("orbit.modules.formatter.runtime").format()
+          end,
+          desc = "format file",
+          mode = { "n", "x" },
+        },
       },
       opts = {
         default_format_opts = {
-          timeout_ms = c.timeout_ms, quiet = false,
+          timeout_ms = c.timeout_ms,
+          quiet = false,
           lsp_format = c.lsp_format,
         },
         formatters_by_ft = default_filetypes(),
@@ -85,12 +91,13 @@ function M.spec()
           },
         },
         format_on_save = c.format_on_save and {
-          timeout_ms = c.timeout_ms, lsp_format = c.lsp_format,
+          timeout_ms = c.timeout_ms,
+          lsp_format = c.lsp_format,
         } or false,
       },
       config = function(_, opts)
-        opts.formatters_by_ft = require("orbit.hangar_bridge")
-          .filter("formatter", opts.formatters_by_ft)
+        opts.formatters_by_ft =
+          require("orbit.hangar_bridge").filter("formatter", opts.formatters_by_ft)
         require("conform").setup(opts)
       end,
     },

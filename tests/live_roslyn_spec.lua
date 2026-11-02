@@ -14,8 +14,13 @@ local workspace = vim.fn.tempname() .. " live roslyn with spaces"
 
 local function run(argv, cwd)
   local result = vim.system(argv, { text = true, timeout = 600000, cwd = cwd }):wait()
-  assert(result.code == 0, vim.inspect(argv) ..
-    " failed: " .. tostring(result.stderr or "") .. tostring(result.stdout or ""))
+  assert(
+    result.code == 0,
+    vim.inspect(argv)
+      .. " failed: "
+      .. tostring(result.stderr or "")
+      .. tostring(result.stdout or "")
+  )
   return result.stdout or ""
 end
 
@@ -40,21 +45,41 @@ local ok, err = xpcall(function()
   -- Resolve 8.3 short names before Roslyn compares solution paths.
   local base = vim.fs.normalize(vim.uv.fs_realpath(workspace))
   local tools = vim.fs.joinpath(base, "tools")
-  run({ "dotnet", "tool", "install", "roslyn-language-server", "--version", server_version,
-    "--tool-path", tools })
+  run({
+    "dotnet",
+    "tool",
+    "install",
+    "roslyn-language-server",
+    "--version",
+    server_version,
+    "--tool-path",
+    tools,
+  })
   vim.env.PATH = tools .. (windows and ";" or ":") .. vim.env.PATH
   -- The RID-specific Windows tool ships a .cmd shim, which Orbit expects.
-  local server = vim.fs.joinpath(tools, windows and "roslyn-language-server.cmd" or "roslyn-language-server")
-  assert(vim.uv.fs_stat(server), "Roslyn tool did not install " .. server .. ": "
-    .. vim.inspect(vim.fn.readdir(tools)))
+  local server =
+    vim.fs.joinpath(tools, windows and "roslyn-language-server.cmd" or "roslyn-language-server")
+  assert(
+    vim.uv.fs_stat(server),
+    "Roslyn tool did not install " .. server .. ": " .. vim.inspect(vim.fn.readdir(tools))
+  )
 
   -- Two solutions reference the project; Orbit selects the root solution.
   local repo = vim.fs.joinpath(base, "repo")
   local project_dir = vim.fs.joinpath(repo, "App")
   run({ "git", "init", repo })
   local framework = "net" .. run({ "dotnet", "--version" }):match("^(%d+%.%d+)")
-  run({ "dotnet", "new", "console", "--name", "App", "--output", project_dir,
-    "--framework", framework })
+  run({
+    "dotnet",
+    "new",
+    "console",
+    "--name",
+    "App",
+    "--output",
+    project_dir,
+    "--framework",
+    framework,
+  })
   run({ "dotnet", "new", "sln", "--name", "App", "--format", "sln", "--output", repo })
   run({ "dotnet", "sln", "App.sln", "add", "App/App.csproj" }, repo)
   local nested = vim.fs.joinpath(repo, "nested")
@@ -90,25 +115,37 @@ local ok, err = xpcall(function()
     return client ~= nil and client.initialized
   end, "Roslyn did not attach")
   local solution = require("roslyn.store").get(client.id)
-  assert(solution and vim.fs.normalize(solution) == vim.fs.joinpath(repo, "App.sln"),
-    "Roslyn opened the wrong solution: " .. tostring(solution))
+  assert(
+    solution and vim.fs.normalize(solution) == vim.fs.joinpath(repo, "App.sln"),
+    "Roslyn opened the wrong solution: " .. tostring(solution)
+  )
   print("PASS Orbit chooses the root solution for real Roslyn")
 
   local diagnostic
   wait(function()
     for _, item in ipairs(vim.diagnostic.get(buffer)) do
-      if item.lnum == 1 and tostring(item.code) == "CS0029" then diagnostic = item end
+      if item.lnum == 1 and tostring(item.code) == "CS0029" then
+        diagnostic = item
+      end
     end
     return diagnostic ~= nil
   end, "Roslyn did not report CS0029: " .. vim.inspect(vim.diagnostic.get(buffer)))
   print("PASS real Roslyn reports a diagnostic: " .. diagnostic.message)
 
   client:stop()
-  wait(function() return client:is_stopped() end, "Roslyn did not stop")
+  wait(function()
+    return client:is_stopped()
+  end, "Roslyn did not stop")
 end, debug.traceback)
 
-for _, client in ipairs(vim.lsp.get_clients()) do pcall(function() client:stop(true) end) end
-vim.wait(5000, function() return #vim.lsp.get_clients() == 0 end, 50)
+for _, client in ipairs(vim.lsp.get_clients()) do
+  pcall(function()
+    client:stop(true)
+  end)
+end
+vim.wait(5000, function()
+  return #vim.lsp.get_clients() == 0
+end, 50)
 vim.fn.delete(workspace, "rf")
 assert(ok, tostring(err))
 print("Real Roslyn integration tests passed.")

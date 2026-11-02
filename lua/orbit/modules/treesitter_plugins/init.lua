@@ -58,8 +58,8 @@ function M.spec()
         require("orbit.modules.treesitter_plugins.runtime").setup()
       end,
       opts = {
-        install_dir = c.install_dir ~= "" and c.install_dir or
-          vim.fs.joinpath(vim.fn.stdpath("data"), "site"),
+        install_dir = c.install_dir ~= "" and c.install_dir
+          or vim.fs.joinpath(vim.fn.stdpath("data"), "site"),
       },
       config = function(_, opts)
         require("nvim-treesitter").setup(opts)
@@ -75,10 +75,15 @@ function M.spec()
       dependencies = { "nvim-treesitter/nvim-treesitter" },
       event = { "BufReadPost", "BufWritePost", "BufNewFile" },
       opts = {
-        enable = true, multiwindow = false, max_lines = c.context_lines,
-        min_window_height = 0, line_numbers = true,
-        multiline_threshold = 20, trim_scope = "outer",
-        mode = "cursor", zindex = 20,
+        enable = true,
+        multiwindow = false,
+        max_lines = c.context_lines,
+        min_window_height = 0,
+        line_numbers = true,
+        multiline_threshold = 20,
+        trim_scope = "outer",
+        mode = "cursor",
+        zindex = 20,
       },
     }
   end

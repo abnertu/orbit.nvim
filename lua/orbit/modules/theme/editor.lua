@@ -26,7 +26,10 @@ return function(c)
     ["FoldColumn"] = { bg = "none" },
     ["Folded"] = { bg = c.black2, fg = c.light_grey },
     ["IncSearch"] = { bg = c.base16.base09, fg = c.base16.base01 },
-    ["LazyButton"] = { bg = c.one_bg, fg = palette.lighten(c.light_grey, vim.o.background == "dark" and 10 or -20) },
+    ["LazyButton"] = {
+      bg = c.one_bg,
+      fg = palette.lighten(c.light_grey, vim.o.background == "dark" and 10 or -20),
+    },
     ["LazyCommit"] = { fg = c.green },
     ["LazyCommitIssue"] = { fg = c.pink },
     ["LazyDir"] = { fg = c.base16.base05 },

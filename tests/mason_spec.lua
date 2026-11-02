@@ -55,9 +55,10 @@ end)
 
 check("invalid installer count is rejected before settings activation", function()
   local accepted = orbit.get_config()
-  local ok, err = pcall(orbit.setup, { modules = {
-    mason = { max_concurrent_installers = 0 },
-  } })
+  local ok, err =
+    pcall(orbit.setup, { modules = {
+      mason = { max_concurrent_installers = 0 },
+    } })
   assert(not ok and tostring(err):find("max_concurrent_installers", 1, true))
   assert(vim.deep_equal(orbit.get_config(), accepted))
 end)

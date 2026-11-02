@@ -21,22 +21,30 @@ end
 ---@param tab integer
 ---@param buffer integer
 local function append(tab, buffer)
-  if not eligible(buffer) then return end
+  if not eligible(buffer) then
+    return
+  end
   local list = order[tab] or {}
-  if not vim.list_contains(list, buffer) then list[#list + 1] = buffer end
+  if not vim.list_contains(list, buffer) then
+    list[#list + 1] = buffer
+  end
   order[tab] = list
 end
 
 ---@param buffer integer
 local function forget(buffer)
   for tab, list in pairs(order) do
-    order[tab] = vim.tbl_filter(function(item) return item ~= buffer end, list)
+    order[tab] = vim.tbl_filter(function(item)
+      return item ~= buffer
+    end, list)
   end
 end
 
 local function prune_tabs()
   for tab in pairs(order) do
-    if not vim.api.nvim_tabpage_is_valid(tab) then order[tab] = nil end
+    if not vim.api.nvim_tabpage_is_valid(tab) then
+      order[tab] = nil
+    end
   end
 end
 
@@ -45,7 +53,9 @@ end
 local function seed()
   order = {}
   local current = vim.api.nvim_get_current_tabpage()
-  for _, buffer in ipairs(vim.api.nvim_list_bufs()) do append(current, buffer) end
+  for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
+    append(current, buffer)
+  end
   for _, tab in ipairs(vim.api.nvim_list_tabpages()) do
     if tab ~= current then
       for _, win in ipairs(vim.api.nvim_tabpage_list_wins(tab)) do
@@ -66,14 +76,18 @@ local function activate()
       append(tab, args.buf)
       if args.event == "BufAdd" then
         vim.schedule(function()
-          if vim.api.nvim_tabpage_is_valid(tab) then append(tab, args.buf) end
+          if vim.api.nvim_tabpage_is_valid(tab) then
+            append(tab, args.buf)
+          end
         end)
       end
     end,
   })
   vim.api.nvim_create_autocmd({ "BufDelete", "BufWipeout" }, {
     group = group,
-    callback = function(args) forget(args.buf) end,
+    callback = function(args)
+      forget(args.buf)
+    end,
   })
   vim.api.nvim_create_autocmd("TabClosed", { group = group, callback = prune_tabs })
 end
@@ -83,7 +97,9 @@ end
 function M.attach(owner)
   local active = next(owners) ~= nil
   owners[owner] = true
-  if not active then activate() end
+  if not active then
+    activate()
+  end
 end
 
 ---Stop tracking for `owner`; the last owner removes the group and state.
@@ -109,7 +125,9 @@ end
 function M.list(tab)
   tab = tab or vim.api.nvim_get_current_tabpage()
   local valid = vim.tbl_filter(eligible, order[tab] or {})
-  if #valid > 0 then return valid end
+  if #valid > 0 then
+    return valid
+  end
   return vim.tbl_filter(eligible, vim.api.nvim_list_bufs())
 end
 
@@ -128,10 +146,14 @@ function M.close(buffer)
   local list = M.list()
   local index = 1
   for position, item in ipairs(list) do
-    if item == buffer then index = position end
+    if item == buffer then
+      index = position
+    end
   end
   local replacement = list[index + 1] or list[index - 1]
-  if replacement == buffer then replacement = nil end
+  if replacement == buffer then
+    replacement = nil
+  end
   for _, win in ipairs(vim.fn.win_findbuf(buffer)) do
     if replacement then
       vim.api.nvim_win_set_buf(win, replacement)

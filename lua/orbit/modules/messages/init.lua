@@ -30,7 +30,9 @@ end
 
 ---@return LazySpec
 function M.spec()
-  if not accepted or not accepted.enabled then return {} end
+  if not accepted or not accepted.enabled then
+    return {}
+  end
   local options = vim.deepcopy(accepted)
   return {
     {

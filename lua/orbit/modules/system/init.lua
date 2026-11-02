@@ -13,16 +13,21 @@ local function command_exists()
 end
 
 local function register()
-  assert(not command_exists(),
-    "refusing to overwrite existing user command: ClearShada")
+  assert(not command_exists(), "refusing to overwrite existing user command: ClearShada")
   vim.api.nvim_create_user_command("ClearShada", function()
     local count, err = require("orbit.modules.system.shada").clear()
     if count then
-      vim.notify(string.format("Removed %d stale ShaDa temporary files", count),
-        vim.log.levels.INFO, { title = "orbit.nvim system" })
+      vim.notify(
+        string.format("Removed %d stale ShaDa temporary files", count),
+        vim.log.levels.INFO,
+        { title = "orbit.nvim system" }
+      )
     else
-      vim.notify("ShaDa cleanup failed: " .. tostring(err),
-        vim.log.levels.WARN, { title = "orbit.nvim system" })
+      vim.notify(
+        "ShaDa cleanup failed: " .. tostring(err),
+        vim.log.levels.WARN,
+        { title = "orbit.nvim system" }
+      )
     end
   end, { desc = "Remove stale ShaDa temporary files without touching main.shada" })
   owns_command = true
@@ -39,7 +44,9 @@ function M.restore(snapshot)
     pcall(vim.api.nvim_del_user_command, "ClearShada")
     owns_command = false
   end
-  if snapshot.owns_command then register() end
+  if snapshot.owns_command then
+    register()
+  end
 end
 
 ---@param opts? Orbit.SystemOptions

@@ -33,7 +33,9 @@ local function specs(prefix)
     end
   end
   table.sort(found)
-  return vim.tbl_map(function(name) return suite("tests/" .. name) end, found)
+  return vim.tbl_map(function(name)
+    return suite("tests/" .. name)
+  end, found)
 end
 
 ---@type table<string, fun(): Orbit.TestSuite[]>
@@ -50,13 +52,17 @@ local groups = {
     list[#list + 1] = suite("tests/smoke.lua", { "--cmd", "set rtp^=." })
     return list
   end,
-  live = function() return specs("live") end,
+  live = function()
+    return specs("live")
+  end,
 }
 
 assert(groups[group], "usage: scripts/test.lua test|live|schema [pattern]")
 local list = groups[group]()
 if pattern then
-  list = vim.tbl_filter(function(item) return item.name:find(pattern, 1, true) ~= nil end, list)
+  list = vim.tbl_filter(function(item)
+    return item.name:find(pattern, 1, true) ~= nil
+  end, list)
 end
 assert(#list > 0, "no suites match " .. tostring(pattern))
 
@@ -73,20 +79,39 @@ for index, item in ipairs(list) do
   io.stdout:write((ci and "::group::" or "== ") .. item.name .. "\n")
   io.stdout:flush()
   local started = vim.uv.hrtime()
-  local result = vim.system(item.argv, {
-    cwd = root, env = env, stdout = function(_, data)
-      if data then io.stdout:write(data) end
-    end, stderr = function(_, data)
-      if data then io.stderr:write(data) end
-    end,
-  }):wait()
-  io.stdout:write(string.format("%s %s (%.1fs)%s\n", result.code == 0 and "ok" or "FAILED",
-    item.name, (vim.uv.hrtime() - started) / 1e9,
-    result.code == 0 and "" or string.format(" exit=%d signal=%d", result.code, result.signal)))
-  if ci then io.stdout:write("::endgroup::\n") end
+  local result = vim
+    .system(item.argv, {
+      cwd = root,
+      env = env,
+      stdout = function(_, data)
+        if data then
+          io.stdout:write(data)
+        end
+      end,
+      stderr = function(_, data)
+        if data then
+          io.stderr:write(data)
+        end
+      end,
+    })
+    :wait()
+  io.stdout:write(
+    string.format(
+      "%s %s (%.1fs)%s\n",
+      result.code == 0 and "ok" or "FAILED",
+      item.name,
+      (vim.uv.hrtime() - started) / 1e9,
+      result.code == 0 and "" or string.format(" exit=%d signal=%d", result.code, result.signal)
+    )
+  )
+  if ci then
+    io.stdout:write("::endgroup::\n")
+  end
   if result.code ~= 0 then
     failed[#failed + 1] = item.name
-    if ci then io.stdout:write("::error::" .. item.name .. " failed\n") end
+    if ci then
+      io.stdout:write("::error::" .. item.name .. " failed\n")
+    end
   end
 end
 vim.fn.delete(sandbox, "rf")
