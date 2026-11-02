@@ -158,7 +158,7 @@ end)
     assert(initial.status == (plugins and "loaded" or "disabled"))
     assert(initial.lazy == plugins and initial.snacks == plugins and initial.imported == plugins)
     if plugins then
-      for _, list in ipairs({ initial.manifest, initial.shim, initial.helper }) do
+      for _, list in ipairs({ initial.manifest, initial.specs, initial.helper }) do
         assert(#list == 1 and canonical(list[1]):find(canonical(installed), 1, true),
           "Lazy dropped the installed Orbit runtime")
       end
