@@ -300,6 +300,11 @@
               "description": "Use the system clipboard as unnamed register.",
               "type": "string"
             },
+            "cursorline": {
+              "default": true,
+              "description": "Enable highlighting selected by cursorlineopt.",
+              "type": "boolean"
+            },
             "cursorlineopt": {
               "default": "number",
               "description": "Highlight the cursor line number.",

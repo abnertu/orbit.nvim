@@ -42,12 +42,12 @@ check("duplicate names show their parent directory", function()
   assert(text:find("one/same.txt", 1, true) and text:find("two/same.txt", 1, true), text)
 end)
 
-check("other tabs keep their own buffers and tab numbers appear", function()
+check("other tabs keep their own buffers without extra tab buttons", function()
   vim.cmd.tabnew()
   vim.cmd.edit(vim.fn.fnameescape(file("gamma.txt")))
   local text = rendered()
   assert(text:find("gamma.txt", 1, true) and not text:find("alpha.txt", 1, true), text)
-  assert(text:find(" 1  2 ", 1, true), text)
+  assert(not text:find(" 1  2 ", 1, true), text)
   vim.cmd.tabclose()
 end)
 
@@ -59,6 +59,33 @@ check("the current buffer stays visible when labels overflow", function()
   assert(text:find("one/same.txt", 1, true), text)
   assert(vim.api.nvim_strwidth(text) <= 40, text)
   vim.o.columns = columns
+end)
+
+check("file icons retain their color on active and inactive backgrounds", function()
+  local previous = package.loaded["mini.icons"]
+  package.loaded["mini.icons"] = { get = function() return "λ", "OrbitTestIcon" end }
+  vim.cmd.edit(vim.fn.fnameescape(file("icon-one.lua")))
+  vim.cmd.edit(vim.fn.fnameescape(file("icon-two.lua")))
+  for _, colors in ipairs({ { 0x12ab34, 0x101010, 0x202020 }, { 0x56cd78, 0x303030, 0x404040 } }) do
+    vim.api.nvim_set_hl(0, "OrbitTestIcon", { fg = colors[1] })
+    vim.api.nvim_set_hl(0, "OrbitTbActive", { bg = colors[2] })
+    vim.api.nvim_set_hl(0, "OrbitTbInactive", { bg = colors[3] })
+    local result = vim.api.nvim_eval_statusline(vim.go.tabline, { use_tabline = true, highlights = true })
+    local seen = {}
+    for _, span in ipairs(result.highlights) do
+      for _, group in ipairs(span.groups) do
+        for index, base in ipairs({ "OrbitTbActive", "OrbitTbInactive" }) do
+          if group == "OrbitIcon_" .. base .. "_OrbitTestIcon" then
+            local hl = vim.api.nvim_get_hl(0, { name = group, link = false })
+            assert(hl.fg == colors[1] and hl.bg == colors[index + 1], vim.inspect(hl))
+            seen[base] = true
+          end
+        end
+      end
+    end
+    assert(seen.OrbitTbActive and seen.OrbitTbInactive, "both icon colors must reach the rendered row")
+  end
+  package.loaded["mini.icons"] = previous
 end)
 
 check("closing from the tab line keeps the window and refuses edits", function()
@@ -127,7 +154,12 @@ check("real mouse clicks select and close buffers", function()
     assert(left >= 0 and current() == "right.txt")
     click(left + 1)
     wait(function() return current() == "left.txt" end, "click did not select the buffer")
-    local close = column("right.txt") + vim.fn.strdisplaywidth("right.txt ")
+    local close = vim.rpcrequest(job, "nvim_exec_lua", [[
+      local text = vim.api.nvim_eval_statusline(vim.go.tabline, { use_tabline = true }).str
+      local label = assert(text:find("right.txt", 1, true))
+      local marker = assert(text:find("󰅖", label, true))
+      return vim.fn.strdisplaywidth(text:sub(1, marker - 1))
+    ]], {})
     click(close)
     wait(function() return column("right.txt") == -1 end, "close click left the buffer")
     assert(current() == "left.txt")

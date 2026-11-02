@@ -126,6 +126,14 @@ check("Hangar enables only selected adapters and Python configurations", functio
   assert(text == "registered 2 cfg" and hl == "DiagnosticOk")
 end)
 
+check("debugger signs retain Orbit icons and diagnostic highlights", function()
+  local stopped = vim.fn.sign_getdefined("DapStopped")[1]
+  local breakpoint = vim.fn.sign_getdefined("DapBreakpoint")[1]
+  assert(stopped and stopped.text == "󰁕 " and stopped.texthl == "DiagnosticWarn")
+  assert(stopped.linehl == "DiagnosticVirtualTextWarn")
+  assert(breakpoint and breakpoint.text:find("●", 1, true) and breakpoint.texthl == "DapBreakpointColor")
+end)
+
 check("adapter toggles do not create duplicates or delete unrelated adapters", function()
   dap.adapters.extra = function() end
   assert(runtime.apply_adapter(dap, "python", true, defs))

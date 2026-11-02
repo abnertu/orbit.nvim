@@ -9,68 +9,37 @@ local started = false
 ---@type Orbit.ThemeOptions?
 local options
 
----@param group string
----@param attr 'fg'|'bg'
----@return integer?
-local function color(group, attr)
-  local ok, hl = pcall(vim.api.nvim_get_hl, 0, { name = group, link = false })
-  return ok and hl[attr] or nil
-end
+local palette = require("orbit.modules.theme.palette")
+local mix = palette.mix
+---@type Orbit.ThemePalette?
+local active_palette
+---@type string?
+local palette_scheme
 
----Blend `from` toward `to` by `percent` of the distance.
----@param from integer
----@param to integer
----@param percent number
----@return integer
-local function mix(from, to, percent)
-  local result = 0
-  for shift = 16, 0, -8 do
-    local a = bit.band(bit.rshift(from, shift), 0xff)
-    local b = bit.band(bit.rshift(to, shift), 0xff)
-    local channel = math.floor(a + (b - a) * percent / 100 + 0.5)
-    result = result + bit.lshift(channel, shift)
-  end
-  return result
-end
-
----@class Orbit.ThemePalette
----@field red integer
----@field yellow integer
----@field green integer
----@field blue integer
----@field purple integer
----@field grey integer
----@field white integer
----@field black integer
----@field one_bg integer
-
--- Derive named colors from standard groups so any colorscheme works.
 ---@return Orbit.ThemePalette
 function M.palette()
-  local dark = vim.o.background == "dark"
-  local bg = color("Normal", "bg") or (dark and 0x1a1b26 or 0xe1e2e7)
-  local fg = color("Normal", "fg") or (dark and 0xc0caf5 or 0x3760bf)
-  return {
-    red = color("DiagnosticError", "fg") or 0xf7768e,
-    yellow = color("DiagnosticWarn", "fg") or 0xe0af68,
-    green = color("String", "fg") or 0x9ece6a,
-    blue = color("Function", "fg") or 0x7aa2f7,
-    purple = color("Statement", "fg") or 0xbb9af7,
-    grey = color("Comment", "fg") or mix(fg, bg, 50),
-    white = fg,
-    black = mix(bg, dark and 0 or 0xffffff, 15),
-    one_bg = mix(bg, fg, 8),
-  }
+  if active_palette and palette_scheme == vim.g.colors_name then
+    return vim.deepcopy(active_palette)
+  end
+  return palette.resolve()
 end
 
 ---@param c Orbit.ThemePalette
 ---@return table<string, vim.api.keyset.highlight>
 function M.groups(c)
-  local curl = { undercurl = true }
-  return {
-    ["@comment"] = { fg = c.grey, italic = true },
-    ["@comment.todo"] = { fg = c.black, bg = c.green },
-    Comment = { fg = c.grey, italic = true },
+  local term, program = vim.env.TERM or "", vim.env.TERM_PROGRAM or ""
+  local curly = not not vim.g.neovide or vim.fn.has("gui_running") == 1
+    or term:find("kitty", 1, true) ~= nil
+    or ({ WezTerm = true, ["iTerm.app"] = true, ghostty = true })[program] == true
+  local curl = { undercurl = curly, underline = not curly }
+  local inherited = vim.tbl_extend("force",
+    require("orbit.modules.theme.editor")(c),
+    require("orbit.modules.theme.plugins")(c),
+    require("orbit.modules.theme.bars")(c))
+  return vim.tbl_extend("force", inherited, {
+    ["@comment"] = { fg = c.grey_fg, italic = true },
+    ["@comment.todo"] = { fg = c.grey, bg = c.green },
+    Comment = { fg = c.light_grey, italic = true },
     IblChar = { fg = c.grey },
     IblScopeChar = { fg = c.purple },
     NvimTreeOpenedFolderName = { fg = c.green, bold = true },
@@ -78,14 +47,20 @@ function M.groups(c)
     LspInlayHint = { fg = 0x808080, bg = c.one_bg, italic = true },
     DevIconDefault = { fg = c.white },
     MiniIconsGrey = { link = "DevIconDefault" },
-    NormalFloat = { fg = c.white, bg = c.black },
-    FloatBorder = { fg = c.blue, bg = c.black },
+    NormalFloat = { bg = c.black },
+    FloatBorder = { fg = c.blue },
     FloatTitle = { fg = c.blue, bg = c.black },
     active_context = { fg = c.blue },
     CmpGhostText = { link = "Comment", default = true },
     DapBreakpointColor = { fg = c.red },
+    DapStopped = { fg = c.green },
+    DapBreakpoint = { fg = c.green },
+    DapBreakpointCondition = { fg = c.green },
+    DapBreakpointRejected = { fg = c.green },
+    DapLogPoint = { fg = c.green },
+    Underlined = { sp = 0x565f89, underline = true, undercurl = false },
     HangarCategoryActive = { fg = c.black, bg = c.green },
-    HangarCategoryInactive = { fg = c.grey, bg = c.one_bg },
+    HangarCategoryInactive = { fg = c.light_grey, bg = c.one_bg },
     NoiceCmdlineIcon = { fg = c.purple },
     NoiceCmdlinePopupBorder = { fg = c.green },
     NoiceCmdlinePopup = { bg = c.black },
@@ -97,6 +72,19 @@ function M.groups(c)
     SnacksPickerMatch = { fg = c.green, bold = true },
     SnacksPickerDir = { fg = c.blue },
     SnacksPickerPathHidden = { fg = c.blue },
+    ExDarkBg = { bg = c.darker_black },
+    ExDarkBorder = { fg = c.darker_black, bg = c.darker_black },
+    ExBlack2Bg = { bg = c.black2 },
+    ExBlack2Border = { fg = c.black2, bg = c.black2 },
+    ExBlack2border = { fg = c.black2, bg = c.black2 },
+    ExBlack3Bg = { bg = c.one_bg2 },
+    ExBlack3Border = { fg = c.one_bg2, bg = c.one_bg2 },
+    ExRed = { fg = c.red },
+    ExYellow = { fg = c.yellow },
+    ExBlue = { fg = c.blue },
+    ExGreen = { fg = c.green },
+    ExLightGrey = { fg = palette.lighten(c.grey, vim.o.background == "dark" and 35 or -35) },
+    CommentFg = { fg = c.light_grey },
     DiagnosticUnderlineError = vim.tbl_extend("force", curl, { sp = c.red }),
     DiagnosticUnderlineWarn = vim.tbl_extend("force", curl, { sp = c.yellow }),
     DiagnosticUnderlineInfo = vim.tbl_extend("force", curl, { sp = c.green }),
@@ -105,13 +93,30 @@ function M.groups(c)
     DiagnosticVirtualTextWarn = { fg = c.yellow, bg = mix(c.yellow, c.black, 75) },
     DiagnosticVirtualTextInfo = { fg = c.green, bg = mix(c.green, c.black, 75) },
     DiagnosticVirtualTextHint = { fg = c.purple, bg = mix(c.purple, c.black, 75) },
-  }
+  })
 end
 
-function M.apply_highlights()
-  for name, spec in pairs(M.groups(M.palette())) do
+---@param refresh? boolean
+function M.apply_highlights(refresh)
+  if refresh or not active_palette or palette_scheme ~= vim.g.colors_name then
+    active_palette, palette_scheme = palette.resolve(), vim.g.colors_name
+  end
+  local groups = M.groups(active_palette)
+  if palette_scheme == "tokyonight-night" or palette_scheme == "tokyonight" then
+    -- Preserve orbitvim's Tokyo Night Tree-sitter polish.
+    groups["@punctuation.bracket"] = { fg = active_palette.purple }
+    groups["@function.method.call"] = { fg = active_palette.red }
+    groups["@function.call"] = { fg = active_palette.blue }
+    groups["@variable.parameter"] = { fg = active_palette.orange }
+  end
+  for name, spec in pairs(groups) do
     vim.api.nvim_set_hl(0, name, spec)
   end
+end
+
+---Reapply owned colors after a plugin installs unconditional fallback groups.
+function M.refresh()
+  if started and options and options.highlights then M.apply_highlights() end
 end
 
 local function sync_group()
@@ -120,7 +125,7 @@ local function sync_group()
   local group = vim.api.nvim_create_augroup(group_name, { clear = true })
   vim.api.nvim_create_autocmd("ColorScheme", {
     group = group,
-    callback = M.apply_highlights,
+    callback = function() M.apply_highlights(true) end,
     desc = "Apply Orbit highlight overrides",
   })
 end

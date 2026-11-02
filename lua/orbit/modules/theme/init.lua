@@ -1,3 +1,7 @@
+---@alias Orbit.ThemeBase16 {base00: integer, base01: integer, base02: integer, base03: integer, base04: integer, base05: integer, base06: integer, base07: integer, base08: integer, base09: integer, base0A: integer, base0B: integer, base0C: integer, base0D: integer, base0E: integer, base0F: integer}
+
+---@alias Orbit.ThemePalette {base16: Orbit.ThemeBase16, baby_pink: integer, black: integer, black2: integer, blue: integer, cyan: integer, dark_purple: integer, darker_black: integer, folder_bg: integer, green: integer, grey: integer, grey_fg: integer, grey_fg2: integer, light_grey: integer, lightbg: integer, line: integer, nord_blue: integer, one_bg: integer, one_bg2: integer, one_bg3: integer, orange: integer, pink: integer, pmenu_bg: integer, purple: integer, red: integer, statusline_bg: integer, sun: integer, teal: integer, vibrant_green: integer, white: integer, yellow: integer}
+
 local M = {}
 local accepted
 

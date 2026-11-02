@@ -1,4 +1,4 @@
--- Render buffers from orbit.buffers, an explorer offset and tab pages.
+-- Render the explorer offset and buffer row from orbit.buffers.
 local M = {}
 local handler = "v:lua.require'orbit.modules.tabline.render'."
 
@@ -33,14 +33,6 @@ local function labels(buffers)
   return result
 end
 
-local function icon(buffer)
-  local icons = package.loaded["mini.icons"]
-  local path = vim.api.nvim_buf_get_name(buffer)
-  if not icons or path == "" then return "" end
-  local ok, glyph = pcall(icons.get, "file", vim.fn.fnamemodify(path, ":t"))
-  return ok and glyph and glyph .. " " or ""
-end
-
 -- Width of a left-side file explorer in the current tab.
 local function offset()
   for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
@@ -55,40 +47,47 @@ end
 ---@param buffer integer
 ---@param label string
 ---@param current boolean
+---@param available integer
 ---@return string, integer
-local function tab(buffer, label, current)
-  local group = current and "%#OrbitTbActive#" or "%#OrbitTbInactive#"
-  local mark = vim.bo[buffer].modified and "●" or "󰅖"
-  local text = " " .. icon(buffer) .. label .. " "
-  local width = vim.api.nvim_strwidth(text) + vim.api.nvim_strwidth(mark) + 1
-  return group .. "%" .. buffer .. "@" .. handler .. "select@" .. escape(text) .. "%X"
-    .. "%" .. buffer .. "@" .. handler .. "close@" .. mark .. " %X", width
+local function tab(buffer, label, current, available)
+  local group = current and "OrbitTbActive" or "OrbitTbInactive"
+  local glyph, icon_group = require("orbit.modules.icons.render")
+    .file(vim.api.nvim_buf_get_name(buffer), group)
+  local modified = vim.bo[buffer].modified
+  local mark = modified and "" or "󰅖"
+  local mark_group = group .. (modified and "Modified" or "Close")
+  local width = math.min(21, available)
+  local limit = width - vim.api.nvim_strwidth(glyph .. mark) - 4
+  if limit < 1 then return "", 0 end
+  if vim.api.nvim_strwidth(label) > limit then
+    local length = vim.fn.strchars(label)
+    repeat
+      length = length - 1
+      label = vim.fn.strcharpart(label, 0, length)
+    until vim.api.nvim_strwidth(label) < limit
+    label = label .. "…"
+  end
+  local remaining = width - vim.api.nvim_strwidth(glyph .. label .. mark) - 2
+  local left = math.floor(remaining / 2)
+  local text = string.rep(" ", left) .. "%#" .. icon_group .. "#" .. escape(glyph) .. " "
+    .. "%#" .. group .. "#" .. escape(label) .. string.rep(" ", remaining - left)
+  return "%#" .. group .. "#%" .. buffer .. "@" .. handler .. "select@" .. text .. "%X"
+    .. "%#" .. mark_group .. "#%" .. buffer .. "@" .. handler .. "close@" .. mark .. " %X", width
 end
 
 ---@return string
 function M.render()
   local width = offset()
-  local parts = { width > 0 and ("%#OrbitTbOffset#" .. string.rep(" ", width)) or "" }
+  local parts = { width > 0 and ("%#OrbitTbOffset#" .. string.rep(" ", width - 1)
+    .. "%#OrbitTbOffsetSep#│") or "" }
   local buffers = require("orbit.buffers").list()
   local names = labels(buffers)
   local current = vim.api.nvim_get_current_buf()
-  local tabs = vim.api.nvim_list_tabpages()
-  local tab_text = ""
-  if #tabs > 1 then
-    local items = {}
-    local active = vim.api.nvim_get_current_tabpage()
-    for index, page in ipairs(tabs) do
-      local group = page == active and "%#OrbitTbTabActive#" or "%#OrbitTbTab#"
-      items[#items + 1] = group .. "%" .. index .. "T " .. index .. " %T"
-    end
-    tab_text = table.concat(items)
-  end
-
   -- Keep the current buffer visible when labels exceed the free width.
-  local available = vim.o.columns - width - (#tabs > 1 and #tabs * 3 or 0)
+  local available = vim.o.columns - width
   local rendered, widths, focus = {}, {}, 1
   for index, buffer in ipairs(buffers) do
-    rendered[index], widths[index] = tab(buffer, names[buffer], buffer == current)
+    rendered[index], widths[index] = tab(buffer, names[buffer], buffer == current, available)
     if buffer == current then focus = index end
   end
   local first, last, used = focus, focus - 1, 0
@@ -102,7 +101,6 @@ function M.render()
   end
   for index = first, last do parts[#parts + 1] = rendered[index] end
   parts[#parts + 1] = "%#OrbitTbFill#%="
-  parts[#parts + 1] = tab_text
   return table.concat(parts)
 end
 
@@ -121,7 +119,9 @@ end
 
 local defaults = {
   OrbitTbActive = "TabLineSel", OrbitTbInactive = "TabLine", OrbitTbFill = "TabLineFill",
-  OrbitTbOffset = "NvimTreeNormal", OrbitTbTab = "TabLine", OrbitTbTabActive = "TabLineSel",
+  OrbitTbOffset = "NvimTreeNormal", OrbitTbOffsetSep = "NvimTreeWinSeparator",
+  OrbitTbActiveModified = "DiagnosticOk", OrbitTbInactiveModified = "DiagnosticError",
+  OrbitTbActiveClose = "DiagnosticError", OrbitTbInactiveClose = "TabLine",
 }
 
 ---Define default links. Colorscheme changes clear them.

@@ -1,6 +1,7 @@
 local M = {}
 
 ---@alias Orbit.StatuslineSnapshot {owned: boolean, original?: string, current: string}
+---@alias Orbit.StatuslineSymbolProvider {get: fun(): string?}
 local owned = false
 ---@type string?
 local original

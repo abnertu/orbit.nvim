@@ -7,6 +7,7 @@ local M = {}
 ---@class Orbit.EditorOptions # Core editor options applied on startup.
 ---@field autoread? boolean @default(true) # Detect changes made to files outside Neovim.
 ---@field clipboard? string @default("unnamedplus") # Use the system clipboard as unnamed register.
+---@field cursorline? boolean @default(true) # Enable highlighting selected by cursorlineopt.
 ---@field cursorlineopt? 'line'|'screenline'|'number'|'both' @default("number") # Highlight the cursor line number.
 ---@field enabled? boolean @default(true) # Apply configured editor options.
 ---@field expandtab? boolean @default(true) # Insert spaces instead of tab characters.
@@ -33,6 +34,7 @@ local options = {
   "tabstop",
   "autoread",
   "clipboard",
+  "cursorline",
   "cursorlineopt",
   "fileformats",
   "laststatus",

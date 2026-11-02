@@ -13,6 +13,9 @@ orbit.nvim is a modular Neovim configuration. Each feature is a module with its 
 - Saved JSON settings with validation, reload and an optional file watcher.
 - Equal support for Linux and Windows.
 
+The statusline shows file and symbol paths, diagnostic icons and Git state. Trouble supplies symbols after LSP attachment.
+The tabline retains file icon colors. The editor highlights the current line number by default.
+
 ## Requirements
 
 - Neovim 0.12 or newer.

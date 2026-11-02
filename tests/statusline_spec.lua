@@ -16,6 +16,7 @@ local function rendered()
 end
 
 vim.go.statusline = "user statusline"
+vim.o.columns = 160
 
 check("setup owns the status line and renders mode, file, cursor and cwd", function()
   orbit.setup()
@@ -24,7 +25,7 @@ check("setup owns the status line and renders mode, file, cursor and cwd", funct
   local text = rendered()
   assert(text:find("NORMAL", 1, true), text)
   assert(text:find("orbit 100% name.lua", 1, true), "file names must be escaped: " .. text)
-  assert(text:find(" %d+:%d+ "), text)
+  assert(text:find(" %d+/%d+ "), text)
   assert(text:find(vim.fn.fnamemodify(vim.fn.getcwd(), ":t"), 1, true), text)
 end)
 
@@ -39,10 +40,42 @@ check("diagnostics and Git status appear when present", function()
   vim.b[buffer].gitsigns_head = "main"
   vim.b[buffer].gitsigns_status_dict = { added = 2, changed = 0, removed = 1 }
   local text = rendered()
-  assert(text:find("E1", 1, true) and text:find("W2", 1, true), text)
-  assert(text:find("main +2 -1", 1, true), text)
+  assert(text:find(" 1", 1, true) and text:find(" 2", 1, true), text)
+  assert(text:find(" main  2  1", 1, true), text)
   vim.diagnostic.reset(ns, buffer)
   vim.b[buffer].gitsigns_head = nil
+end)
+
+check("symbols use Trouble lazily and preserve escaped names and truncation", function()
+  local previous = package.loaded.trouble
+  local calls = 0
+  package.loaded.trouble = {
+    statusline = function(opts)
+      calls = calls + 1
+      assert(opts.mode == "symbols" and opts.filter.range and opts.hl_group == "OrbitStSymbols")
+      local boundary = opts.format:sub(-1)
+      return { get = function()
+        local parts = {}
+        for _, name in ipairs({ "Root%%", "Hidden", "Class", "Method" }) do
+          parts[#parts + 1] = "%#Function#ƒ%*%#OrbitStSymbols#" .. name .. "%*" .. boundary
+        end
+        return table.concat(parts) .. "%#OrbitStSymbols# %*"
+      end }
+    end,
+  }
+  local text = rendered()
+  assert(text:find("Root%  …  ƒClass  ƒMethod", 1, true), text)
+  rendered()
+  assert(calls == 1, "redraw must reuse the symbol provider")
+  package.loaded.trouble = previous
+end)
+
+check("narrow status lines hide the cwd block", function()
+  local columns = vim.o.columns
+  vim.o.columns = 70
+  local text = rendered()
+  assert(not text:find("󰉋", 1, true), text)
+  vim.o.columns = columns
 end)
 
 check("highlight links survive a colorscheme change", function()
