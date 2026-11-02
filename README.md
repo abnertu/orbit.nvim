@@ -148,9 +148,9 @@ Do not edit `settings.schema.json` by hand. Read [architecture](doc/architecture
 ## Continuous integration
 
 - `validate.yml` runs `just schema` and `just test` on Linux and Windows.
-- `live-upstream.yml` installs the pinned tools and runs `just live` on Linux and Windows.
-- Both run on pushes, pull requests and a daily schedule on `main`.
-- `release.yml` runs for version tags only.
+- Validation runs on pushes, pull requests and a daily schedule on `main`.
+- `live-upstream.yml` installs pinned tools and runs `just live` on Linux and Windows only when started manually.
+- `release.yml` validates version tags before publishing. Releases do not run live suites.
 
 ## Releases
 

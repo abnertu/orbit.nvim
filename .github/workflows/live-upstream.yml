@@ -1,13 +1,7 @@
 name: Validate real upstream plugins
 
 on:
-  push:
-    branches: [main]
-  pull_request:
   workflow_dispatch:
-  workflow_call:
-  schedule:
-    - cron: '41 2 * * *'
 
 permissions:
   contents: read
@@ -32,7 +26,6 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v4
         with:
-          # Release runs test the tagged commit with full ancestry.
           fetch-depth: 0
 
       - name: Install Neovim
