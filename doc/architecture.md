@@ -1,123 +1,106 @@
 # Architecture
 
-The public entry point is `require("orbit").setup(opts)`. It validates all declared options before activating modules.
+The public entry point is `require("orbit").setup(opts)`. It validates all options before any module activates.
 
 ## Module contract
 
-A module lives in `lua/orbit/modules/<name>/`. Its `init.lua` exports `setup(opts)` and documents the options with LuaDoc. The LuaDoc includes types, defaults, bounds and descriptions. Defaulted fields use `---@field name? type`; the generator strips `?` from JSON property keys. The schema generator reads source comments without evaluating the module.
+- A module lives in `lua/orbit/modules/<name>/`.
+- Its `init.lua` exports `setup(opts)`, `capture()`, `restore(snapshot)` and, for plugin owners, `spec()`.
+- LuaDoc in `init.lua` declares the option types, defaults, bounds and descriptions.
+- Defaulted fields use `---@field name? type`. The generator removes `?` from JSON property names.
+- `spec()` returns a `LazySpec` list and imports no external plugin.
+- Runtime side effects stay in `runtime.lua` files or in Lazy callbacks.
 
-The explicit `manifest.json` orders module activation. Both the runtime and the schema generator read this manifest. No second module inventory is maintained.
+`lua/orbit/modules/manifest.json` orders module activation. The runtime, the Lazy import and the schema generator read this manifest. No second feature inventory exists.
 
-Module `spec()` functions return `LazySpec`, the upstream Lazy specification type. They do not return an untyped `table[]`.
+## Option rules
 
-Use `vim.tbl_extend("force", ...)` for validated object overlays. Use `vim.tbl_deep_extend("force", ...)` only for nested maps that support recursive overlays. Keep arrays as replacements.
-
-An omitted option takes its declared default. An unknown option or invalid type fails before any module activates. An explicit `false` is retained. Arrays replace earlier arrays when overrides are applied. Nested LuaDoc classes produce closed objects with derived defaults.
+- An omitted option takes its declared default.
+- An unknown option, an invalid type or JSON null fails before any module activates.
+- An explicit `false` stays `false`.
+- Arrays replace earlier arrays.
+- Nested LuaDoc classes produce closed objects with derived defaults.
+- Use `vim.tbl_extend("force", ...)` for flat overlays and `vim.tbl_deep_extend("force", ...)` for nested maps.
+- Fields with `@restart(true)` apply only after a restart. Later setup calls defer them and report them through `get_pending_restart()`.
 
 ## Ownership
 
 | Component | Responsibility |
 | --- | --- |
-| `lua/orbit/init.lua` | Public setup and activation order |
+| `lua/orbit/init.lua` | Public setup, transactional activation and rollback |
 | `lua/orbit/config.lua` | Option validation and defaults |
-| `lua/orbit/settings.lua` | JSON settings input and validation before explicit activation |
+| `lua/orbit/settings.lua` | JSON settings input, reload, watch and atomic updates |
 | `lua/orbit/modules/manifest.json` | Module inventory and activation order |
-| `lua/orbit/modules/*/init.lua` LuaDoc | Per-module settings contract and type hints |
-| `lua/orbit/modules/*/init.lua` | Module activation and runtime owner |
-| `lua/orbit/buffers.lua` | Tab-local order of loaded listed buffers for cycling and tab lines |
-| `lua/orbit/tooling/schema.lua` and `scripts/generate_schema.lua` | Deterministic bundle generation |
-| `settings.schema.json` | Generated editor-facing schema, not an editable source |
+| `lua/orbit/modules/*/init.lua` | Settings contract and module owner |
+| `lua/orbit/plugins/init.lua` | Lazy spec import built from the manifest |
+| `lua/orbit/buffers.lua` | Tab-local order of loaded, listed buffers |
+| `lua/orbit/hangar_bridge.lua` | Managed-tool enablement for all consumers |
+| `lua/orbit/sqlfluff.lua` | Shared SQLFluff configuration for Conform and nvim-lint |
+| `lua/orbit/tooling/schema.lua`, `scripts/generate_schema.lua` | Deterministic schema generation |
+| `settings.schema.json` | Generated schema; do not edit |
 
-## Future integration
+## Lifecycle
 
-The Markdown owner contributes the legacy preview Lazy command and filetype entry points. Its build adapter verifies the platform executable version after installation. CI checks its process boundary without downloading upstream plugins. Browser rendering and real Obsidian vault workflows remain separate acceptance tasks. The opt-in Obsidian spec resolves a configured vault at Lazy activation and defers plugin imports until its config callback.
+- Setup is transactional. When a module fails, Orbit restores every module from its `capture()` snapshot.
+- Owners restore replaced options, mappings, commands and filetype rules when they disable or roll back.
+- Owners create their autocommand groups once and reuse them on repeated setup.
+- Orbit never replaces a user-defined command.
+- Activated plugin managers and loaded plugins are restart-only. Orbit does not claim rollback of external plugin state.
 
-The completion owner configures Blink, LuaSnip, autopairs and Lazydev only at Lazy callback boundaries. It keeps snippet filetype extensions and its own InsertLeave cleanup. Pinned upstream input tests verify actual Blink windows, candidate acceptance, LuaSnip navigation, and independent Escape and InsertLeave cleanup. Native snippet fallback runs without external completion imports. Separate commandline tests verify first colon demand, subsequent typing, candidate navigation, acceptance events, command execution, and cancellation. Search tests prove manual candidates exist before checking automatic suppression, then execute native forward/backward searches. The fixtures use Blink's Lua matcher and plain placeholders. Rust distribution, native regex builds, terminal paste transports, custom snippets, and live resizing remain separate parity checks.
+## Plugin loading
 
-The completion runtime guards Blink 1.x commandline preview releases by event-instance generation. An older timeout cannot clear a newer preview's suppression. The guard retains automatic insertion and the upstream 20ms release. It installs only at the restart-only Lazy config boundary.
+The `plugins` module owns Lazy. It is disabled by default.
 
-Blink registers commandline listeners after asynchronous matcher initialization. The completion owner recovers existing colon input once those listeners are ready. Temporary commandline observers invalidate recovery after changes or session transitions, then clear after the scheduled check. The listener wrapper removes itself. Recovery retains the real character handler and does not replay native events or keys. Fresh input tests cover batched activation, immediate exit, replacement sessions, search-first startup, and disabled controls. Deterministic callback tests cover identical-text session replacement and UTF-8 character delivery.
+- It registers one package searcher and one demand-event group.
+- Lazy starts on the first demand event or on a lookup of a missing module.
+- New file observers receive only the missed event, and earlier observers do not run twice.
+- `bootstrap = true` clones Lazy on first demand. A lockfile pins the commit. An existing checkout is never replaced.
+- The owner keeps Orbit's runtime and `after` directories through Lazy's runtimepath reset.
+- `import` defaults to `orbit.plugins`. Each module adds its specs from `spec()`.
 
-The `orbit.plugins` spec import scans the module manifest. Modules that implement `spec()` contribute Lazy declarations without a second feature inventory. The navigation module owns Oil and nvim-tree specs, Windows watcher settings and one FileCreated-to-CreateFile observer. Harpoon integration is a separate owner.
+Keep plugin loading with Lazy and tool state with hangar.nvim.
 
-The menu module contributes restart-only mouse mappings for menu and Volt. Root setup and spec collection import neither plugin. General actions use current shortcuts; tree actions capture the clicked node. Deferred actions validate the source buffer and window before selecting that source. Delegated actions retain their resulting focus.
+## Startup events
 
-The menu lifetime temporarily owns source Normal/Visual Escape and global or pre-existing buffer-local LeftMouse slots. Cleanup restores original mappings and preserves user replacements. A scoped adapter replaces upstream mouse interception and observes menu disposal through one autocommand group. Partial rendering failures dispose allocated menu buffers and permit reopening. Activated right-click slots and shared Volt hooks remain restart-only.
+- The `events` module owns core events, the DiagnosticChanged redraw and the one-shot `User FilePost` event.
+- FilePost fires once after UI entry, when a named normal buffer is ready.
+- After FilePost, the owner sends FileType to that buffer again, so late filetype observers attach.
+- When `vim.g.editorconfig` is on, it then applies EditorConfig to the same buffer.
+- Directory arguments set the working directory. They do not open an explorer.
 
-Pinned native-package input tests drive real Lazy, menu, Volt, and nvim-tree. They verify mouse demand, rendered groups, saved file contents, nested actions, tree opening, Visual selection behavior, and cleanup. Separate controls disable corekeys or the menu. These checks do not establish terminal frontend transport, every delegated provider, or theme parity.
+## Editor and keys
 
-The nvim-lint module debounces triggers per buffer, skips SQLFluff while editing, and cancels pending timers on buffer wipe. Pinned upstream Linux/Windows tests verify actual process output, diagnostic publication, edit-event suppression and buffer cancellation. Production SQLFluff binaries, Windows tool arguments and Hangar ordering remain separate integration tasks.
+- `editor` owns global, buffer-local and window-local option defaults and keeps each option in its scope.
+- `corekeys` owns save, window navigation, buffer cycling and fixed editing keys. Escape is an expression mapping that does not load plugins.
+- `keymaps` owns leader actions, conversions, comments, terminals and the theme picker. It keeps mode-qualified mappings across leader changes.
+- Buffer cleanup checks every candidate first and refuses modified buffers. It never runs `%bd|e#`.
+- Terminals start with argv vectors, reuse live jobs and replace exited jobs. Windows uses PowerShell with `-NoLogo`.
+- `statusline` and `tabline` set only the global options through `%!` expressions and restore the previous values.
+- `colors` draws swatches for hex codes in visible rows and uses the built-in LSP document color provider.
 
-The shared SQLFluff adapter resolves project configuration, process roots and stdin arguments for Conform and nvim-lint. It uses a bundled T-SQL fallback only when no project SQLFluff section exists.
+## Language tools
 
-The Conform formatter module keeps async requests owned by one buffer and cleans up pending operations when a buffer is wiped. A pinned upstream Linux/Windows test exercises native Lua formatting, delayed completion and duplicate request rejection. Real external formatter binaries, Hangar ordering and project-specific adapters remain separate parity checks.
+- The Hangar registry is the canonical inventory of Mason packages, parsers and tool metadata.
+- `orbit.hangar_bridge` is the only enablement boundary. It does not import Hangar before its Lazy owner starts.
+- `lsp` registers generic servers once at `VeryLazy`. It does not register Roslyn or TypeScript tools.
+- `lsp_providers` owns Roslyn and TypeScript tools. Roslyn selects a unique root solution. TypeScript tools removes semantic tokens and filters duplicate tsserver diagnostics.
+- `formatter` (Conform) and `linter` (nvim-lint) filter tools through Hangar. Each async operation belongs to one buffer and stops when the buffer is wiped.
+- `treesitter_plugins` owns parsers, context and autotag. `:TSInstallAll` installs the registry parsers.
+- `dap` registers debugpy launch and attach, closes DAP UI when a session ends, and delegates CoreCLR to the `dotnet` owner.
+- `mason` declares the command-lazy package manager. It does not enable servers.
 
-The Tree-sitter module contributes parser, context and autotag specs. Parser activation is guarded by buffer/filetype validity and excludes bigfile buffers. The C# injection query captures raw-string node owners before evaluating SQL predicates. Pinned upstream C#/SQL parser integration validates injection captures and an actual SQL child LanguageTree. Legacy syntax fallback still protects unsupported T-SQL syntax.
+## UI plugins
 
-The native LSP module uses LuaDoc-owned server flags and a single registration boundary. It preserves shared diagnostics and language defaults. Roslyn and TypeScript tools are independent provider-owned Lazy specs, not registered by generic LSP; Hangar activation gating now filters standard LSP servers, Conform and nvim-lint through one optional bridge. The bridge does not import Hangar until its Lazy owner has initialized; DAP now registers debugpy launch/attach and provides Hangar-compatible adapter controls. CoreCLR delegates to dotnet-cli, and DAP UI listeners are installed once. A pinned real nvim-dap TCP integration test verifies Python attach, breakpoint synchronization and disconnect on Linux/Windows without external debuggers. A hermetic Linux/Windows TCP language-server test exercises the real native Neovim LSP client and TypeScript provider diagnostic deduplication. Real Python/.NET debuggee sessions remain pending. The Hangar registry is the canonical source for Mason packages, parsers and tool metadata. Its owner sets state paths and adapters before event-loaded consumers read tool settings. A pinned real Hangar v0.3.1 test validates persisted LSP/linter/formatter flags, Python formatter order, runtime filtering, reload, explicit state path precedence, and concurrent-writer protection on Linux and Windows. An additional pinned real NUI integration validates Hangar window rendering, navigation, focus reuse, and close/reopen ownership in headless Neovim on both platforms. Actual Mason installs and a complete interactive UX audit remain separate acceptance gates.
+- `theme` declares tokyonight and applies Orbit highlight overrides after each colorscheme. A theme selection saves only to an existing settings file.
+- `snacks` owns pickers, layouts, the dashboard and the notifier filter.
+- `messages` owns Noice routes and popups at the Lazy callback boundary.
+- `completion` owns Blink, LuaSnip, autopairs and Lazydev. Its callbacks are restart-only.
+- `menu` owns right-click menus. A menu temporarily owns Escape and LeftMouse and restores them on close.
+- `navigation` owns Oil, nvim-tree and Harpoon. `layout` owns Edgy side windows.
+- `markdown` owns markdown-preview.nvim and an optional Obsidian vault. Its build records the installed release in `app/bin/.orbit-version`.
 
-The Mason module owns only the command-lazy package manager declaration and its settings. It does not register or enable LSP servers, which require a separate runtime lifecycle.
+## Tests
 
-The messages module owns Noice's commandline, notification, and LSP presentation settings. It constructs routes and popup layouts only at the Lazy callback boundary. It does not import Noice during root setup. Pinned Linux/Windows tests verify formatter notifications render in a real NUI popup. The popup dismissal and reopen lifecycle has dedicated coverage. Native-package commandline children combine real Lazy, Blink, Noice, and NUI through production callbacks. Actual input verifies commandline popup rendering, cancellation, reopening, repeated setup, and each owner's independent disabling. Native popupmenu rendering, LSP presentation, and theme parity remain unverified.
-
-The Snacks module owns the picker shortcuts, the narrow invalid-window redraw guard, dashboard artwork and sections, four picker layouts and a notifier source filter. A pinned Linux/Windows test drives real Snacks pickers, the dashboard and notifications.
-
-The diagnostics_plugins owner contributes Trouble and todo-comments. Its LSP-reference handler and TODO-picker entry points are covered by Lua fixtures; Snacks integration is pending its own module.
-
-The layout owner contributes Edgy at `VeryLazy`. Each side has one Trouble view filtered by Trouble's window position, split type and editor-relative placement; previews stay unmanaged. A pinned Linux/Windows test drives real Edgy and Trouble.
-
-The theme owner declares tokyonight with high priority. Its Lazy config starts the theme runtime, which applies the configured colorscheme and one `OrbitTheme` ColorScheme observer. Override colors come from standard highlight groups, so other colorschemes keep working. Rollback restores the previous scheme. `orbit.settings.update` saves a selection only to an existing file through an atomic replace after validation.
-
-The independent editor_plugins owner contributes vim-matchup and indent-blankline. Its init callback owns the matchup globals, and its indent hook is registered only at Lazy config time. Existing theme highlights remain a separate migration requirement.
-
-The icons and git owners produce Lazy declarations without loading external code. The git owner preserves the original staged and unstaged glyph defaults and uses the one-shot FilePost event.
-
-The first-demand integration test combines a local locked Git checkout, the module manifest spec import and file observer replay in a single Neovim process. It does not require external plugins or network access.
-
-The independent `live-upstream.yml` workflow exercises a pinned real mini.icons checkout on Linux and Windows through its actual Lazy config callback and devicons compatibility API. This intentionally uses GitHub network access, unlike hermetic unit suites. It also verifies a pinned real gitsigns checkout, plugin setup, tracked-file attachment and asynchronous hunk updates. Those checks do not establish parity for other plugins, parser installations, LSP servers or terminal sessions.
-
-The opt-in plugin module owns one package searcher and one demand-event group. It initializes an existing Lazy installation on first use. Newly registered file observers receive only the missed event. Setup does not clone plugins or require the network. First demand may clone the stable Lazy source when explicitly authorized by `bootstrap = true`. The optional lockfile pins the checkout. Existing installations are never replaced by bootstrap. All plugin options are restart-only because loaded plugins cannot be rolled back.
-
-The plugin owner retains Orbit's native package runtime and `after` directory through Lazy's runtimepath reset. This preserves manifest imports, deferred helpers, and query extensions.
-
-Keep plugin loading with Lazy until a separate benchmark and compatibility plan approves another owner. Keep tool state and operations with hangar.nvim. Keep the configuration registry and runtime adapters within orbit.nvim.
-
-The editor module owns core statusline, clipboard, mouse, indentation and signcolumn defaults. Its schema declares every migrated scalar option.
-
-The corekeys module owns configurable save/window keys and fixed plugin-independent editing shortcuts. It restores overwritten user mappings during reconfiguration, disable and rollback. Buffer-local LSP mappings can override its global `K` reservation. The Normal/Insert/Select Escape maps are expression callbacks: when a loaded menu is active they schedule cleanup, otherwise they clear search highlights and stop an active LuaSnip or native snippet. Escape does not load completion/UI plugins solely to handle a keypress.
-
-The `orbit.buffers` owner records loaded listed buffers per tab in first-entry order. Consumers attach and detach by name, and the last detach removes its autocommand group. Corekeys attaches while its cycling mappings are active. Unloaded, unlisted and wiped buffers are skipped.
-
-The statusline and tabline owners set only the global `statusline`, `tabline` and `showtabline` values through `%!` render expressions. They keep the original values for restoration and do not overwrite a value the user set after activation. Their highlight groups link to standard groups and are redefined after each colorscheme. The tab line attaches to `orbit.buffers`. Its close action moves each window to a neighbouring buffer before deletion. The events module remains the single DiagnosticChanged redraw owner.
-
-The colors owner rebuilds inline swatch extmarks for visible rows after edits, scrolling and window changes. Inline virtual text cannot be ephemeral, so a decoration provider is not used. Swatch highlights are recreated after each colorscheme. LSP colors use Neovim's built-in provider; Orbit sets its swatch style once and restores the prior enablement when it releases ownership.
-
-The keymaps module owns leader-based save, new-buffer, project-root, diagnostic, settings and native comment actions. It stores mode-qualified physical mappings across leader changes and restores user bindings during rollback. Project roots prefer the current buffer's LSP before the legacy repository and language markers. Settings shortcuts resolve the configured command at invocation. DOS-to-Unix and Big5-to-UTF-8 conversion keys reload and write only when invoked; their Lua helper refuses unnamed buffers. The `<leader>bD` and `<leader>x` buffer actions replace the legacy `%bd|e#` / tabufline dependency. Bulk cleanup preflights every listed, normal candidate and refuses modified buffers before deleting any; the current buffer is preserved. Single-buffer close rejects unsaved or special buffers. This is intentionally safer than the legacy force-prone bulk command and does not require NvChad.
-
-The keymaps terminal helper restores `<leader>h/v` split terminals plus Normal/Terminal `<M-h/v/i>` toggles. It owns reusable buffer IDs in Lua, starts processes using argv vectors (including PowerShell `-NoLogo` on Windows), avoids operating on unrelated floating windows and leaves running user terminals intact when keymaps are disabled. The next toggle starts a new PTY when a saved terminal job has exited, while live jobs retain their buffer and process identity. The current window proportions remain fixed to the original 30%/20% splits and approximately 80% floating region. Linux/Windows CI exercises controlled long-running `/bin/sh` and `cmd.exe` sessions; interactive PowerShell parity and tunable terminal settings remain separate work.
-
-The keymaps theme helper restores `<leader>ut/ur` using Neovim's installed colorscheme list and `vim.ui.select`, with reload via the active `:colorscheme`. It does not import the old external theme picker, reload external highlight caches, or attempt to recreate the legacy dashboard; those UI and persisted-theme contracts remain separate parity work.
-
-The events module owns core Neovim events and the legacy one-shot `User FilePost` signal. It emits FilePost once after UI entry and a named normal buffer are ready. It resends FileType only to that buffer to attach newly available filetype observers. When `vim.g.editorconfig` is enabled, it then applies the configured EditorConfig module to that same still-loaded buffer; optional imports are deferred and external configuration errors are reported without breaking the callback.
-
-The events module owns only standalone core events. It registers callbacks once and disables them through state instead of destroying an event group needed for rollback.
-
-The startup integration test attaches an embedded Neovim UI and observes native startup events. It covers empty, startup-interface, existing-file, new-file, and directory arguments. A local Git fixture verifies optional Lazy activation and read-observer counts. Real EditorConfig replay restores project indentation after FileType callbacks. Directory startup currently consumes FilePost before its argument buffer is removed. The fixture disables netrw to isolate Orbit's directory owner; it does not verify explorer or dashboard integration.
-
-The separate upstream startup test installs Orbit through native `pack/start` and runs pinned Lazy, Snacks, Oil, and nvim-tree. Its attached UI verifies dashboard rendering, backing-buffer retention, file arguments, directory cleanup, mapped explorer demand, and repeated setup. It preserves real Lazy path resets and built-in plugin loading. Directory arguments do not automatically open an explorer. Artwork, themes, and broader explorer workflows remain separate acceptance tasks.
-
-The commands module owns the settings command and restores its registration after failed activation. It does not replace other commands.
-
-The filetypes module owns only Compose YAML and JSX detection. It captures the existing Neovim registry entries before registration and restores them on rollback or disable.
-
-Port each feature behind the public module contract. Preserve previous behavior until the feature's targeted checks pass. Avoid persistent compatibility aliases that hide old names in new code.
-
-Keep startup side effects outside module imports. Complete asynchronous work only while its buffer or owner remains valid. Every module must implement `capture(opts)` and `restore(snapshot)` beside `setup(opts)`. The root captures all modules before activation and restores activated modules in reverse order on failure. Repeated setup must replace owned mappings and subscriptions instead of duplicating them.
-
-## Tooling language
-
-Write executable tooling and tests in Lua. Use Neovim as the Lua host to reuse `vim.json`, filesystem APIs and process execution. Keep only the generated `settings.schema.json`, the manifest and GitHub Actions YAML as data formats. Add non-Lua code only when a specific requirement cannot be met reasonably with Lua, and document the exception.
-
-C# SQL injection queries use the `after/queries/c_sharp/injections.scm` extension. The Lua predicates exclude undecodable escape sequences and allow independently configured comment and SQL-name detection. Actual parser compatibility remains an upstream integration gate.
-
-SQL Server highlighting also uses `after/queries/sql/highlights.scm` and the focused `syntax/tsql.vim` fallback. Explicit buffer and global dialect preferences take precedence. Markdown SQL fences retain user mappings.
+- Offline suites use hermetic Lua fixtures and local Git checkouts. They do not download plugins.
+- Live suites pin real plugins and tools and run on Linux and Windows.
+- `scripts/test.lua` runs each suite in its own process with private XDG directories.
