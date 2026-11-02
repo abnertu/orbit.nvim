@@ -173,10 +173,10 @@ Do not edit `settings.schema.json` by hand. Read [architecture](doc/architecture
 
 ## Releases
 
-orbit.nvim follows [Semantic Versioning](https://semver.org/). Tags are bare versions, such as `1.0.0`. [CHANGELOG](CHANGELOG.md) lists the changes for each release.
+orbit.nvim follows [Semantic Versioning](https://semver.org/). Tags are bare versions, such as `1.1.0`. [CHANGELOG](CHANGELOG.md) lists the changes for each release.
 
 To install a release, check out its tag in the package directory:
 
 ```sh
-git -C <data-dir>/site/pack/orbit/start/orbit.nvim checkout 1.0.0
+git -C <data-dir>/site/pack/orbit/start/orbit.nvim checkout 1.1.0
 ```
