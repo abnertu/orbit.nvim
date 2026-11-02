@@ -5,10 +5,14 @@ local server = vim.env.ORBIT_LUA_LANGUAGE_SERVER or vim.fn.exepath("lua-language
 assert(server ~= "" and vim.fn.executable(server) == 1, "lua-language-server is required")
 local workspace = vim.fn.tempname() .. " LuaDoc"
 assert(vim.fn.mkdir(workspace, "p") == 1)
-local locked = vim.json.decode(table.concat(vim.fn.readfile(root .. "/lazy-lock.json"), "\n"))
 local plugins = vim.env.ORBIT_TYPE_PLUGIN_ROOT or (workspace .. "/plugins")
-local sources = { "folke/lazy.nvim", "folke/lazydev.nvim", "folke/snacks.nvim" }
-for _, repository in ipairs(sources) do
+local sources = {
+  { repository = "folke/lazy.nvim", commit = "306a05526ada86a7b30af95c5cc81ffba93fef97" },
+  { repository = "folke/lazydev.nvim", commit = "ff2cbcba459b637ec3fd165a2be59b7bbaeedf0d" },
+  { repository = "folke/snacks.nvim", commit = "882c996cf28183f4d63640de0b4c02ec886d01f2" },
+}
+for _, source in ipairs(sources) do
+  local repository = source.repository
   local name = repository:match("[^/]+$")
   local directory = plugins .. "/" .. name
   if not vim.env.ORBIT_TYPE_PLUGIN_ROOT then
@@ -22,7 +26,7 @@ for _, repository in ipairs(sources) do
         "--depth",
         "1",
         "https://github.com/" .. repository .. ".git",
-        locked[name].commit,
+        source.commit,
       },
       { "git", "-C", directory, "checkout", "--detach", "FETCH_HEAD" },
     }) do
