@@ -3,8 +3,8 @@ local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
 local orbit = require("orbit")
 local commands = require("orbit.modules.commands")
--- The tabline has its own suite. Keep its separate headless redraw path
--- outside these statusline ownership and formatting checks.
+-- Drawing both bars in this headless fixture can crash Windows Neovim 0.12.5.
+-- The tabline has its own suite; isolate the statusline checks from its redraw.
 local function setup(opts)
   orbit.setup(vim.tbl_deep_extend("force", { modules = { tabline = { enabled = false } } }, opts or {}))
 end
