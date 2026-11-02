@@ -192,7 +192,6 @@ nvim --headless -u NONE -l scripts/generate_schema.lua
 nvim --headless -u NONE -l scripts/generate_schema.lua --check
 nvim --headless -u NONE -l tests/schema_spec.lua
 nvim --headless -u NONE -l tests/settings_spec.lua
-nvim --headless -u NONE -l scripts/check_legacy_names.lua
 ```
 
 Do not edit `settings.schema.json` manually.
