@@ -98,6 +98,7 @@ Keep plugin loading with Lazy and tool state with hangar.nvim.
 - `menu` owns right-click menus. A menu temporarily owns Escape and LeftMouse and restores them on close.
 - `navigation` owns Oil, nvim-tree and Harpoon. `layout` owns Edgy side windows.
 - `markdown` owns markdown-preview.nvim and an optional Obsidian vault. Its build records the installed release in `app/bin/.orbit-version`.
+- Vault activation sets `conceallevel=2` in Markdown windows and can replace the Markdown highlight query. Both changes are restart-only.
 
 ## Tests
 

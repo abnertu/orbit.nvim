@@ -35,7 +35,7 @@ require("orbit").setup()
 
 4. Restart Neovim and run `:OrbitSettings info`.
 
-The explicit `:packadd` is necessary because Neovim scans `pack/start` after `init.lua`.
+`:packadd` loads Orbit's plugin and `after` files before `setup()` runs, not only its Lua modules.
 
 To try orbit.nvim without changing your configuration, run this command in the repository:
 

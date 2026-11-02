@@ -39,7 +39,7 @@ The module manifest remains the runtime feature inventory.
 | G17 | Formatting and linting | Preserve per-buffer ownership, debounce, cancellation, and managed-tool filtering. Use real SQLFluff project configuration and stdin arguments. |
 | G18 | Parsing | Provide configured parser installation, context, autotag, C#/SQL injections, and T-SQL syntax/fences. Derive bulk installation from the canonical registry. |
 | G19 | Markdown preview | Build, start, update, toggle, and stop preview. Observe the resulting document through a real browser connection. |
-| G20 | Notes | Attach an explicit Obsidian vault. Preserve frontmatter and agent-note exclusions. Own Markdown conceal/highlight changes and restore prior state. |
+| G20 | Notes | Attach an explicit Obsidian vault. Preserve frontmatter and agent-note exclusions. Own Markdown conceal and highlight changes; they apply at vault activation and are restart-only. |
 | G21 | Completion and snippets | Provide Insert and commandline completion, acceptance, search controls, snippet navigation/cleanup, T-SQL assets, JSX extensions, and supported native build paths. |
 | G22 | Editor integrations | Provide icons, Git signs, diagnostics/TODO, matchup, and indentation through their real plugin entry points and highlight owners. |
 | G23 | Managed tools | Use the Hangar registry for tools and parsers. Preserve state, UI ownership, selections, install operations, and activation filtering. |
