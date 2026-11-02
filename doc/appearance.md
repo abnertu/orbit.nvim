@@ -37,6 +37,7 @@ Trouble loads on `LspAttach` and owns symbol requests and refreshes.
 The statusline reuses one symbol provider and never loads plugins from its render loop.
 File icons retain their source foreground and use the surrounding bar's background.
 Menu opening reapplies owned colors after Volt installs fallback highlights.
+Dotnet Manager uses `NormalFloat` and `FloatBorder` for its panels, independent of Volt highlight availability.
 
 ## Verification
 

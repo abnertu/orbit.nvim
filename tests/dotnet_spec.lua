@@ -52,6 +52,40 @@ check("invalid manager keys are rejected and options are restart-only", function
   assert(orbit.get_pending_restart()["orbit.modules.dotnet.enabled"] == false)
 end)
 
+check("manager open applies floating-window colors after Comet creates its panels", function()
+  local panels = {}
+  local configured = 0
+  local dotnet = {
+    setup = function() configured = configured + 1 end,
+    open = function()
+      for index = 1, 3 do
+        local buffer = vim.api.nvim_create_buf(false, true)
+        panels[index] = vim.api.nvim_open_win(buffer, false, {
+          relative = "editor", row = index, col = index, width = 10, height = 2, border = "rounded",
+        })
+        vim.wo[panels[index]].winhighlight = "Normal:ExBlack2Bg,FloatBorder:ExBlack2Border"
+      end
+    end,
+  }
+  package.loaded["dotnet-cli"] = dotnet
+  package.loaded["comet.state"] = {
+    is_open = function() return true end,
+    get = function() return { input_win = panels[1], list_win = panels[2], output_win = panels[3] } end,
+  }
+  local item = feature.spec()[1]
+  item.config(item, item.opts)
+  local open = dotnet.open
+  item.config(item, item.opts)
+  assert(configured == 1 and dotnet.open == open, "repeated activation reconfigured or wrapped Dotnet twice")
+  dotnet.open()
+  for _, window in ipairs(panels) do
+    assert(vim.wo[window].winhighlight:find("Normal:NormalFloat", 1, true))
+    assert(vim.wo[window].winhighlight:find("FloatBorder:FloatBorder", 1, true))
+    vim.api.nvim_win_close(window, true)
+  end
+  package.loaded["dotnet-cli"], package.loaded["comet.state"] = nil, nil
+end)
+
 check("a disabled owner contributes no spec", function()
   feature.setup({ enabled = false })
   assert(#feature.spec() == 0)
