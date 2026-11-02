@@ -3,13 +3,17 @@ local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
 local orbit = require("orbit")
 local commands = require("orbit.modules.commands")
+-- The tabline has its own suite. Keep its separate headless redraw path
+-- outside these statusline ownership and formatting checks.
+local function setup(opts)
+  orbit.setup(vim.tbl_deep_extend("force", { modules = { tabline = { enabled = false } } }, opts or {}))
+end
 local passed = 0
 local function check(label, fn)
   local ok, err = xpcall(fn, debug.traceback)
   assert(ok, "FAIL " .. label .. "\n" .. tostring(err))
   passed = passed + 1
-  -- Keep result reporting outside Neovim's headless message redraw path.
-  io.stdout:write("PASS " .. label .. "\n")
+  print("PASS " .. label)
 end
 
 local function rendered()
@@ -20,7 +24,7 @@ vim.go.statusline = "user statusline"
 vim.o.columns = 160
 
 check("setup owns the status line and renders mode, file, cursor and cwd", function()
-  orbit.setup()
+  setup()
   assert(vim.go.statusline:find("orbit.modules.statusline.render", 1, true))
   vim.cmd.edit(vim.fn.fnameescape(vim.fn.tempname() .. "-orbit 100% name.lua"))
   local text = rendered()
@@ -90,7 +94,7 @@ check("later module failure keeps the owned status line", function()
   local expression = vim.go.statusline
   local prior = commands.setup
   commands.setup = function() error("injected statusline rollback") end
-  local ok = pcall(orbit.setup, { modules = { statusline = { enabled = false },
+  local ok = pcall(setup, { modules = { statusline = { enabled = false },
     commands = { name = "OrbitStatuslineFail" } } })
   commands.setup = prior
   assert(not ok and vim.go.statusline == expression)
@@ -98,16 +102,16 @@ check("later module failure keeps the owned status line", function()
 end)
 
 check("disabling restores the prior status line and removes observers", function()
-  orbit.setup({ modules = { statusline = { enabled = false } } })
+  setup({ modules = { statusline = { enabled = false } } })
   assert(vim.go.statusline == "user statusline", vim.go.statusline)
   assert(not pcall(vim.api.nvim_get_autocmds, { group = "OrbitStatusline" }))
 end)
 
 check("disabling keeps a status line the user set after ownership", function()
-  orbit.setup()
+  setup()
   vim.go.statusline = "replaced by user"
-  orbit.setup({ modules = { statusline = { enabled = false } } })
+  setup({ modules = { statusline = { enabled = false } } })
   assert(vim.go.statusline == "replaced by user")
 end)
 
-io.stdout:write(string.format("%d statusline tests passed.\n", passed))
+print(string.format("%d statusline tests passed.", passed))
