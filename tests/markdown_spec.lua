@@ -49,17 +49,13 @@ local binary = runtime.executable(temp, platform)
 vim.fn.writefile({ "fixture binary" }, binary)
 local original_system = vim.system
 
-check("build callback waits for the installer and verifies the new version", function()
-  local calls, checks = {}, 0
+local marker = vim.fs.joinpath(app, "bin", ".orbit-version")
+
+check("build callback waits for the installer and records the new version", function()
+  vim.fn.writefile({ "1.0.0" }, marker)
+  local calls = {}
   vim.system = function(argv, opts)
     calls[#calls + 1] = { argv = argv, opts = opts }
-    if argv[1] == binary then
-      checks = checks + 1
-      return { wait = function(_, timeout)
-        assert(timeout == 10000)
-        return { code = 0, stdout = checks == 1 and "old\n" or "1.2.3\n" }
-      end }
-    end
     assert(opts.cwd == app and opts.text == true)
     if platform == "win" then
       assert(vim.deep_equal(argv,
@@ -73,46 +69,29 @@ check("build callback waits for the installer and verifies the new version", fun
     end }
   end
   feature.spec()[1].build({ dir = temp })
-  assert(#calls == 3 and checks == 2)
+  assert(#calls == 1, "a stale version marker must run the installer")
+  assert(vim.fn.readfile(marker)[1] == "1.2.3")
   runtime.build_preview({ dir = temp })
-  assert(#calls == 4 and checks == 3,
-    "a matching binary must skip the installer")
+  assert(#calls == 1, "a matching version marker must skip the installer")
   vim.system = original_system
 end)
 
-check("unlaunchable preview binaries are rebuilt before verification", function()
-  local checks, installs = 0, 0
-  vim.system = function(argv)
-    if argv[1] == binary then
-      checks = checks + 1
-      if checks == 1 then error("fixture spawn failure") end
-      return { wait = function() return { code = 0, stdout = "1.2.3\n" } end }
-    end
-    installs = installs + 1
-    return { wait = function() return { code = 0 } end }
-  end
-  runtime.build_preview({ dir = temp })
-  assert(checks == 2 and installs == 1)
-  vim.system = original_system
-end)
-
-check("installer errors and mismatched output do not report success", function()
-  vim.system = function(argv)
-    if argv[1] == binary then
-      return { wait = function() return { code = 0, stdout = "old\n" } end }
-    end
+check("installer errors and missing binaries do not report success", function()
+  vim.fn.delete(marker)
+  vim.system = function()
     return { wait = function() return { code = 7, stderr = "fixture failed" } end }
   end
   local ok, err = pcall(runtime.build_preview, { dir = temp })
   assert(not ok and tostring(err):find("fixture failed", 1, true))
-  vim.system = function(argv)
-    if argv[1] == binary then
-      return { wait = function() return { code = 0, stdout = "old\n" } end }
-    end
+  assert(vim.fn.filereadable(marker) == 0, "a failed install recorded a version")
+  vim.fn.delete(binary)
+  vim.system = function()
     return { wait = function() return { code = 0 } end }
   end
   ok, err = pcall(runtime.build_preview, { dir = temp })
-  assert(not ok and tostring(err):find("expected executable version", 1, true))
+  assert(not ok and tostring(err):find("expected executable", 1, true))
+  assert(vim.fn.filereadable(marker) == 0, "a missing binary recorded a version")
+  vim.fn.writefile({ "fixture binary" }, binary)
   vim.system = original_system
 end)
 

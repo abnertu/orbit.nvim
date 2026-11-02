@@ -38,13 +38,11 @@ function M.build_preview(plugin, timeout)
 
   local platform = current_platform()
   local executable = M.executable(plugin.dir, platform)
+  -- The prebuilt server has no version flag, so record the installed release.
+  local marker = vim.fs.joinpath(plugin.dir, "app", "bin", ".orbit-version")
   local function installed()
-    if not vim.uv.fs_stat(executable) then return false end
-    -- A stale or corrupt binary may fail to spawn. Rebuild it instead.
-    local ok, result = pcall(function()
-      return vim.system({ executable, "--version" }, { text = true }):wait(10000)
-    end)
-    return ok and result.code == 0 and vim.trim(result.stdout or "") == version
+    return vim.uv.fs_stat(executable) ~= nil and vim.uv.fs_stat(marker) ~= nil
+      and vim.trim(table.concat(vim.fn.readfile(marker), "\n")) == version
   end
   if installed() then return end
 
@@ -58,8 +56,10 @@ function M.build_preview(plugin, timeout)
   assert(result.code == 0,
     "Markdown preview installation failed:\n" ..
     (result.stderr or "") .. (result.stdout or ""))
-  assert(installed(),
-    "Markdown preview installer did not produce the expected executable version")
+  assert(vim.uv.fs_stat(executable),
+    "Markdown preview installer did not produce the expected executable")
+  assert(vim.fn.writefile({ version }, marker) == 0,
+    "Markdown preview version marker could not be written")
 end
 
 return M
