@@ -43,8 +43,9 @@ local ok, err = xpcall(function()
   run({ "dotnet", "tool", "install", "roslyn-language-server", "--version", server_version,
     "--tool-path", tools })
   vim.env.PATH = tools .. (windows and ";" or ":") .. vim.env.PATH
-  local server = windows and "roslyn-language-server.exe" or "roslyn-language-server"
-  assert(vim.fn.executable(server) == 1, "Roslyn tool did not install " .. server)
+  local server = vim.fs.joinpath(tools, windows and "roslyn-language-server.exe" or "roslyn-language-server")
+  assert(vim.uv.fs_stat(server), "Roslyn tool did not install " .. server .. ": "
+    .. vim.inspect(vim.fn.readdir(tools)))
   -- Mason installs a .cmd shim on Windows; Orbit and roslyn.nvim expect it.
   if windows then
     assert(vim.fn.writefile({ '@"%~dp0roslyn-language-server.exe" %*' },
