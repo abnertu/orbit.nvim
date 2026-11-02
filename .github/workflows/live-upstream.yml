@@ -120,6 +120,11 @@ jobs:
           nvim --headless -u NONE -l tests/live_obsidian_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Real Obsidian vault integration failed' }
 
+      - name: Run real Markdown preview in a headless browser
+        run: |
+          nvim --headless -u NONE -l tests/live_markdown_preview_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Real Markdown preview integration failed' }
+
       - name: Run pinned real Noice message activation integration
         run: |
           nvim --headless -u NONE -l tests/live_noice_spec.lua
