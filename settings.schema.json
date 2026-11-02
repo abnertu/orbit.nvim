@@ -1127,8 +1127,8 @@
               "x-orbit-restart": true
             },
             "path_mode": {
-              "default": "skip",
-              "description": "Mason PATH handling policy.",
+              "default": "prepend",
+              "description": "Where Mason's bin directory goes on PATH at startup.",
               "enum": [
                 "skip",
                 "prepend",

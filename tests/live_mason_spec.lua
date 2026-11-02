@@ -35,7 +35,7 @@ local ok, err = xpcall(function()
   local install_root = vim.fs.joinpath(vim.fs.normalize(vim.uv.fs_realpath(workspace)), "mason root")
   local path_before = vim.env.PATH
   require("mason").setup(vim.tbl_extend("force", spec.opts, { install_root_dir = install_root }))
-  assert(vim.env.PATH == path_before, "Orbit's skip PATH mode changed PATH")
+  assert(vim.env.PATH == path_before, "Mason changed PATH; Orbit owns PATH at startup")
   assert(require("mason.settings").current.registries[1] == registry, "Orbit did not pass its registry")
   assert(vim.api.nvim_get_commands({}).MasonInstall, "Mason did not define MasonInstall")
 

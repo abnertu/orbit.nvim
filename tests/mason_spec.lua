@@ -63,9 +63,23 @@ check("invalid installer count is rejected before settings activation", function
 end)
 
 check("valid changes require restart", function()
-  orbit.setup({ modules = { mason = { path_mode = "prepend" } } })
-  assert(orbit.get_config().modules.mason.path_mode == "skip")
-  assert(orbit.get_pending_restart()["orbit.modules.mason.path_mode"] == "prepend")
+  orbit.setup({ modules = { mason = { path_mode = "append" } } })
+  assert(orbit.get_config().modules.mason.path_mode == "prepend")
+  assert(orbit.get_pending_restart()["orbit.modules.mason.path_mode"] == "append")
+end)
+
+check("startup init puts the Mason bin directory on PATH once", function()
+  local original = vim.env.PATH
+  local bin = vim.fs.joinpath(vim.fn.stdpath("data"), "mason", "bin")
+  local separator = vim.fn.has("win32") == 1 and ";" or ":"
+  mason.spec()[1].init()
+  assert(vim.startswith(vim.env.PATH, bin .. separator), "Mason bin was not prepended")
+  mason.spec()[1].init()
+  assert(vim.env.PATH == bin .. separator .. original, "Mason bin was added twice")
+  vim.env.PATH = original
+  mason.add_bin_to_path("skip")
+  assert(vim.env.PATH == original, "skip mode changed PATH")
+  assert(package.loaded.mason == nil, "PATH setup loaded Mason")
 end)
 
 print(string.format("%d Mason feature tests passed.", tests))
