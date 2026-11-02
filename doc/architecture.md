@@ -11,6 +11,10 @@ The public entry point is `require("orbit").setup(opts)`. It validates all optio
 - `spec()` returns a `LazySpec` list and imports no external plugin.
 - Runtime side effects stay in `runtime.lua` files or in Lazy callbacks.
 
+Orbit settings use local LuaDoc contracts for JSON validation. Plugin options and callbacks use upstream types where available.
+LazyDev adds installed libraries for annotation-only references, including `LazySpec` and Snacks option classes.
+The project LuaLS configuration leaves library discovery to Neovim and LazyDev.
+
 `lua/orbit/modules/manifest.json` orders module activation. The runtime, the Lazy import and the schema generator read this manifest. No second feature inventory exists.
 
 ## Option rules

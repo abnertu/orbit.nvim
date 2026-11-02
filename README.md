@@ -95,6 +95,9 @@ require("orbit").setup({
 - Invalid options stop setup and keep the previous configuration.
 - `settings.schema.json` lists every module, option, default and bound.
 
+Use `---@type Orbit.Config` for Lua settings. Plugin options use upstream types, such as `snacks.Config` and `blink.cmp.Config`.
+LazyDev resolves installed plugin types from annotations without activating the plugins.
+
 ## Saved settings
 
 Orbit can read options from a JSON file. The default path is `stdpath("data") .. "/settings.json"`.
@@ -150,6 +153,9 @@ Run the checks with [just](https://github.com/casey/just) on Linux or Windows:
 
 `just test terminal` runs only the suites whose path contains `terminal`. Each suite runs in its own Neovim process with private XDG directories. A missing tool fails its suite.
 
+`just live luadoc` checks Lua type resolution and completion with pinned plugins.
+Install `lua-language-server` on `PATH` before running it locally.
+
 Module settings are LuaDoc annotations in each module's `init.lua`. After you change them, regenerate the schema:
 
 ```sh
@@ -160,7 +166,7 @@ Do not edit `settings.schema.json` by hand. Read [architecture](doc/architecture
 
 ## Continuous integration
 
-- `validate.yml` runs `just schema` and `just test` on Linux and Windows.
+- `validate.yml` runs `just schema`, `just test` and `just live luadoc` on Linux and Windows.
 - Validation runs on pushes, pull requests and a daily schedule on `main`.
 - `live-upstream.yml` installs pinned tools and runs `just live` on Linux and Windows only when started manually.
 - `release.yml` validates version tags before publishing. Releases do not run live suites.

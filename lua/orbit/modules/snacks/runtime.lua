@@ -1,6 +1,7 @@
 local M = {}
 local wrapped = false
 
+---@param opts snacks.Config
 function M.setup(opts)
   local snacks = require("snacks")
   if opts.dashboard and opts.dashboard.enabled then

@@ -2,6 +2,8 @@
 local M = {}
 local active = false
 
+---@param name 'formatter'|'linter'
+---@return table<string, string[]>
 local function settings_for(name)
   local module = require("orbit.modules." .. name)
   local specs = module.spec()
@@ -12,6 +14,7 @@ local function settings_for(name)
 end
 
 ---@param opts Orbit.HangarOptions
+---@return Hangar.Options
 function M.options(opts)
   local registry = require("orbit.modules.hangar.registry")
   return {

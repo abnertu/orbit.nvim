@@ -1,5 +1,6 @@
 -- Context-menu declarations stay inert until Lazy activates the feature.
 local M = {}
+---@type Orbit.MenuOptions?
 local accepted
 
 ---@class Orbit.MenuOptions # Mouse context menus for files and the tree explorer.

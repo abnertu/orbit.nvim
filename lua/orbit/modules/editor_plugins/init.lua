@@ -1,4 +1,5 @@
 local M = {}
+---@type Orbit.EditorPluginsOptions?
 local accepted
 
 ---@class Orbit.EditorPluginsOptions # Optional editor visual integrations.
@@ -32,6 +33,7 @@ function M.spec()
   end
 
   local config = vim.deepcopy(accepted)
+  ---@type LazySpec
   local result = {}
   if config.matchup then
     result[#result + 1] = {
@@ -53,10 +55,13 @@ function M.spec()
       "lukas-reineke/indent-blankline.nvim",
       main = "ibl",
       event = "User FilePost",
+      ---@type ibl.config
       opts = {
         indent = { char = config.indent_char, highlight = "IblChar" },
         scope = { char = config.scope_char, highlight = "IblScopeChar" },
       },
+      ---@param _ LazyPlugin
+      ---@param opts ibl.config
       config = function(_, opts)
         local hooks = require("ibl.hooks")
         hooks.register(hooks.type.WHITESPACE, hooks.builtin.hide_first_space_indent_level)

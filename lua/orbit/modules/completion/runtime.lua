@@ -3,6 +3,7 @@ local M = {}
 local snippets_started = false
 local blink_started = false
 
+---@param plugin LazyPlugin
 function M.build_luasnip(plugin)
   local command = { "make", "install_jsregexp" }
   if vim.fn.has("win32") == 1 then
@@ -20,6 +21,7 @@ function M.build_luasnip(plugin)
   end
 end
 
+---@param opts Orbit.LuasnipOptions
 function M.setup_luasnip(opts)
   if snippets_started then
     return
@@ -42,6 +44,8 @@ function M.setup_luasnip(opts)
   snippets_started = true
 end
 
+---@param item blink.cmp.CompletionItem
+---@return string?
 local function detail(item)
   local value = item.detail
   if type(value) == "table" then
@@ -52,6 +56,7 @@ local function detail(item)
   end
 end
 
+---@param opts blink.cmp.CompletionDocumentationDrawOpts
 function M.draw_documentation(opts)
   local item = opts.item
   local lines, markdown = {}, {}
@@ -77,6 +82,7 @@ function M.draw_documentation(opts)
   end
 end
 
+---@param opts blink.cmp.Config
 function M.setup_blink(opts)
   if blink_started then
     return

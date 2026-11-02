@@ -1,4 +1,5 @@
 local M = {}
+---@type Orbit.IconsOptions?
 local accepted
 
 ---@class Orbit.IconsOptions # Optional mini.icons integration.

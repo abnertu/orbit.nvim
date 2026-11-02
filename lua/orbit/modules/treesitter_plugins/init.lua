@@ -1,4 +1,5 @@
 local M = {}
+---@type Orbit.TreesitterPluginsOptions?
 local accepted
 
 ---@class Orbit.TreesitterPluginsOptions # Tree-sitter parser and companion plugins.
@@ -47,6 +48,7 @@ function M.spec()
     return {}
   end
   local c = vim.deepcopy(accepted)
+  ---@type LazySpec
   local specs = {}
   if c.core then
     specs[#specs + 1] = {
@@ -57,10 +59,13 @@ function M.spec()
       init = function()
         require("orbit.modules.treesitter_plugins.runtime").setup()
       end,
+      ---@type TSConfig
       opts = {
         install_dir = c.install_dir ~= "" and c.install_dir
           or vim.fs.joinpath(vim.fn.stdpath("data"), "site"),
       },
+      ---@param _ LazyPlugin
+      ---@param opts TSConfig
       config = function(_, opts)
         require("nvim-treesitter").setup(opts)
         if c.install_all then
@@ -74,6 +79,7 @@ function M.spec()
       "nvim-treesitter/nvim-treesitter-context",
       dependencies = { "nvim-treesitter/nvim-treesitter" },
       event = { "BufReadPost", "BufWritePost", "BufNewFile" },
+      ---@type TSContext.UserConfig
       opts = {
         enable = true,
         multiwindow = false,
@@ -92,6 +98,7 @@ function M.spec()
       "windwp/nvim-ts-autotag",
       dependencies = { "nvim-treesitter/nvim-treesitter" },
       event = { "BufReadPre", "BufNewFile" },
+      ---@type nvim-ts-autotag.PluginSetup
       opts = {
         opts = {
           enable_close = c.autotag_close,
@@ -100,6 +107,8 @@ function M.spec()
         },
         aliases = { pubxml = "xml", csproj = "xml", jsx = "typescriptreact" },
       },
+      ---@param _ LazyPlugin
+      ---@param opts nvim-ts-autotag.PluginSetup
       config = function(_, opts)
         require("nvim-ts-autotag").setup(opts)
       end,

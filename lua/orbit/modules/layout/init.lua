@@ -1,4 +1,5 @@
 local M = {}
+---@type Orbit.LayoutOptions?
 local accepted
 
 ---@class Orbit.LayoutOptions # Edgy side layouts for Trouble views.

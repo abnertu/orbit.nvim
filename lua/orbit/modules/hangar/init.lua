@@ -1,4 +1,5 @@
 local M = {}
+---@type Orbit.HangarOptions?
 local accepted
 
 ---@class Orbit.HangarOptions # Managed development tools and persistent state.

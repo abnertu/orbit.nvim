@@ -1,7 +1,7 @@
 -- Adapter definitions are independent of the external nvim-dap package.
 local M = {}
 
----@alias Orbit.DapDefinitions {enabled: {python: boolean, coreclr: boolean}, adapters: table<string, function>, configurations: table<string, table<string, any>[]>}
+---@alias Orbit.DapDefinitions {enabled: {python: boolean, coreclr: boolean}, adapters: table<string, dap.AdapterFactory>, configurations: table<string, dap.Configuration[]>}
 
 ---@param opts Orbit.DapOptions
 ---@return Orbit.DapDefinitions

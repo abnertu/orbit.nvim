@@ -21,6 +21,8 @@ local function json_settings()
   }
 end
 
+---@param name string
+---@return vim.lsp.Config
 function M.get(name)
   if name == "ruff" then
     return {
@@ -44,7 +46,6 @@ function M.get(name)
       },
     }
   elseif name == "lua_ls" then
-    local data = vim.fs.normalize(vim.fn.stdpath("data"))
     return {
       settings = {
         Lua = {
@@ -63,7 +64,6 @@ function M.get(name)
             library = {
               vim.fn.expand("$VIMRUNTIME/lua"),
               "$" .. "{3rd}/luv/library",
-              vim.fs.joinpath(data, "lazy", "lazy.nvim", "lua", "lazy"),
             },
           },
         },

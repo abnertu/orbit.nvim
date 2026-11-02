@@ -2,6 +2,7 @@ local M = {}
 
 ---@alias Orbit.ColorsSnapshot {options?: Orbit.ColorsOptions, lsp: boolean, lsp_original?: boolean}
 ---@type Orbit.ColorsOptions?
+---@type Orbit.ColorsOptions?
 local accepted
 
 ---@class Orbit.ColorsOptions # Color previews for hex codes and LSP document colors.

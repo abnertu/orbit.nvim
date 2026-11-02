@@ -1,4 +1,5 @@
 local M = {}
+---@type Orbit.GitOptions?
 local accepted
 
 ---@class Orbit.GitMarks # Marker text for unstaged changes.
@@ -36,6 +37,8 @@ function M.setup(opts)
   accepted = require("orbit.config").resolve_module("git", opts)
 end
 
+---@param marks Orbit.GitMarks|Orbit.GitStaged
+---@return table<string, Gitsigns.SignConfig>
 local function translate(marks)
   local signs = {}
   for name, text in pairs(marks) do
@@ -55,6 +58,7 @@ function M.spec()
     {
       "lewis6991/gitsigns.nvim",
       event = "User FilePost",
+      ---@type Gitsigns.Config|{}
       opts = {
         signs = translate(config.marks),
         signs_staged = translate(config.staged),

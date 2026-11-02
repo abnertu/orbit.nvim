@@ -1,4 +1,5 @@
 local M = {}
+---@type Orbit.SnacksOptions?
 local accepted
 
 ---@class Orbit.SnacksOptions # Snacks UI and picker integration.
@@ -38,7 +39,7 @@ local ignored_notifications = {
   "lua_ls: %-32603",
 }
 
----@param notif {msg: string}
+---@param notif snacks.notifier.Notif
 ---@return boolean
 local function notification_filter(notif)
   for _, pattern in ipairs(ignored_notifications) do
@@ -49,6 +50,7 @@ local function notification_filter(notif)
   return true
 end
 
+---@type table<string, snacks.picker.layout.Config>
 local layouts = {
   default = {
     layout = {
@@ -121,6 +123,8 @@ local layouts = {
   },
 }
 
+---@param c Orbit.SnacksOptions
+---@return snacks.Config
 local function options(c)
   return {
     dim = {},
@@ -213,6 +217,8 @@ function M.spec()
       priority = 1000,
       opts = options(vim.deepcopy(accepted)),
       keys = require("orbit.modules.snacks.keys"),
+      ---@param _ LazyPlugin
+      ---@param opts snacks.Config
       config = function(_, opts)
         require("orbit.modules.snacks.runtime").setup(opts)
       end,

@@ -1,4 +1,5 @@
 local M = {}
+---@type Orbit.DapOptions?
 local accepted
 
 ---@class Orbit.DapOptions # Debug adapters and DAP UI integrations.
@@ -30,6 +31,7 @@ function M.spec()
     return {}
   end
   local opts = vim.deepcopy(accepted)
+  ---@type LazySpec
   local specs = {
     {
       "Orbit-Lua/nvim-dap",
@@ -78,6 +80,8 @@ function M.spec()
           desc = "dap open watch window",
         },
       },
+      ---@param _ LazyPlugin
+      ---@param ui_opts dapui.Config
       config = function(_, ui_opts)
         require("orbit.modules.dap.runtime").setup_ui(ui_opts)
       end,

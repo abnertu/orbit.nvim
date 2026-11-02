@@ -64,6 +64,7 @@ local function run(lint, opts, buf, only_edit)
   end)
 end
 
+---@param opts Orbit.LinterRuntimeOptions
 function M.setup(opts)
   generation = generation + 1
   local current_generation = generation

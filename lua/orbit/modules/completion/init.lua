@@ -1,5 +1,9 @@
 local M = {}
+---@type Orbit.CompletionOptions?
 local accepted
+
+---@alias Orbit.LuasnipOptions {history?: boolean, updateevents?: string}
+---@alias Orbit.AutopairsOptions {fast_wrap?: table<string, unknown>, disable_filetype?: string[]}
 
 ---@class Orbit.CompletionOptions # Blink, LuaSnip, autopairs and Lua developer completion.
 ---@field enabled? boolean @default(true) @restart(true) # Enable completion plugins.
@@ -40,23 +44,30 @@ function M.spec()
         {
           "L3MON4D3/LuaSnip",
           dependencies = "rafamadriz/friendly-snippets",
+          ---@param plugin LazyPlugin
           build = function(plugin)
             require("orbit.modules.completion.runtime").build_luasnip(plugin)
           end,
+          ---@type Orbit.LuasnipOptions
           opts = {
             history = c.snippet_history,
             updateevents = "TextChanged,TextChangedI",
           },
+          ---@param _ LazyPlugin
+          ---@param opts Orbit.LuasnipOptions
           config = function(_, opts)
             require("orbit.modules.completion.runtime").setup_luasnip(opts)
           end,
         },
         {
           "windwp/nvim-autopairs",
+          ---@type Orbit.AutopairsOptions
           opts = {
             fast_wrap = {},
             disable_filetype = { "TelescopePrompt", "vim" },
           },
+          ---@param _ LazyPlugin
+          ---@param opts Orbit.AutopairsOptions
           config = function(_, opts)
             require("nvim-autopairs").setup(opts)
           end,
@@ -65,17 +76,13 @@ function M.spec()
           "folke/lazydev.nvim",
           ft = "lua",
           dependencies = { { "justinsgithub/wezterm-types", lazy = true } },
-          opts = {
-            library = {
-              { path = "snacks.nvim", words = { "snacks", "snacks.nvim" } },
-              { path = "noice.nvim", words = { "noice", "noice.nvim" } },
-              { path = "blink.cmp/lua/blink/cmp", words = { "blink%.cmp" } },
-              { path = "wezterm-types", mods = { "wezterm", "module.wezterm" } },
-            },
-          },
+          ---@type lazydev.Config
+          opts = { library = require("orbit.modules.completion.libraries") },
         },
       },
       opts = require("orbit.modules.completion.blink").build(c),
+      ---@param _ LazyPlugin
+      ---@param opts blink.cmp.Config
       config = function(_, opts)
         require("orbit.modules.completion.runtime").setup_blink(opts)
       end,

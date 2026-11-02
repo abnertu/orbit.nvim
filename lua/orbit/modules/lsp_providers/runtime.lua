@@ -1,8 +1,6 @@
 -- Specialist providers own their own registration; no generic vim.lsp.enable().
 local M = {}
 
----@alias Orbit.TypescriptToolOptions {filetypes: string[], on_attach: fun(client: vim.lsp.Client), handlers: table<string, function>, settings: {separate_diagnostic_server: boolean, code_lens: string, tsserver_path: string, tsserver_file_preferences: table<string, boolean|string>}}
-
 ---Select only a unique solution belonging to the known Roslyn targets.
 ---@param targets string[]
 ---@return string?
@@ -34,6 +32,10 @@ function M.choose_target(targets)
 end
 
 ---Keep distinct diagnostics while suppressing exact tsserver duplicates.
+---@param err? lsp.ResponseError
+---@param result lsp.PublishDiagnosticsParams
+---@param ctx lsp.HandlerContext
+---@param config? vim.diagnostic.Opts
 function M.publish_typescript_diagnostics(err, result, ctx, config)
   if result and result.diagnostics then
     local seen, filtered = {}, {}

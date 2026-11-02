@@ -1,22 +1,7 @@
 -- Obsidian's optional vault is configured only at the Lazy callback boundary.
 local M = {}
 
----@class Orbit.ObsidianNote
----@field id string
----@field aliases? string[]
----@field tags? string[]
----@field metadata? table<string, any>
-
----@class Orbit.ObsidianFrontmatter
----@field id? string
----@field aliases? string[]
----@field tags? string[]
----@field created? string
----@field modified? string
-
----@alias Orbit.ObsidianOptions {legacy_commands: boolean, workspaces: {name: string, path: string}[], frontmatter: {func: fun(note: Orbit.ObsidianNote): Orbit.ObsidianFrontmatter}}
-
----@param note Orbit.ObsidianNote
+---@param note obsidian.Note
 ---@return Orbit.ObsidianFrontmatter
 function M.frontmatter(note)
   if note.id == "AGENTS" or note.id == "CLAUDE" or note.id == "SKILL" then
@@ -43,7 +28,7 @@ function M.frontmatter(note)
 end
 
 ---@param vault string
----@return Orbit.ObsidianOptions
+---@return obsidian.config
 function M.options(vault)
   return {
     legacy_commands = false,
@@ -92,7 +77,7 @@ local function conceal_markdown(buffer)
   end
 end
 
----@param opts Orbit.ObsidianOptions
+---@param opts obsidian.config
 ---@param highlights? boolean
 function M.setup(opts, highlights)
   require("obsidian").setup(opts)

@@ -1,4 +1,5 @@
 local M = {}
+---@type Orbit.DiagnosticsPluginsOptions?
 local accepted
 
 ---@class Orbit.DiagnosticsPluginsOptions # Trouble and todo-comments integrations.
@@ -54,12 +55,14 @@ function M.spec()
     return {}
   end
   local c = vim.deepcopy(accepted)
+  ---@type LazySpec
   local specs = {}
   if c.trouble then
     specs[#specs + 1] = {
       "folke/trouble.nvim",
       cmd = "Trouble",
       event = "LspAttach",
+      ---@type trouble.Config
       opts = {
         modes = {
           diagnostic_preview_float = {
@@ -131,11 +134,14 @@ function M.spec()
           desc = "Todo/Fix/Fixme/Workaround",
         },
       },
+      ---@type TodoOptions
       opts = {
         keywords = {
           WORKAROUND = { icon = c.todo_icon, color = "warning" },
         },
       },
+      ---@param _ LazyPlugin
+      ---@param opts TodoOptions
       config = function(_, opts)
         require("todo-comments").setup(opts)
       end,

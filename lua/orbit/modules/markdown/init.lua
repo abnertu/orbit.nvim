@@ -1,5 +1,8 @@
 local M = {}
+---@type Orbit.MarkdownOptions?
 local accepted
+
+---@alias Orbit.ObsidianFrontmatter {id?: string|number, aliases?: string[], tags?: string[], created?: string, modified?: string, [string]: unknown}
 
 ---@class Orbit.MarkdownOptions # Markdown preview integration.
 ---@field enabled? boolean @default(true) @restart(true) # Enable Markdown integration.
@@ -31,6 +34,7 @@ function M.spec()
     return {}
   end
   local c = vim.deepcopy(accepted)
+  ---@type LazySpec
   local specs = {}
   if c.preview then
     specs[#specs + 1] = {
@@ -40,6 +44,7 @@ function M.spec()
       keys = {
         { c.preview_key, "<cmd>MarkdownPreviewToggle<cr>", desc = "markdown preview toggle" },
       },
+      ---@param plugin LazyPlugin
       build = function(plugin)
         require("orbit.modules.markdown.runtime").build_preview(plugin, c.build_timeout)
       end,
@@ -56,6 +61,8 @@ function M.spec()
       opts = function()
         return require("orbit.modules.markdown.notes").options(c.vault)
       end,
+      ---@param _ LazyPlugin
+      ---@param opts obsidian.config
       config = function(_, opts)
         require("orbit.modules.markdown.notes").setup(opts, c.note_highlights)
       end,

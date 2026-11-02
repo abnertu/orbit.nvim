@@ -1,4 +1,5 @@
 local M = {}
+---@type Orbit.LspOptions?
 local accepted
 
 ---@class Orbit.LspServerFlags # Standard servers owned by native Neovim LSP.
@@ -58,6 +59,8 @@ function M.spec()
       "neovim/nvim-lspconfig",
       event = "VeryLazy",
       opts = vim.deepcopy(accepted),
+      ---@param _ LazyPlugin
+      ---@param opts Orbit.LspOptions
       config = function(_, opts)
         return require("orbit.modules.lsp.runtime").setup(opts)
       end,

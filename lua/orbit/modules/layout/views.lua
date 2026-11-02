@@ -1,21 +1,7 @@
 -- Build Edgy views that capture only editor-relative Trouble splits.
 local M = {}
 
----@alias Orbit.LayoutPos 'top'|'bottom'|'left'|'right'
-
----@class Orbit.LayoutView
----@field ft string
----@field filter fun(buf: integer, win: integer): boolean
----@field size {width?: number, height?: number}
-
----@class Orbit.LayoutConfig
----@field top Orbit.LayoutView[]
----@field bottom Orbit.LayoutView[]
----@field left Orbit.LayoutView[]
----@field right Orbit.LayoutView[]
----@field animate {enabled: boolean}
-
----@param pos Orbit.LayoutPos
+---@param pos Edgy.Pos
 ---@return fun(buf: integer, win: integer): boolean
 function M.trouble_filter(pos)
   return function(_, win)
@@ -29,7 +15,7 @@ function M.trouble_filter(pos)
 end
 
 ---@param size number
----@return Orbit.LayoutConfig
+---@return Edgy.Config
 function M.build(size)
   local opts = { animate = { enabled = false } }
   for _, pos in ipairs({ "top", "bottom", "left", "right" }) do

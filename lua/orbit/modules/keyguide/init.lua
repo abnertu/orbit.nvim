@@ -1,5 +1,6 @@
 -- Which-key owns discoverability, without importing the plugin at root setup.
 local M = {}
+---@type Orbit.KeyguideOptions?
 local accepted
 
 ---@class Orbit.KeyguideOptions # Discoverable leader-key groups through which-key.
@@ -59,11 +60,14 @@ function M.spec()
         { "<leader>wK", "<cmd>WhichKey<cr>", desc = "Show all keymaps" },
         { "<leader>wk", M.query, desc = "Query keymaps" },
       },
+      ---@type wk.Opts
       opts = {
         preset = opts.preset,
         win = { border = opts.border },
         spec = vim.deepcopy(groups),
       },
+      ---@param _ LazyPlugin
+      ---@param options wk.Opts
       config = function(_, options)
         require("which-key").setup(options)
       end,

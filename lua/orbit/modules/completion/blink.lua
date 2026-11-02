@@ -8,6 +8,7 @@ local function snippet_forward(cmp)
 end
 
 ---@param opts Orbit.CompletionOptions
+---@return blink.cmp.Config
 function M.build(opts)
   return {
     snippets = { preset = "luasnip" },

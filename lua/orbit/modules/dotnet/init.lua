@@ -1,4 +1,5 @@
 local M = {}
+---@type Orbit.DotnetOptions?
 local accepted
 
 ---@class Orbit.DotnetOptions # dotnet-cli and Comet .NET project commands.
@@ -44,7 +45,10 @@ function M.spec()
         { c.manager_key, "<cmd>DotnetManager<CR>", desc = "open dotnet manager" },
       },
       ft = "cs",
+      ---@type DotnetCliConfig|{}
       opts = {},
+      ---@param _ LazyPlugin
+      ---@param opts DotnetCliConfig
       config = function(_, opts)
         require("orbit.modules.dotnet.runtime").setup(opts)
       end,

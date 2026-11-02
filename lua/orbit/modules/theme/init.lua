@@ -3,6 +3,7 @@
 ---@alias Orbit.ThemePalette {base16: Orbit.ThemeBase16, baby_pink: integer, black: integer, black2: integer, blue: integer, cyan: integer, dark_purple: integer, darker_black: integer, folder_bg: integer, green: integer, grey: integer, grey_fg: integer, grey_fg2: integer, light_grey: integer, lightbg: integer, line: integer, nord_blue: integer, one_bg: integer, one_bg2: integer, one_bg3: integer, orange: integer, pink: integer, pmenu_bg: integer, purple: integer, red: integer, statusline_bg: integer, sun: integer, teal: integer, vibrant_green: integer, white: integer, yellow: integer}
 
 local M = {}
+---@type Orbit.ThemeOptions?
 local accepted
 
 ---@class Orbit.ThemeOptions # Colorscheme, highlight overrides and saved theme selection.
@@ -48,7 +49,10 @@ function M.spec()
       "folke/tokyonight.nvim",
       lazy = false,
       priority = 1000,
+      ---@type tokyonight.Config
       opts = {},
+      ---@param _ LazyPlugin
+      ---@param opts tokyonight.Config
       config = function(_, opts)
         require("tokyonight").setup(opts)
         require("orbit.modules.theme.runtime").start()

@@ -2,6 +2,12 @@ local M = {}
 
 ---@class Orbit.ModuleOverrides
 ---@field editor? Orbit.EditorOptions
+---@field statusline? Orbit.StatuslineOptions
+---@field tabline? Orbit.TablineOptions
+---@field colors? Orbit.ColorsOptions
+---@field theme? Orbit.ThemeOptions
+---@field layout? Orbit.LayoutOptions
+---@field dotnet? Orbit.DotnetOptions
 ---@field filetypes? Orbit.FiletypesOptions
 ---@field keymaps? Orbit.KeymapsOptions
 ---@field terminal? Orbit.TerminalOptions
@@ -181,7 +187,7 @@ end
 
 ---Resolve a supplied schema without activating any modules.
 ---Used to validate generated schema fixtures before publishing them.
----@param opts? table<string, any><string, any>
+---@param opts? table<string, any>
 ---@param supplied_schema Orbit.SchemaNode
 ---@return table<string, any>
 function M.resolve_against(opts, supplied_schema)
@@ -189,9 +195,10 @@ function M.resolve_against(opts, supplied_schema)
 end
 
 ---Validate a module when users call its setup function directly.
+---@generic T
 ---@param name string
----@param opts? table<string, any>
----@return table<string, any>
+---@param opts? T
+---@return T
 function M.resolve_module(name, opts)
   local modules = get_schema().properties.modules.properties
   local node = assert(modules[name], "unknown orbit.nvim module: " .. name)

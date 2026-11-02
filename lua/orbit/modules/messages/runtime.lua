@@ -1,7 +1,7 @@
 -- Noice options are constructed only at its Lazy activation boundary.
 local M = {}
 
----@alias Orbit.NoiceOptions {routes: table<string, any>[], cmdline: table<string, any>, messages: table<string, boolean>, popupmenu: table<string, any>, lsp: table<string, any>, presets: table<string, boolean>, views: table<string, any>}
+---@alias Orbit.NoiceOptions NoiceConfig
 
 local ignored_messages = {
   "; after #%d+",
@@ -17,12 +17,16 @@ local ignored_messages = {
 }
 local ignored_progress = { "Searching in files", "pyright" }
 
+---@param patterns string[]
+---@return NoiceFilter[]
 local function any(patterns)
   return vim.tbl_map(function(pattern)
     return { find = pattern }
   end, patterns)
 end
 
+---@param c Orbit.MessagesOptions
+---@return {max_width: integer, max_height: integer}
 local function docs_size(c)
   return {
     max_width = math.max(1, math.min(c.doc_max_width, math.floor(vim.o.columns * 0.5))),

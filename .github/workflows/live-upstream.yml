@@ -55,6 +55,11 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Install the pinned Lua language server
+        run: |
+          nvim --headless -u NONE -l scripts/install_lua_ls.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Lua language server installation failed' }
+
       - name: Install pinned SQLFluff
         run: |
           python -m pip install --disable-pip-version-check 'sqlfluff==4.4.0'

@@ -109,6 +109,7 @@ function M.setup(dap, definitions)
   initialized = true
 end
 
+---@param opts? dapui.Config
 function M.setup_ui(opts)
   if ui_initialized then
     return

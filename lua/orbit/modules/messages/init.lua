@@ -1,4 +1,5 @@
 local M = {}
+---@type Orbit.MessagesOptions?
 local accepted
 
 ---@class Orbit.MessagesOptions # Optional Noice commandline and LSP message integration.
@@ -42,6 +43,8 @@ function M.spec()
       opts = function()
         return require("orbit.modules.messages.runtime").options(options)
       end,
+      ---@param _ LazyPlugin
+      ---@param opts NoiceConfig
       config = function(_, opts)
         require("noice").setup(opts)
       end,

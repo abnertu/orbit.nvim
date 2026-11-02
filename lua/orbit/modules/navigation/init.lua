@@ -1,4 +1,5 @@
 local M = {}
+---@type Orbit.NavigationOptions?
 local accepted
 local subscribed = false
 
@@ -27,6 +28,8 @@ function M.setup(opts)
   accepted = require("orbit.config").resolve_module("navigation", opts)
 end
 
+---@param c Orbit.NavigationOptions
+---@return oil.SetupOpts
 local function oil_options(c)
   return {
     default_file_explorer = false,
@@ -52,6 +55,8 @@ local function oil_options(c)
   }
 end
 
+---@param c Orbit.NavigationOptions
+---@return nvim_tree.config
 local function tree_options(c)
   local windows = vim.fn.has("win32") == 1
   return {
@@ -92,6 +97,7 @@ local function tree_options(c)
   }
 end
 
+---@param opts nvim_tree.config
 local function setup_tree(opts)
   require("nvim-tree").setup(opts)
   if subscribed then
@@ -110,6 +116,7 @@ function M.spec()
     return {}
   end
   local c = vim.deepcopy(accepted)
+  ---@type LazySpec
   local specs = {}
   if c.oil then
     specs[#specs + 1] = {
@@ -145,6 +152,8 @@ function M.spec()
         },
       },
       opts = tree_options(c),
+      ---@param _ LazyPlugin
+      ---@param opts nvim_tree.config
       config = function(_, opts)
         setup_tree(opts)
       end,

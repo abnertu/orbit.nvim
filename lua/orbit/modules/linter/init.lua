@@ -1,4 +1,5 @@
 local M = {}
+---@type Orbit.LinterOptions?
 local accepted
 
 ---@class Orbit.LinterOptions # nvim-lint configuration and event scheduling.
@@ -22,6 +23,9 @@ function M.setup(opts)
   accepted = require("orbit.config").resolve_module("linter", opts)
 end
 
+---@alias Orbit.LinterRuntimeOptions {events: string[], debounce_ms: integer, skip_while_editing: string[], linters_by_ft: table<string, string[]>, linters: table<string, lint.Linter|fun():lint.Linter>}
+
+---@return table<string, string[]>
 local function language_defaults()
   return {
     dockerfile = { "hadolint" },
@@ -52,6 +56,7 @@ function M.spec()
     {
       "mfussenegger/nvim-lint",
       event = { "BufReadPost", "BufWritePost", "BufNewFile" },
+      ---@type Orbit.LinterRuntimeOptions
       opts = {
         events = events,
         debounce_ms = c.debounce_ms,
@@ -69,6 +74,8 @@ function M.spec()
           end,
         },
       },
+      ---@param _ LazyPlugin
+      ---@param opts Orbit.LinterRuntimeOptions
       config = function(_, opts)
         require("orbit.modules.linter.runtime").setup(opts)
       end,

@@ -77,6 +77,16 @@ jobs:
           just test
           if ($LASTEXITCODE -ne 0) { throw 'Offline test suites failed' }
 
+      - name: Install the pinned Lua language server
+        run: |
+          nvim --headless -u NONE -l scripts/install_lua_ls.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Lua language server installation failed' }
+
+      - name: Verify LuaDoc type resolution and completion
+        run: |
+          just live luadoc
+          if ($LASTEXITCODE -ne 0) { throw 'LuaDoc completion checks failed' }
+
       - name: Check tracked source is unchanged
         run: |
           git diff --exit-code

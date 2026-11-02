@@ -1,5 +1,9 @@
 local M = {}
+---@type Orbit.LspProvidersOptions?
 local accepted
+
+---@alias Orbit.TypescriptSettings Settings
+---@alias Orbit.TypescriptToolOptions {filetypes: string[], on_attach: (fun(client: vim.lsp.Client)), handlers: table<string, lsp.Handler>, settings: Orbit.TypescriptSettings|{}}
 
 ---@class Orbit.LspProvidersOptions # Specialist Roslyn and TypeScript LSP providers.
 ---@field enabled? boolean @default(true) @restart(true) # Contribute specialist LSP providers.
@@ -30,6 +34,7 @@ function M.spec()
     return {}
   end
   local c = vim.deepcopy(accepted)
+  ---@type LazySpec
   local result = {}
   if c.roslyn then
     result[#result + 1] = {
@@ -41,11 +46,14 @@ function M.spec()
         -- Let roslyn.nvim resolve the server when the provider loads.
         return require("orbit.hangar_bridge").is_enabled("lsp", "roslyn")
       end,
+      ---@type RoslynNvimConfig
       opts = {
         filewatching = c.roslyn_filewatching,
         silent = true,
         choose_target = require("orbit.modules.lsp_providers.runtime").choose_target,
       },
+      ---@param _ LazyPlugin
+      ---@param opts RoslynNvimConfig
       config = function(_, opts)
         -- roslyn.nvim enables the LSP in plugin/roslyn.lua before config runs.
         -- Lazy evaluates cond before Hangar's startup config, so check again.

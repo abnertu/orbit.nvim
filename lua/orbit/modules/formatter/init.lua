@@ -1,4 +1,5 @@
 local M = {}
+---@type Orbit.FormatterOptions?
 local accepted
 
 ---@class Orbit.FormatterOptions # Conform formatting integration.
@@ -23,6 +24,7 @@ function M.setup(opts)
   accepted = require("orbit.config").resolve_module("formatter", opts)
 end
 
+---@return table<string, conform.FiletypeFormatter>
 local function default_filetypes()
   return {
     lua = { "stylua" },
@@ -69,6 +71,7 @@ function M.spec()
           mode = { "n", "x" },
         },
       },
+      ---@type conform.setupOpts
       opts = {
         default_format_opts = {
           timeout_ms = c.timeout_ms,
@@ -95,6 +98,8 @@ function M.spec()
           lsp_format = c.lsp_format,
         } or false,
       },
+      ---@param _ LazyPlugin
+      ---@param opts conform.setupOpts
       config = function(_, opts)
         opts.formatters_by_ft =
           require("orbit.hangar_bridge").filter("formatter", opts.formatters_by_ft)

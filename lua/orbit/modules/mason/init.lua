@@ -1,4 +1,5 @@
 local M = {}
+---@type Orbit.MasonOptions?
 local accepted
 
 ---@class Orbit.MasonOptions # Lazy Mason package manager integration.
@@ -56,6 +57,7 @@ function M.spec()
       init = function()
         M.add_bin_to_path(c.path_mode)
       end,
+      ---@type MasonSettings
       opts = {
         PATH = "skip",
         ui = {
