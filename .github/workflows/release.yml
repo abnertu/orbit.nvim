@@ -21,12 +21,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check the tag format, main ancestry and changelog
+      - name: Check the tag format, annotation, main ancestry and changelog
         env:
           TAG: ${{ github.ref_name }}
         run: |
           set -eu
           [[ "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::$TAG is not MAJOR.MINOR.PATCH"; exit 1; }
+          [ "$(git cat-file -t "refs/tags/$TAG")" = tag ] || { echo "::error::$TAG is not an annotated tag"; exit 1; }
           git merge-base --is-ancestor "$GITHUB_SHA" origin/main || { echo "::error::$TAG is not on main"; exit 1; }
           grep -q "^## \[$TAG\] - " CHANGELOG.md || { echo "::error::CHANGELOG.md has no $TAG section"; exit 1; }
 
