@@ -180,6 +180,11 @@ jobs:
           nvim --headless -u NONE -l tests/live_hangar_ui_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Real Hangar/NUI UI lifecycle failed' }
 
+      - name: Run real Mason install and uninstall
+        run: |
+          nvim --headless -u NONE -l tests/live_mason_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Real Mason install integration failed' }
+
       - name: Run pinned real nvim-lint diagnostic integration
         run: |
           nvim --headless -u NONE -l tests/live_lint_spec.lua
