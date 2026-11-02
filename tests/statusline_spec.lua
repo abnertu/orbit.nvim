@@ -8,7 +8,8 @@ local function check(label, fn)
   local ok, err = xpcall(fn, debug.traceback)
   assert(ok, "FAIL " .. label .. "\n" .. tostring(err))
   passed = passed + 1
-  print("PASS " .. label)
+  -- Keep result reporting outside Neovim's headless message redraw path.
+  io.stdout:write("PASS " .. label .. "\n")
 end
 
 local function rendered()
@@ -109,4 +110,4 @@ check("disabling keeps a status line the user set after ownership", function()
   assert(vim.go.statusline == "replaced by user")
 end)
 
-print(string.format("%d statusline tests passed.", passed))
+io.stdout:write(string.format("%d statusline tests passed.\n", passed))
