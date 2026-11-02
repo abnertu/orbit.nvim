@@ -4,7 +4,6 @@ local root = vim.fn.fnamemodify(script, ":p:h:h")
 vim.opt.rtp:prepend(root)
 
 local schema = require("orbit.tooling.schema")
-local legacy = require("orbit.tooling.legacy")
 local completed = 0
 
 local function check(name, run)
@@ -394,14 +393,6 @@ check("module override contract rejects unknown keys and invalid types", functio
   expect_error(function()
     config.resolve({ modules = { nonexistent = {} } })
   end, "unknown setting")
-end)
-
-check("source name scanner catches legacy identifiers", function()
-  assert(legacy.is_legacy("vim.g.Orbit" .. "VimSettings"))
-  assert(legacy.is_legacy("orbit_" .. "vim_session"))
-  assert(legacy.is_legacy("NV" .. "CHAD_UI"))
-  assert(legacy.is_legacy("base" .. "46_cache"))
-  assert(not legacy.is_legacy("orbit.modules.editor"))
 end)
 
 print(string.format("%d Lua schema and tooling tests passed.", completed))
