@@ -102,6 +102,26 @@ check("current close refuses unsaved content then safely deletes it", function()
   assert(not vim.api.nvim_buf_is_valid(current))
 end)
 
+check("closing a displayed buffer preserves every split and its replacement", function()
+  local current = vim.api.nvim_create_buf(true, false)
+  local replacement = vim.api.nvim_create_buf(true, false)
+  vim.api.nvim_set_current_buf(replacement)
+  vim.api.nvim_set_current_buf(current)
+  local origin = vim.api.nvim_get_current_win()
+  vim.cmd.vsplit()
+  local split = vim.api.nvim_get_current_win()
+  mapping(" x").callback()
+  assert(
+    vim.api.nvim_win_is_valid(origin) and vim.api.nvim_win_is_valid(split),
+    "close removed a split"
+  )
+  assert(vim.api.nvim_win_get_buf(origin) == replacement)
+  assert(vim.api.nvim_win_get_buf(split) == replacement)
+  vim.api.nvim_win_close(split, true)
+  vim.api.nvim_set_current_buf(previous)
+  vim.api.nvim_buf_delete(replacement, { force = true })
+end)
+
 check("special buffers cannot be closed through the normal-file action", function()
   local special = vim.api.nvim_create_buf(true, false)
   vim.bo[special].buftype = "nofile"

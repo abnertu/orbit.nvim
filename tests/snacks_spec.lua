@@ -61,7 +61,8 @@ check("picker and buffer commands resolve only at the Lazy callback boundary", f
   key(keys, "<leader>ff")[2]()
   key(keys, "<leader>sg")[2]()
   key(keys, "<leader>bd")[2]()
-  assert(vim.deep_equal(calls, { "files", "grep", "bufdelete" }))
+  vim.fn.maparg(" x", "n", false, true).callback()
+  assert(vim.deep_equal(calls, { "files", "grep", "bufdelete", "bufdelete" }))
   package.loaded.snacks, package.preload.snacks = nil, nil
 end)
 

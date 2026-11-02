@@ -18,7 +18,7 @@ return {
   {
     "<leader>bd",
     function()
-      require("snacks").bufdelete()
+      require("orbit.modules.keymaps.buffer_actions").close_current()
     end,
     desc = "close current buffer",
   },

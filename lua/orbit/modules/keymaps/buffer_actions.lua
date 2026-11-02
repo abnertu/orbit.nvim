@@ -1,5 +1,5 @@
--- Pure Lua buffer operations; never the destructive %bd|e#.
--- No external plugin import or implicit writes.
+-- Buffer actions preserve splits and resolve optional Snacks only on demand.
+-- Bulk cleanup never writes files or runs the destructive %bd|e#.
 local M = {}
 
 local function normal(buffer)
@@ -23,9 +23,17 @@ end
 ---Close the current normal buffer without discarding unsaved changes.
 function M.close_current()
   local buffer = vim.api.nvim_get_current_buf()
-  assert(normal(buffer), "cannot close a special buffer")
-  assert(not protected(buffer), "buffer has unsaved changes: " .. buffer)
-  vim.api.nvim_buf_delete(buffer, { force = false })
+  local config = require("orbit").get_config()
+  if
+    config
+    and config.modules.snacks.enabled
+    and (package.loaded.snacks or config.modules.plugins.enabled)
+  then
+    require("snacks").bufdelete()
+    return
+  end
+  local ok, err = require("orbit.buffers").close(buffer)
+  assert(ok, err)
 end
 
 ---Keep the current buffer and delete other listed normal buffers.
