@@ -67,6 +67,7 @@ Keep plugin loading with Lazy and tool state with hangar.nvim.
 - After FilePost, the owner sends FileType to that buffer again, so late filetype observers attach.
 - When `vim.g.editorconfig` is on, it then applies EditorConfig to the same buffer.
 - Directory arguments set the working directory. They do not open an explorer.
+- Opening a file removes an unused Orbit startup buffer. User-created, visible or edited scratch buffers remain.
 
 ## Editor and keys
 
