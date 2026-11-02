@@ -43,14 +43,10 @@ local ok, err = xpcall(function()
   run({ "dotnet", "tool", "install", "roslyn-language-server", "--version", server_version,
     "--tool-path", tools })
   vim.env.PATH = tools .. (windows and ";" or ":") .. vim.env.PATH
-  local server = vim.fs.joinpath(tools, windows and "roslyn-language-server.exe" or "roslyn-language-server")
+  -- The RID-specific Windows tool ships a .cmd shim, which Orbit expects.
+  local server = vim.fs.joinpath(tools, windows and "roslyn-language-server.cmd" or "roslyn-language-server")
   assert(vim.uv.fs_stat(server), "Roslyn tool did not install " .. server .. ": "
     .. vim.inspect(vim.fn.readdir(tools)))
-  -- Mason installs a .cmd shim on Windows; Orbit and roslyn.nvim expect it.
-  if windows then
-    assert(vim.fn.writefile({ '@"%~dp0roslyn-language-server.exe" %*' },
-      vim.fs.joinpath(tools, "roslyn-language-server.cmd")) == 0)
-  end
 
   -- Two solutions reference the project; Orbit selects the root solution.
   local repo = vim.fs.joinpath(base, "repo")
