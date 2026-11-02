@@ -98,7 +98,7 @@ return function(opts)
   package.loaded["orbit.tests.live_completion_escape"] = {
     ---@return LazySpec
     import = function()
-      local specs = require("plugins")
+      local specs = require("orbit.plugins")
       for index, spec in ipairs(specs) do
         specs[index] = localize(spec)
         -- Exercise the supported Lua path; native distribution is a separate gate.

@@ -1319,7 +1319,7 @@
               "x-orbit-restart": true
             },
             "import": {
-              "default": "plugins",
+              "default": "orbit.plugins",
               "description": "Lazy plugin spec import module.",
               "minLength": 1,
               "type": "string",

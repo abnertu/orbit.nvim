@@ -151,7 +151,7 @@ return function(opts)
     ---@return LazySpec
     import = function()
       ---@type LazySpec
-      local specs = require("plugins")
+      local specs = require("orbit.plugins")
       for _, spec in ipairs(specs) do
         spec.dir = assert(opts.dependencies[spec[1]:match("[^/]+$")], spec[1])
         if spec.dependencies then
