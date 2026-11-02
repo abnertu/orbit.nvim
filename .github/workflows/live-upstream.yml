@@ -220,6 +220,11 @@ jobs:
           nvim --headless -u NONE -l tests/live_debugpy_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Real debugpy integration failed' }
 
+      - name: Run real tsserver through TypeScript tools
+        run: |
+          nvim --headless -u NONE -l tests/live_tsserver_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Real tsserver integration failed' }
+
       - name: Run pinned real Harpoon navigation integration
         run: |
           nvim --headless -u NONE -l tests/live_harpoon_spec.lua
