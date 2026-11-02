@@ -45,6 +45,9 @@ function M.spec()
       },
       ft = "cs",
       opts = {},
+      config = function(_, opts)
+        require("orbit.modules.dotnet.runtime").setup(opts)
+      end,
     },
   }
 end
