@@ -8,7 +8,8 @@
 - Mark breaking changes with `!` and a `BREAKING CHANGE:` footer.
 - Author commits as the user alone. Do not add agent trailers or session links.
 - Commit as the approved plan progresses.
-- Keep each scoped change reviewable in its own branch and pull request.
+- Keep each scoped change reviewable in its own commit.
+- Create a pull request only when the user explicitly requests one.
 - Push approved development work without requesting repeated user approval.
 - Run the required Linux and Windows CI checks before merging each pull request.
 - Use GitHub's `rebase` merge method when the reviewed change passes all required checks.
@@ -101,7 +102,6 @@
 - Protect release tags with a tag ruleset.
 - Restrict release credentials to protected release tags.
 - Keep CI changes on the default branch before creating a release tag.
-- Delete topic branches only after their pull request has merged successfully.
 - Run branch cleanup with a same-repository merged-PR guard and no untrusted code checkout.
 - Propagate tool failures, including missing prerequisites.
 - Test real entry points or isolated fixtures rather than file existence.
