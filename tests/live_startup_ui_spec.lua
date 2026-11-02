@@ -158,6 +158,7 @@ end)
     assert(initial.status == (plugins and "loaded" or "disabled"))
     assert(initial.lazy == plugins and initial.snacks == plugins and initial.imported == plugins)
     if plugins then
+      assert(#events(initial, "LazyVimStarted") == 1, "Lazy startup timing completion was missed or repeated")
       for _, list in ipairs({ initial.manifest, initial.specs, initial.helper }) do
         assert(#list == 1 and canonical(list[1]):find(canonical(installed), 1, true),
           "Lazy dropped the installed Orbit runtime")
@@ -175,6 +176,10 @@ end)
       assert(#dashboards == 1 and initial.current == dashboards[1].id,
         "empty startup did not display one real dashboard")
       assert(table.concat(dashboards[1].lines, ""):match("%S"), "dashboard did not render content")
+      local startup = exec("return require('lazy.stats').stats().startuptime")
+      assert(startup > 0, "dashboard startup time stayed at 0ms after UIEnter")
+      assert(not table.concat(dashboards[1].lines, ""):find("in 0ms", 1, true),
+        "dashboard rendered a zero startup time")
     else
       assert(#buffers(initial, "snacks_dashboard") == 0, "unexpected startup dashboard")
     end

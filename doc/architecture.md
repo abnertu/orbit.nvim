@@ -53,7 +53,8 @@ The `plugins` module owns Lazy. It is disabled by default.
 
 - It registers one package searcher and one demand-event group.
 - Lazy starts on the first demand event or on a lookup of a missing module.
-- New file observers receive only the missed event, and earlier observers do not run twice.
+- New file observer groups receive missed demand events. Existing observers are not replayed.
+- Late one-shot UI callbacks receive the first `UIEnter`, including Lazy's startup timer.
 - `bootstrap = true` clones Lazy on first demand. A lockfile pins the commit. An existing checkout is never replaced.
 - The owner keeps Orbit's runtime and `after` directories through Lazy's runtimepath reset.
 - `import` defaults to `orbit.plugins`. Each module adds its specs from `spec()`.
@@ -95,6 +96,7 @@ Keep plugin loading with Lazy and tool state with hangar.nvim.
 
 - `theme` declares tokyonight and applies Orbit highlight overrides after each colorscheme. A theme selection saves only to an existing settings file.
 - `snacks` owns pickers, layouts, the dashboard and the notifier filter.
+- The dashboard refreshes startup statistics after `LazyVimStarted`, including when Lazy starts during `UIEnter`.
 - `messages` owns Noice routes and popups at the Lazy callback boundary.
 - `completion` owns Blink, LuaSnip, autopairs and Lazydev. Its callbacks are restart-only.
 - `menu` owns right-click menus. A menu temporarily owns Escape and LeftMouse and restores them on close.

@@ -1,6 +1,6 @@
 local M = {}
 
----@alias Orbit.DemandEvent {event: string, buf?: integer}
+---@alias Orbit.DemandEvent {event: string, buf?: integer, match?: string, file?: string, data?: any}
 ---@alias Orbit.PluginsSnapshot {group?: integer, searcher?: function, options?: Orbit.PluginsOptions, state: string, failure?: string, original_loadplugins?: boolean, current_loadplugins: boolean}
 
 ---@class Orbit.PluginsOptions # On-demand Lazy plugin initialization.
@@ -22,7 +22,7 @@ local demand_events = {
   "UIEnter", "BufReadPre", "BufNewFile", "StdinReadPre",
   "CmdUndefined", "ColorSchemePre",
 }
-local replay_events = { BufReadPre = true, BufNewFile = true, StdinReadPre = true }
+local replay_events = { UIEnter = true, BufReadPre = true, BufNewFile = true, StdinReadPre = true }
 
 local function clear_group()
   if group then
@@ -63,9 +63,7 @@ function M.activate(event)
   local replay = event and replay_events[event.event] and event.buf
   if replay then
     for _, item in ipairs(vim.api.nvim_get_autocmds({ event = event.event })) do
-      if item.group then
-        previous[item.group] = true
-      end
+      previous[item.group or ("id:" .. tostring(item.id or item.callback or item.command))] = true
     end
   end
 
@@ -97,11 +95,22 @@ function M.activate(event)
   state = "loaded"
   if replay then
     for _, item in ipairs(vim.api.nvim_get_autocmds({ event = event.event })) do
-      if item.group and not previous[item.group] then
-        previous[item.group] = true
-        vim.api.nvim_exec_autocmds(event.event, {
-          group = item.group, buffer = event.buf, modeline = false,
-        })
+      local key = item.group or ("id:" .. tostring(item.id or item.callback or item.command))
+      if not previous[key] then
+        previous[key] = true
+        if item.group then
+          vim.api.nvim_exec_autocmds(event.event, {
+            group = item.group, buffer = event.buf, modeline = false,
+          })
+        elseif event.event == "UIEnter" and item.id and item.once and type(item.callback) == "function" then
+          -- Lazy registers its startup timer without a group during setup.
+          -- Neovim cannot replay one ungrouped ID, so consume that once hook directly.
+          vim.api.nvim_del_autocmd(item.id)
+          item.callback({
+            id = item.id, event = event.event, buf = event.buf,
+            match = event.match or "", file = event.file or "", data = event.data,
+          })
+        end
       end
     end
   end

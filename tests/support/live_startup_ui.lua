@@ -77,7 +77,7 @@ return function(opts)
     group = group, callback = record,
   })
   vim.api.nvim_create_autocmd("User", {
-    group = group, pattern = { "FilePost", "LazyDone", "VeryLazy" }, callback = record,
+    group = group, pattern = { "FilePost", "LazyDone", "VeryLazy", "LazyVimStarted" }, callback = record,
   })
   vim.api.nvim_create_autocmd("User", {
     group = group, pattern = "LazyLoad",
