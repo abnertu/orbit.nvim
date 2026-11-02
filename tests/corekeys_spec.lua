@@ -24,6 +24,7 @@ vim.keymap.set("n", ";", "<cmd>echo 'user-command'<cr>", { silent = true })
 vim.keymap.set("x", ">", "<cmd>echo 'user-visual'<cr>", { silent = true })
 vim.keymap.set("x", "J", "<cmd>echo 'user-move-down'<cr>", { silent = true })
 vim.keymap.set("x", "K", "<cmd>echo 'user-move-up'<cr>", { silent = true })
+vim.keymap.set("n", "K", "<cmd>echo 'user-hover'<cr>", { silent = true })
 vim.keymap.set("i", "jk", "<cmd>echo 'user-insert'<cr>", { silent = true })
 vim.keymap.set("t", "<C-x>", "<cmd>echo 'user-terminal'<cr>", { silent = true })
 vim.keymap.set("n", "<Tab>", "<cmd>echo 'user-next'<cr>", { silent = true })
@@ -35,6 +36,7 @@ local previous = {
   { "x", ">", vim.fn.maparg(">", "x") },
   { "x", "J", vim.fn.maparg("J", "x") },
   { "x", "K", vim.fn.maparg("K", "x") },
+  { "n", "K", vim.fn.maparg("K", "n") },
   { "i", "jk", vim.fn.maparg("jk", "i") },
   { "t", "<C-x>", vim.fn.maparg("<C-x>", "t") },
 }
@@ -64,7 +66,6 @@ check("common editing shortcuts use their modes and actions", function()
     { "i", "jk", "<esc>" },
     { "n", "Q", "q" },
     { "n", "q", "<nop>" },
-    { "n", "K", "<nop>" },
     { "t", "<C-x>", "<c-\\><c-n>" },
   }
   for _, item in ipairs(expected) do
