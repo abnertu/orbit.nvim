@@ -93,6 +93,10 @@ function M.setup_ui(opts)
   dap.listeners.before.event_exited["orbit_dapui"] = function()
     ui.close()
   end
+  -- Attach sessions end with `terminated` alone; adapters send `exited` only for launched programs.
+  dap.listeners.before.event_terminated["orbit_dapui"] = function()
+    ui.close()
+  end
   ui_initialized = true
 end
 
