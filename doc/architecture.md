@@ -74,6 +74,7 @@ Keep plugin loading with Lazy and tool state with hangar.nvim.
 
 - `editor` owns global, buffer-local and window-local option defaults and keeps each option in its scope.
 - `corekeys` owns save, window navigation, buffer cycling and fixed editing keys. Escape is an expression mapping that does not load plugins.
+- Buffer-local LSP navigation follows client attachment and restores prior mappings after the last client detaches.
 - `keymaps` owns leader actions, conversions, comments, terminals and the theme picker. It keeps mode-qualified mappings across leader changes.
 - Buffer cleanup checks every candidate first and refuses modified buffers. It never runs `%bd|e#`.
 - Terminals start with argv vectors, reuse live jobs and replace exited jobs. Windows uses PowerShell with `-NoLogo`.
