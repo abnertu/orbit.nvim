@@ -34,7 +34,7 @@ local definitions = {
   -- Plugin-independent editing keys use fixed slots. They share the
   -- owner lifecycle with the configurable save and window navigation keys.
   { lhs = "<C-c>", mode = "n", rhs = "<cmd>%y+<cr>", desc = "Copy the whole file" },
-  { lhs = ";", mode = "n", rhs = ":", desc = "Enter command mode" },
+  { lhs = ";", mode = "n", rhs = ":", silent = false, desc = "Enter command mode" },
   { lhs = "<", mode = "n", rhs = "<<", desc = "Decrease line indent" },
   { lhs = ">", mode = "n", rhs = ">>", desc = "Increase line indent" },
   { lhs = "<", mode = "x", rhs = "<gv", desc = "Decrease indent and keep selection" },
@@ -113,6 +113,7 @@ local function targets(opts)
       key = key,
       rhs = definition.rhs,
       expr = definition.expr,
+      silent = definition.silent,
       desc = definition.desc,
     }
   end
@@ -203,7 +204,8 @@ function M.setup(opts)
       mapping(target.mode, target.lhs)
     vim.keymap.set(target.mode, target.lhs, target.rhs, {
       desc = target.desc,
-      silent = true,
+      -- A silent colon suppresses cmdline_show until command text arrives.
+      silent = target.silent ~= false,
       expr = target.expr == true,
     })
     next_owned[target.key] = {

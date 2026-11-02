@@ -102,6 +102,7 @@ return function(opts)
   local modules = {}
   for _, name in ipairs(manifest.order) do modules[name] = { enabled = false } end
   modules.completion = { enabled = opts.completion, cmdline = opts.cmdline }
+  modules.corekeys = { enabled = true }
   modules.messages = { enabled = opts.messages }
   modules.plugins = { enabled = true, path = opts.dependencies["lazy.nvim"], import = "live_cmdline_paths" }
   local options = { modules = modules }
