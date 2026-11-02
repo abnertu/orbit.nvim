@@ -1,4 +1,4 @@
--- Real file conversions must preserve explicit-only writes and legacy keys.
+-- Real file conversions must preserve explicit-only writes and their keys.
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
 local orbit = require("orbit")

@@ -23,7 +23,7 @@ local function check(name, fn)
   print("PASS " .. name)
 end
 
-check("legacy Compose and JSX rules are configurable", function()
+check("Compose and JSX rules are configurable", function()
   orbit.setup()
   assert(match("compose.yaml") == "yaml.docker-compose")
   assert(match("compose.yml") == "yaml.docker-compose")

@@ -12,7 +12,7 @@ local function check(name, fn)
   print("PASS " .. name)
 end
 
-check("Harpoon import is inert and keeps the legacy navigation keys", function()
+check("Harpoon import is inert and keeps the navigation keys", function()
   assert(#navigation.spec() == 0)
   orbit.setup()
   local list = navigation.spec()

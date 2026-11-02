@@ -16,7 +16,7 @@ check("feature import is inert", function()
   assert(package.loaded.lint == nil)
 end)
 
-check("initial Lazy spec keeps legacy events and language linters", function()
+check("initial Lazy spec keeps its events and language linters", function()
   orbit.setup()
   local item = module.spec()[1]
   assert(item[1] == "mfussenegger/nvim-lint")

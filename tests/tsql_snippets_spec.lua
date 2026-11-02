@@ -1,4 +1,4 @@
--- Check the legacy T-SQL collection through LuaSnip's actual entry file.
+-- Check the T-SQL collection through LuaSnip's actual entry file.
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
 
@@ -33,10 +33,10 @@ for _, snippet in ipairs(snippets) do
   assert(not snippet.body:match("SELECT%s+%*"),
     "unsafe wildcard in " .. snippet.trigger)
   assert(not snippet.body:find("RAISERROR", 1, true),
-    "legacy error syntax in " .. snippet.trigger)
+    "deprecated RAISERROR syntax in " .. snippet.trigger)
 end
 assert(#snippets == 105,
-  "legacy T-SQL snippet inventory changed: " .. #snippets)
+  "T-SQL snippet inventory changed: " .. #snippets)
 
 local expected = {
   cprocr = "CREATE OR ALTER PROCEDURE",

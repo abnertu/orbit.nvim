@@ -60,7 +60,7 @@ end
 ---@return string
 function M.cwd(filename)
   local start = directory(filename)
-  -- Keep the legacy marker priority: a repository root wins over a
+  -- Keep the marker priority: a repository root wins over a
   -- closer package manifest when both are present.
   for _, marker in ipairs(project_markers) do
     local found = vim.fs.find(marker, {

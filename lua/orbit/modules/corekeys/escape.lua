@@ -1,4 +1,4 @@
--- Legacy Escape behavior, with optional integrations consulted only if loaded.
+-- Smart Escape behavior, with optional integrations consulted only if loaded.
 -- This helper never imports a UI or completion plugin on an ordinary Escape.
 local M = {}
 

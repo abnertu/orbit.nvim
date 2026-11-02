@@ -1,4 +1,4 @@
--- Legacy item groups dispatch through their existing action owners.
+-- Item groups dispatch through their action owners.
 local M = {}
 
 ---@class Orbit.MenuSource
