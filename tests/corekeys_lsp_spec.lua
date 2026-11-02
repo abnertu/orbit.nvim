@@ -26,12 +26,18 @@ local client_id = assert(vim.lsp.start({
             result = { contents = { kind = "plaintext", value = "Orbit hover documentation" } }
           end
           callback(nil, result, id)
-          if notify_reply then notify_reply(id) end
+          if notify_reply then
+            notify_reply(id)
+          end
         end)
         return true, id
       end,
-      notify = function() return true end,
-      is_closing = function() return closing end,
+      notify = function()
+        return true
+      end,
+      is_closing = function()
+        return closing
+      end,
       terminate = function()
         closing = true
         dispatchers.on_exit(0, 0)
@@ -40,22 +46,31 @@ local client_id = assert(vim.lsp.start({
   end,
 }))
 
-assert(vim.wait(1000, function()
-  local client = vim.lsp.get_client_by_id(client_id)
-  return client and client.initialized and vim.lsp.buf_is_attached(buffer, client_id)
-end), "fixture LSP did not attach")
+assert(
+  vim.wait(1000, function()
+    local client = vim.lsp.get_client_by_id(client_id)
+    return client and client.initialized and vim.lsp.buf_is_attached(buffer, client_id)
+  end),
+  "fixture LSP did not attach"
+)
 -- Reconfiguration after attachment must keep the shared K mapping usable.
 orbit.setup()
 vim.cmd("normal K")
-assert(vim.wait(1000, function() return requests == 1 end),
-  "K did not send textDocument/hover after LSP attachment")
+assert(
+  vim.wait(1000, function()
+    return requests == 1
+  end),
+  "K did not send textDocument/hover after LSP attachment"
+)
 
 ---@return boolean
 local function hover_visible()
   for _, window in ipairs(vim.api.nvim_list_wins()) do
     if vim.api.nvim_win_get_config(window).relative ~= "" then
       local lines = vim.api.nvim_buf_get_lines(vim.api.nvim_win_get_buf(window), 0, -1, false)
-      if vim.tbl_contains(lines, "Orbit hover documentation") then return true end
+      if vim.tbl_contains(lines, "Orbit hover documentation") then
+        return true
+      end
     end
   end
   return false
@@ -66,7 +81,9 @@ print("PASS K requests and displays documentation after LSP attachment")
 -- The key stays inert when this buffer has no client with hover support.
 local client = assert(vim.lsp.get_client_by_id(client_id))
 local original_hover, calls = vim.lsp.buf.hover, 0
-vim.lsp.buf.hover = function() calls = calls + 1 end
+vim.lsp.buf.hover = function()
+  calls = calls + 1
+end
 client.server_capabilities.hoverProvider = false
 vim.cmd("normal K")
 assert(calls == 0, "K invoked hover for a client without hover support")

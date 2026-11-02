@@ -87,12 +87,16 @@ check("project shortcut resolves markers and an LSP root without a shell", funct
     vim.api.nvim_set_current_dir(source)
     mapping(" fd").callback()
     assert(equal_path(vim.fn.getcwd(), sandbox), "failed marker root")
-    vim.lsp.get_clients = function() return {
-      { config = { root_dir = lsp_root } },
-    } end
+    vim.lsp.get_clients = function()
+      return {
+        { config = { root_dir = lsp_root } },
+      }
+    end
     assert(equal_path(project.root(), lsp_root), "LSP root not preferred")
-    assert(equal_path(project.root(source .. "/sample.lua"), sandbox),
-      "explicit path should skip current LSP")
+    assert(
+      equal_path(project.root(source .. "/sample.lua"), sandbox),
+      "explicit path should skip current LSP"
+    )
     vim.api.nvim_set_current_dir(source)
     mapping(" fd").callback()
     assert(equal_path(vim.fn.getcwd(), lsp_root))
@@ -116,9 +120,10 @@ end)
 
 check("save key collisions are rejected before replacing accepted values", function()
   local before = orbit.get_config()
-  local ok, err = pcall(orbit.setup, { modules = {
-    keymaps = { leader = ",", save = "<leader>bn" },
-  } })
+  local ok, err =
+    pcall(orbit.setup, { modules = {
+      keymaps = { leader = ",", save = "<leader>bn" },
+    } })
   assert(not ok and tostring(err):find("duplicate leader mapping", 1, true))
   assert(vim.deep_equal(orbit.get_config(), before))
   assert(type(mapping(",bn").callback) == "function")
@@ -127,11 +132,15 @@ end)
 check("downstream failure restores old and proposed physical mappings", function()
   local before = orbit.get_config()
   local original = events.setup
-  events.setup = function() error("injected leader action failure") end
-  local ok, err = pcall(orbit.setup, { modules = {
-    keymaps = { leader = ";", save = "<leader>w" },
-    events = { diagnostics_redraw = false },
-  } })
+  events.setup = function()
+    error("injected leader action failure")
+  end
+  local ok, err = pcall(orbit.setup, {
+    modules = {
+      keymaps = { leader = ";", save = "<leader>w" },
+      events = { diagnostics_redraw = false },
+    },
+  })
   events.setup = original
   assert(not ok and tostring(err):find("injected leader action failure", 1, true))
   assert(vim.deep_equal(orbit.get_config(), before))

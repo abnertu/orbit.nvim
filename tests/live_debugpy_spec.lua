@@ -14,8 +14,10 @@ local debuggee
 
 local function run(argv)
   local result = vim.system(argv, { text = true, timeout = 300000 }):wait()
-  assert(result.code == 0, vim.inspect(argv) ..
-    " failed: " .. tostring(result.stderr or result.stdout))
+  assert(
+    result.code == 0,
+    vim.inspect(argv) .. " failed: " .. tostring(result.stderr or result.stdout)
+  )
   return result.stdout or ""
 end
 
@@ -41,8 +43,14 @@ local ok, err = xpcall(function()
   local venv = vim.fs.joinpath(workspace, "venv")
   run({ python, "-m", "venv", venv })
   local venv_python = vim.fs.joinpath(venv, windows and "Scripts/python.exe" or "bin/python")
-  run({ venv_python, "-m", "pip", "install", "--disable-pip-version-check",
-    "debugpy==" .. debugpy_version })
+  run({
+    venv_python,
+    "-m",
+    "pip",
+    "install",
+    "--disable-pip-version-check",
+    "debugpy==" .. debugpy_version,
+  })
   vim.env.VIRTUAL_ENV = venv
 
   local program = vim.fs.joinpath(workspace, "program.py")
@@ -70,9 +78,13 @@ local ok, err = xpcall(function()
     dap.listeners.after.event_stopped.orbit_live = function(session, body)
       stopped = { thread = body.threadId, session = session }
     end
-    dap.listeners.after.event_terminated.orbit_live = function() terminated = true end
+    dap.listeners.after.event_terminated.orbit_live = function()
+      terminated = true
+    end
     dap.run(configuration)
-    wait(function() return stopped ~= nil end, label .. ": debugpy did not stop at the breakpoint")
+    wait(function()
+      return stopped ~= nil
+    end, label .. ": debugpy did not stop at the breakpoint")
     local frame = stopped.session.current_frame
     wait(function()
       frame = stopped.session.current_frame
@@ -84,29 +96,55 @@ local ok, err = xpcall(function()
     require("dapui").open()
     assert(require("dapui.windows").layouts[1]:is_open(), label .. ": DAP UI did not open")
     dap.continue()
-    wait(function() return terminated and next(dap.sessions()) == nil end,
-      label .. ": session did not finish")
-    wait(function() return not require("dapui.windows").layouts[1]:is_open() end,
-      label .. ": DAP UI stayed open after the session ended")
+    wait(function()
+      return terminated and next(dap.sessions()) == nil
+    end, label .. ": session did not finish")
+    wait(function()
+      return not require("dapui.windows").layouts[1]:is_open()
+    end, label .. ": DAP UI stayed open after the session ended")
     print("PASS real debugpy " .. label .. " reaches the breakpoint and cleans up")
   end
 
-  debug_session({ type = "python", request = "launch", name = "orbit launch",
-    program = program, console = "internalConsole" }, "launch")
+  debug_session({
+    type = "python",
+    request = "launch",
+    name = "orbit launch",
+    program = program,
+    console = "internalConsole",
+  }, "launch")
 
   local port = 5678 + (vim.uv.os_getpid() % 1000)
-  debuggee = vim.system({ venv_python, "-m", "debugpy", "--listen", "127.0.0.1:" .. port,
-    "--wait-for-client", program }, { text = true })
-  vim.wait(2000, function() return false end)
-  debug_session({ type = "python", request = "attach", name = "orbit attach",
-    connect = { host = "127.0.0.1", port = port } }, "attach")
+  debuggee = vim.system({
+    venv_python,
+    "-m",
+    "debugpy",
+    "--listen",
+    "127.0.0.1:" .. port,
+    "--wait-for-client",
+    program,
+  }, { text = true })
+  vim.wait(2000, function()
+    return false
+  end)
+  debug_session({
+    type = "python",
+    request = "attach",
+    name = "orbit attach",
+    connect = { host = "127.0.0.1", port = port },
+  }, "attach")
   local done = debuggee:wait(30000)
-  assert(done.code == 0 and done.stdout:find("orbit-debugpy 3", 1, true),
-    "attached program did not finish: " .. vim.inspect(done))
+  assert(
+    done.code == 0 and done.stdout:find("orbit-debugpy 3", 1, true),
+    "attached program did not finish: " .. vim.inspect(done)
+  )
   debuggee = nil
 end, debug.traceback)
 
-if debuggee then pcall(function() debuggee:kill(9) end) end
+if debuggee then
+  pcall(function()
+    debuggee:kill(9)
+  end)
+end
 vim.fn.delete(workspace, "rf")
 assert(ok, tostring(err))
 print("Real debugpy integration tests passed.")

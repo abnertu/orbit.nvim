@@ -6,14 +6,22 @@ local windows = vim.fn.has("win32") == 1
 -- Upstream nvim-dap does not stop at forward-slash Windows paths (PR #125).
 local pins = {
   { "https://github.com/Orbit-Lua/nvim-dap.git", "e03a0f2b786ccbf3398ed445d9700df8ed1e7627" },
-  { "https://github.com/Orbit-Lua/dotnet-cli.nvim.git", "a74464a59be996b5db3e7f9480b937c9ff992471" },
+  {
+    "https://github.com/Orbit-Lua/dotnet-cli.nvim.git",
+    "a74464a59be996b5db3e7f9480b937c9ff992471",
+  },
 }
 local workspace = vim.fn.tempname() .. " live coreclr with spaces"
 
 local function run(argv, cwd)
   local result = vim.system(argv, { text = true, timeout = 600000, cwd = cwd }):wait()
-  assert(result.code == 0, vim.inspect(argv) ..
-    " failed: " .. tostring(result.stderr or "") .. tostring(result.stdout or ""))
+  assert(
+    result.code == 0,
+    vim.inspect(argv)
+      .. " failed: "
+      .. tostring(result.stderr or "")
+      .. tostring(result.stdout or "")
+  )
   return result.stdout or ""
 end
 
@@ -36,14 +44,24 @@ local ok, err = xpcall(function()
   end
 
   -- Resolve 8.3 short names: the compiled PDB records the long path.
-  local project_dir = vim.fs.joinpath(vim.fs.normalize(vim.uv.fs_realpath(workspace)), "Orbit Console")
-  run({ "dotnet", "new", "console", "--name", "OrbitConsole", "--output", project_dir,
-    "--framework", "net" .. run({ "dotnet", "--version" }):match("^(%d+%.%d+)") })
+  local project_dir =
+    vim.fs.joinpath(vim.fs.normalize(vim.uv.fs_realpath(workspace)), "Orbit Console")
+  run({
+    "dotnet",
+    "new",
+    "console",
+    "--name",
+    "OrbitConsole",
+    "--output",
+    project_dir,
+    "--framework",
+    "net" .. run({ "dotnet", "--version" }):match("^(%d+%.%d+)"),
+  })
   local program = vim.fs.joinpath(project_dir, "Program.cs")
   assert(vim.fn.writefile({
     "var total = 0;",
     "for (var value = 0; value < 3; value++) total += value;",
-    "System.Console.WriteLine($\"orbit-coreclr {total}\");",
+    'System.Console.WriteLine($"orbit-coreclr {total}");',
   }, program) == 0)
   local project = vim.fs.joinpath(project_dir, "OrbitConsole.csproj")
 
@@ -59,7 +77,8 @@ local ok, err = xpcall(function()
   -- vim.fs.normalize. Windows debuggers must accept both buffer names.
   local spellings = { { "native", program } }
   if windows then
-    spellings = { { "native", (program:gsub("/", "\\")) }, { "forward", (program:gsub("\\", "/")) } }
+    spellings =
+      { { "native", (program:gsub("/", "\\")) }, { "forward", (program:gsub("\\", "/")) } }
   end
   for _, spelling in ipairs(spellings) do
     local label, path = spelling[1], spelling[2]
@@ -75,25 +94,37 @@ local ok, err = xpcall(function()
     require("dap.breakpoints").set({}, buffer, 3)
 
     local stopped, terminated = nil, false
-    dap.listeners.after.event_stopped.orbit_live = function(session) stopped = session end
-    dap.listeners.after.event_terminated.orbit_live = function() terminated = true end
+    dap.listeners.after.event_stopped.orbit_live = function(session)
+      stopped = session
+    end
+    dap.listeners.after.event_terminated.orbit_live = function()
+      terminated = true
+    end
     local config = assert(require("dotnet-cli.dap").config({
-      project = project, root = project_dir, configuration = "Debug",
+      project = project,
+      root = project_dir,
+      configuration = "Debug",
     }))
     dap.run(config)
-    wait(function() return stopped ~= nil and stopped.current_frame ~= nil end,
-      label .. " path: netcoredbg did not stop at the breakpoint (" .. path .. ")")
-    assert(stopped.current_frame.line == 3,
-      label .. " path stopped at line " .. tostring(stopped.current_frame.line))
+    wait(function()
+      return stopped ~= nil and stopped.current_frame ~= nil
+    end, label .. " path: netcoredbg did not stop at the breakpoint (" .. path .. ")")
+    assert(
+      stopped.current_frame.line == 3,
+      label .. " path stopped at line " .. tostring(stopped.current_frame.line)
+    )
     assert(vim.tbl_count(dap.sessions()) == 1, label .. " path started duplicate sessions")
     dap.continue()
-    wait(function() return terminated and next(dap.sessions()) == nil end,
-      label .. " path: session did not finish")
+    wait(function()
+      return terminated and next(dap.sessions()) == nil
+    end, label .. " path: session did not finish")
     print("PASS real netcoredbg stops at a breakpoint with a " .. label .. " path")
   end
 end, debug.traceback)
 
-pcall(function() require("dap").terminate() end)
+pcall(function()
+  require("dap").terminate()
+end)
 vim.fn.delete(workspace, "rf")
 assert(ok, tostring(err))
 print("Real CoreCLR integration tests passed.")

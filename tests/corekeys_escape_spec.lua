@@ -33,7 +33,11 @@ end)
 check("Escape returns the proper result and clears search highlights", function()
   local original_snippet = vim.snippet
   local stops = 0
-  vim.snippet = { stop = function() stops = stops + 1 end }
+  vim.snippet = {
+    stop = function()
+      stops = stops + 1
+    end,
+  }
   local ok, err = xpcall(function()
     for _, mode in ipairs({ "n", "i", "s" }) do
       assert(map(mode).callback() == "<Esc>")
@@ -48,14 +52,22 @@ check("loaded LuaSnip session is unlinked instead of native snippet", function()
   local original_snippet = vim.snippet
   local original_luasnip = package.loaded["luasnip"]
   local native_stops, unlink = 0, 0
-  vim.snippet = { stop = function() native_stops = native_stops + 1 end }
+  vim.snippet = {
+    stop = function()
+      native_stops = native_stops + 1
+    end,
+  }
   package.loaded["luasnip"] = {
     session = { current_nodes = {
       [vim.api.nvim_get_current_buf()] = true,
     } },
-    unlink_current = function() unlink = unlink + 1 end,
+    unlink_current = function()
+      unlink = unlink + 1
+    end,
   }
-  local ok, err = pcall(function() assert(map("i").callback() == "<Esc>") end)
+  local ok, err = pcall(function()
+    assert(map("i").callback() == "<Esc>")
+  end)
   package.loaded["luasnip"] = original_luasnip
   vim.snippet = original_snippet
   assert(ok, tostring(err))
@@ -69,9 +81,13 @@ check("menu Escape suppresses keystrokes and schedules menu cleanup", function()
   local scheduled, closed = {}, 0
   package.loaded["menu.state"] = { bufids = { 5 } }
   package.loaded["menu.utils"] = {
-    delete_old_menus = function() closed = closed + 1 end,
+    delete_old_menus = function()
+      closed = closed + 1
+    end,
   }
-  vim.schedule = function(cb) scheduled[#scheduled + 1] = cb end
+  vim.schedule = function(cb)
+    scheduled[#scheduled + 1] = cb
+  end
   local ok, err = xpcall(function()
     assert(map("n").callback() == "")
     assert(#scheduled == 1 and closed == 0)
@@ -94,7 +110,9 @@ check("missing menu utilities fail gracefully when menu state exists", function(
   local queued
   package.loaded["menu.state"] = { bufids = { 1 } }
   package.loaded["menu.utils"] = nil
-  vim.schedule = function(cb) queued = cb end
+  vim.schedule = function(cb)
+    queued = cb
+  end
   local ok, err = xpcall(function()
     assert(map("n").callback() == "")
     assert(type(queued) == "function")
@@ -109,11 +127,15 @@ end)
 check("a later module failure retains every owned mode binding", function()
   local before = orbit.get_config()
   local original = commands.setup
-  commands.setup = function() error("injected Escape rollback failure") end
-  local ok, err = pcall(orbit.setup, { modules = {
-    corekeys = { enabled = false },
-    commands = { enabled = false },
-  } })
+  commands.setup = function()
+    error("injected Escape rollback failure")
+  end
+  local ok, err = pcall(orbit.setup, {
+    modules = {
+      corekeys = { enabled = false },
+      commands = { enabled = false },
+    },
+  })
   commands.setup = original
   assert(not ok and tostring(err):find("injected Escape rollback failure", 1, true))
   assert(vim.deep_equal(orbit.get_config(), before))

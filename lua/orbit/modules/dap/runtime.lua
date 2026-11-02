@@ -10,9 +10,13 @@ end
 local function remove_configs(dap, name)
   for ft, configs in pairs(dap.configurations or {}) do
     for index = #configs, 1, -1 do
-      if configs[index].type == name then table.remove(configs, index) end
+      if configs[index].type == name then
+        table.remove(configs, index)
+      end
     end
-    if #configs == 0 then dap.configurations[ft] = nil end
+    if #configs == 0 then
+      dap.configurations[ft] = nil
+    end
   end
 end
 
@@ -24,7 +28,10 @@ local function add_configs(dap, name, definitions)
         dap.configurations[ft] = dap.configurations[ft] or {}
         local exists = false
         for _, existing in ipairs(dap.configurations[ft]) do
-          if same(existing, entry) then exists = true; break end
+          if same(existing, entry) then
+            exists = true
+            break
+          end
         end
         if not exists then
           table.insert(dap.configurations[ft], vim.deepcopy(entry))
@@ -38,7 +45,9 @@ function M.apply_adapter(dap, name, enabled, definitions)
   if enabled then
     if name == "coreclr" then
       local ok, dotnet = pcall(require, "dotnet-cli")
-      if not ok then return false, "dotnet-cli is unavailable" end
+      if not ok then
+        return false, "dotnet-cli is unavailable"
+      end
       return dotnet.setup_dap()
     end
     assert(definitions.adapters[name], "unknown debug adapter: " .. name)
@@ -56,18 +65,25 @@ function M.adapter_status(dap, name)
   local count = 0
   for _, configs in pairs(dap.configurations or {}) do
     for _, c in ipairs(configs) do
-      if c.type == name then count = count + 1 end
+      if c.type == name then
+        count = count + 1
+      end
     end
   end
-  local label = string.format("%s %d cfg",
-    registered and "registered" or "not registered", count)
-  if not registered then return label, "DiagnosticError" end
-  if count == 0 then return label, "DiagnosticWarn" end
+  local label = string.format("%s %d cfg", registered and "registered" or "not registered", count)
+  if not registered then
+    return label, "DiagnosticError"
+  end
+  if count == 0 then
+    return label, "DiagnosticWarn"
+  end
   return label, "DiagnosticOk"
 end
 
 function M.setup(dap, definitions)
-  if initialized then return end
+  if initialized then
+    return
+  end
   -- The DAP owner registers signs; the theme owner supplies their colors.
   for name, spec in pairs({
     DapStopped = { text = "󰁕 ", texthl = "DiagnosticWarn", linehl = "DiagnosticVirtualTextWarn" },
@@ -94,7 +110,9 @@ function M.setup(dap, definitions)
 end
 
 function M.setup_ui(opts)
-  if ui_initialized then return end
+  if ui_initialized then
+    return
+  end
   local dap, ui = require("dap"), require("dapui")
   ui.setup(opts or {})
   dap.listeners.before.terminate["orbit_dapui"] = function()

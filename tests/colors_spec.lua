@@ -14,8 +14,9 @@ end
 
 local function swatches(buffer)
   local result = {}
-  for _, mark in ipairs(vim.api.nvim_buf_get_extmarks(buffer, runtime.namespace, 0, -1,
-    { details = true })) do
+  for _, mark in
+    ipairs(vim.api.nvim_buf_get_extmarks(buffer, runtime.namespace, 0, -1, { details = true }))
+  do
     local chunk = mark[4].virt_text[1]
     result[#result + 1] = { row = mark[2], col = mark[3], hl = chunk[2], text = chunk[1] }
   end
@@ -23,7 +24,9 @@ local function swatches(buffer)
 end
 
 local function settle()
-  vim.wait(200, function() return false end)
+  vim.wait(200, function()
+    return false
+  end)
 end
 
 check("only standalone 3, 6 and 8 digit codes match", function()
@@ -83,9 +86,13 @@ end)
 check("later module failure restores previews and LSP state", function()
   local buffer = vim.api.nvim_get_current_buf()
   local prior = commands.setup
-  commands.setup = function() error("injected colors rollback") end
-  local ok = pcall(orbit.setup, { modules = { colors = { enabled = false },
-    commands = { name = "OrbitColorsFail" } } })
+  commands.setup = function()
+    error("injected colors rollback")
+  end
+  local ok = pcall(
+    orbit.setup,
+    { modules = { colors = { enabled = false }, commands = { name = "OrbitColorsFail" } } }
+  )
   commands.setup = prior
   assert(not ok)
   settle()

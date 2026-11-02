@@ -6,7 +6,9 @@ local commands = require("orbit.modules.commands")
 -- Drawing both bars in this headless fixture can crash Windows Neovim 0.12.5.
 -- The tabline has its own suite; isolate the statusline checks from its redraw.
 local function setup(opts)
-  orbit.setup(vim.tbl_deep_extend("force", { modules = { tabline = { enabled = false } } }, opts or {}))
+  orbit.setup(
+    vim.tbl_deep_extend("force", { modules = { tabline = { enabled = false } } }, opts or {})
+  )
 end
 local passed = 0
 local function check(label, fn)
@@ -59,13 +61,15 @@ check("symbols use Trouble lazily and preserve escaped names and truncation", fu
       calls = calls + 1
       assert(opts.mode == "symbols" and opts.filter.range and opts.hl_group == "OrbitStSymbols")
       local boundary = opts.format:sub(-1)
-      return { get = function()
-        local parts = {}
-        for _, name in ipairs({ "Root%%", "Hidden", "Class", "Method" }) do
-          parts[#parts + 1] = "%#Function#ƒ%*%#OrbitStSymbols#" .. name .. "%*" .. boundary
-        end
-        return table.concat(parts) .. "%#OrbitStSymbols# %*"
-      end }
+      return {
+        get = function()
+          local parts = {}
+          for _, name in ipairs({ "Root%%", "Hidden", "Class", "Method" }) do
+            parts[#parts + 1] = "%#Function#ƒ%*%#OrbitStSymbols#" .. name .. "%*" .. boundary
+          end
+          return table.concat(parts) .. "%#OrbitStSymbols# %*"
+        end,
+      }
     end,
   }
   local text = rendered()
@@ -93,9 +97,13 @@ end)
 check("later module failure keeps the owned status line", function()
   local expression = vim.go.statusline
   local prior = commands.setup
-  commands.setup = function() error("injected statusline rollback") end
-  local ok = pcall(setup, { modules = { statusline = { enabled = false },
-    commands = { name = "OrbitStatuslineFail" } } })
+  commands.setup = function()
+    error("injected statusline rollback")
+  end
+  local ok = pcall(
+    setup,
+    { modules = { statusline = { enabled = false }, commands = { name = "OrbitStatuslineFail" } } }
+  )
   commands.setup = prior
   assert(not ok and vim.go.statusline == expression)
   assert(#vim.api.nvim_get_autocmds({ group = "OrbitStatusline" }) > 0)

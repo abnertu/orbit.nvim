@@ -56,11 +56,16 @@ check("named file triggers FilePost then FileType then EditorConfig", function()
   buffer = vim.api.nvim_create_buf(true, false)
   vim.api.nvim_buf_set_name(buffer, vim.fn.tempname() .. ".lua")
   vim.api.nvim_exec_autocmds("BufReadPost", {
-    buffer = buffer, modeline = false,
+    buffer = buffer,
+    modeline = false,
   })
   assert(fileposts == 1)
-  assert(vim.wait(1000, function() return #applies == 1 end, 10),
-    "EditorConfig was not applied")
+  assert(
+    vim.wait(1000, function()
+      return #applies == 1
+    end, 10),
+    "EditorConfig was not applied"
+  )
   assert(applies[1] == buffer)
   local index = #events
   assert(events[index - 1].type == "filetype")
@@ -73,12 +78,16 @@ check("the same and new file events never replay the one-shot config", function(
   local second = vim.api.nvim_create_buf(true, false)
   vim.api.nvim_buf_set_name(second, vim.fn.tempname() .. ".txt")
   vim.api.nvim_exec_autocmds("BufReadPost", {
-    buffer = buffer, modeline = false,
+    buffer = buffer,
+    modeline = false,
   })
   vim.api.nvim_exec_autocmds("BufNewFile", {
-    buffer = second, modeline = false,
+    buffer = second,
+    modeline = false,
   })
-  assert(vim.wait(100, function() return true end, 10))
+  assert(vim.wait(100, function()
+    return true
+  end, 10))
   assert(fileposts == 1)
   assert(#applies == 1)
   vim.api.nvim_buf_delete(second, { force = true })
@@ -89,7 +98,8 @@ check("reconfiguration does not register duplicate FilePost hooks", function()
   assert(fileposts == 1)
   assert(#applies == 1)
   assert(#vim.api.nvim_get_autocmds({
-    group = "OrbitCoreEvents", event = "BufReadPost",
+    group = "OrbitCoreEvents",
+    event = "BufReadPost",
   }) == 0)
 end)
 

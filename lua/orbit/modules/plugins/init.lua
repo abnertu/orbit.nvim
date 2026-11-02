@@ -19,8 +19,12 @@ local failure
 local initial_loadplugins
 
 local demand_events = {
-  "UIEnter", "BufReadPre", "BufNewFile", "StdinReadPre",
-  "CmdUndefined", "ColorSchemePre",
+  "UIEnter",
+  "BufReadPre",
+  "BufNewFile",
+  "StdinReadPre",
+  "CmdUndefined",
+  "ColorSchemePre",
 }
 local replay_events = { UIEnter = true, BufReadPre = true, BufNewFile = true, StdinReadPre = true }
 
@@ -100,15 +104,26 @@ function M.activate(event)
         previous[key] = true
         if item.group then
           vim.api.nvim_exec_autocmds(event.event, {
-            group = item.group, buffer = event.buf, modeline = false,
+            group = item.group,
+            buffer = event.buf,
+            modeline = false,
           })
-        elseif event.event == "UIEnter" and item.id and item.once and type(item.callback) == "function" then
+        elseif
+          event.event == "UIEnter"
+          and item.id
+          and item.once
+          and type(item.callback) == "function"
+        then
           -- Lazy registers its startup timer without a group during setup.
           -- Neovim cannot replay one ungrouped ID, so consume that once hook directly.
           vim.api.nvim_del_autocmd(item.id)
           item.callback({
-            id = item.id, event = event.event, buf = event.buf,
-            match = event.match or "", file = event.file or "", data = event.data,
+            id = item.id,
+            event = event.event,
+            buf = event.buf,
+            match = event.match or "",
+            file = event.file or "",
+            data = event.data,
           })
         end
       end
@@ -117,10 +132,8 @@ function M.activate(event)
 end
 
 local function install()
-  local ok, existing = pcall(vim.api.nvim_get_autocmds,
-    { group = "OrbitPluginDemand" })
-  assert(not ok or #existing == 0,
-    "plugin demand group is owned by another component")
+  local ok, existing = pcall(vim.api.nvim_get_autocmds, { group = "OrbitPluginDemand" })
+  assert(not ok or #existing == 0, "plugin demand group is owned by another component")
   group = vim.api.nvim_create_augroup("OrbitPluginDemand", { clear = true })
   vim.api.nvim_create_autocmd(demand_events, {
     group = group,
@@ -164,8 +177,10 @@ end
 
 ---@param snapshot Orbit.PluginsSnapshot
 function M.restore(snapshot)
-  assert(state ~= "loaded" or snapshot.state == "loaded",
-    "loaded plugins cannot be rolled back; restart Neovim")
+  assert(
+    state ~= "loaded" or snapshot.state == "loaded",
+    "loaded plugins cannot be rolled back; restart Neovim"
+  )
   if group ~= snapshot.group then
     clear_group()
   end
@@ -185,8 +200,7 @@ end
 function M.setup(opts)
   opts = require("orbit.config").resolve_module("plugins", opts)
   if options then
-    assert(vim.deep_equal(options, opts),
-      "plugin startup options require restarting Neovim")
+    assert(vim.deep_equal(options, opts), "plugin startup options require restarting Neovim")
     return
   end
   if opts.enabled and opts.bootstrap then

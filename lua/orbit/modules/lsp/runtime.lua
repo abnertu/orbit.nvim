@@ -14,8 +14,7 @@ function M.client_capabilities()
   if ok and type(blink.get_lsp_capabilities) == "function" then
     return blink.get_lsp_capabilities(overrides, true)
   end
-  return vim.tbl_deep_extend("force",
-    vim.lsp.protocol.make_client_capabilities(), overrides)
+  return vim.tbl_deep_extend("force", vim.lsp.protocol.make_client_capabilities(), overrides)
 end
 
 local function set_diagnostics(opts)
@@ -30,12 +29,14 @@ local function set_diagnostics(opts)
       prefix = "●",
       severity = { min = severity.WARN },
     } or false,
-    signs = { text = {
-      [severity.ERROR] = " ",
-      [severity.WARN] = " ",
-      [severity.HINT] = " ",
-      [severity.INFO] = " ",
-    } },
+    signs = {
+      text = {
+        [severity.ERROR] = " ",
+        [severity.WARN] = " ",
+        [severity.HINT] = " ",
+        [severity.INFO] = " ",
+      },
+    },
     float = { border = opts.float_border },
   })
 end
@@ -75,8 +76,7 @@ function M.setup(opts)
         failures[name] = tostring(failure)
       end
       if failures[name] then
-        vim.notify("orbit.nvim LSP " .. name .. ": " .. failures[name],
-          vim.log.levels.WARN)
+        vim.notify("orbit.nvim LSP " .. name .. ": " .. failures[name], vim.log.levels.WARN)
       end
     end
   end

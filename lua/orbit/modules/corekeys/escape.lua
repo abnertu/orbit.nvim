@@ -4,14 +4,13 @@ local M = {}
 
 local function active_menu()
   local state = package.loaded["menu.state"]
-  return type(state) == "table"
-    and type(state.bufids) == "table"
-    and #state.bufids > 0
+  return type(state) == "table" and type(state.bufids) == "table" and #state.bufids > 0
 end
 
 local function stop_snippet()
   local luasnip = package.loaded["luasnip"]
-  if type(luasnip) == "table"
+  if
+    type(luasnip) == "table"
     and type(luasnip.session) == "table"
     and type(luasnip.session.current_nodes) == "table"
     and luasnip.session.current_nodes[vim.api.nvim_get_current_buf()]

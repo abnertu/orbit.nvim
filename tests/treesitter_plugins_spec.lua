@@ -34,7 +34,8 @@ check("parser owner subscribes only once and skips bigfiles", function()
   runtime.setup()
   runtime.setup()
   assert(#vim.api.nvim_get_autocmds({
-    group = "OrbitTreesitterStart", event = "FileType",
+    group = "OrbitTreesitterStart",
+    event = "FileType",
   }) == 1)
   local start = vim.treesitter.start
   local seen = {}
@@ -55,10 +56,12 @@ check("missing parser retries on BufEnter and stops after success", function()
   runtime.setup()
   runtime.setup()
   assert(#vim.api.nvim_get_autocmds({
-    group = "OrbitTreesitterStart", event = "BufEnter",
+    group = "OrbitTreesitterStart",
+    event = "BufEnter",
   }) == 1)
   assert(#vim.api.nvim_get_autocmds({
-    group = "OrbitTreesitterStart", event = "BufWipeout",
+    group = "OrbitTreesitterStart",
+    event = "BufWipeout",
   }) == 1)
 
   local original = vim.treesitter.start
@@ -68,7 +71,9 @@ check("missing parser retries on BufEnter and stops after success", function()
   vim.treesitter.start = function(target)
     assert(target == buffer)
     attempts = attempts + 1
-    if not installed then error("parser unavailable") end
+    if not installed then
+      error("parser unavailable")
+    end
   end
   vim.bo[buffer].filetype = "c_sharp"
   assert(attempts == 1)
@@ -103,9 +108,10 @@ end)
 
 check("invalid context limit is rejected and safe config remains accepted", function()
   local accepted = orbit.get_config()
-  local ok, err = pcall(orbit.setup, { modules = {
-    treesitter_plugins = { context_lines = -1 },
-  } })
+  local ok, err =
+    pcall(orbit.setup, { modules = {
+      treesitter_plugins = { context_lines = -1 },
+    } })
   assert(not ok and tostring(err):find("context_lines", 1, true))
   assert(vim.deep_equal(orbit.get_config(), accepted))
 end)
@@ -122,8 +128,12 @@ check("TSInstallAll installs every registry parser through the spec config", fun
   local previous = package.loaded["nvim-treesitter"]
   local setup_opts, received
   package.loaded["nvim-treesitter"] = {
-    setup = function(opts) setup_opts = opts end,
-    install = function(names) received = names end,
+    setup = function(opts)
+      setup_opts = opts
+    end,
+    install = function(names)
+      received = names
+    end,
   }
   assert(vim.api.nvim_get_commands({}).TSInstallAll == nil)
   spec.config(nil, spec.opts)
@@ -142,7 +152,9 @@ check("TSInstallAll never replaces a user command and can be disabled", function
   local previous = package.loaded["nvim-treesitter"]
   package.loaded["nvim-treesitter"] = { setup = function() end, install = function() end }
   local notify, warned = vim.notify, nil
-  vim.notify = function(message) warned = message end
+  vim.notify = function(message)
+    warned = message
+  end
   vim.api.nvim_create_user_command("TSInstallAll", "let g:orbit_user_install = 1", {})
   local spec = feature.spec()[1]
   spec.config(nil, spec.opts)

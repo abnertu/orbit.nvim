@@ -37,7 +37,9 @@ check("Roslyn condition honors Hangar before Mason exposes executables", functio
   local enabled = false
   local queries = 0
   vim.fn.executable = function(name)
-    if name == "dotnet" or name == "roslyn-language-server"
+    if
+      name == "dotnet"
+      or name == "roslyn-language-server"
       or name == "roslyn-language-server.cmd"
     then
       return 0
@@ -84,7 +86,11 @@ check("Roslyn config disables its eager upstream LSP when Hangar rejects it", fu
   }
   package.loaded.roslyn = nil
   package.preload.roslyn = function()
-    return { setup = function(opts) configured = opts end }
+    return {
+      setup = function(opts)
+        configured = opts
+      end,
+    }
   end
   vim.lsp.enable = function(name, value)
     assert(name == "roslyn" and value == false)
@@ -93,8 +99,7 @@ check("Roslyn config disables its eager upstream LSP when Hangar rejects it", fu
   local ok, err = xpcall(function()
     item.config(nil, item.opts)
     assert(disabled == 1 and configured == nil)
-    assert(package.loaded.roslyn == nil,
-      "disabled Roslyn must not require its setup module")
+    assert(package.loaded.roslyn == nil, "disabled Roslyn must not require its setup module")
     enabled = true
     item.config(nil, item.opts)
     assert(disabled == 1 and configured == item.opts)
@@ -140,19 +145,24 @@ check("TypeScript options preserve server capabilities and parser preferences", 
   assert(opts.settings.separate_diagnostic_server == true)
   assert(opts.settings.code_lens == "off")
   assert(opts.settings.tsserver_file_preferences.includeCompletionsForModuleExports)
-  assert(opts.settings.tsserver_file_preferences.includeInlayParameterNameHints ==
-    "literals")
-  assert(opts.settings.tsserver_file_preferences
-    .includeInlayVariableTypeHintsWhenTypeMatchesName == true)
-  local disabled = runtime.typescript_options(vim.tbl_extend("force",
-    vim.deepcopy(orbit.get_config().modules.lsp_providers),
-    { ts_inlay_hints = false, tsserver_path = "custom/tsserver.js" }))
+  assert(opts.settings.tsserver_file_preferences.includeInlayParameterNameHints == "literals")
+  assert(
+    opts.settings.tsserver_file_preferences.includeInlayVariableTypeHintsWhenTypeMatchesName == true
+  )
+  local disabled = runtime.typescript_options(
+    vim.tbl_extend(
+      "force",
+      vim.deepcopy(orbit.get_config().modules.lsp_providers),
+      { ts_inlay_hints = false, tsserver_path = "custom/tsserver.js" }
+    )
+  )
   assert(disabled.settings.tsserver_path == "custom/tsserver.js")
-  assert(disabled.settings.tsserver_file_preferences
-    .includeInlayVariableTypeHintsWhenTypeMatchesName == false)
+  assert(
+    disabled.settings.tsserver_file_preferences.includeInlayVariableTypeHintsWhenTypeMatchesName
+      == false
+  )
   assert(opts.settings.tsserver_path:find("tsserver.js", 1, true))
-  assert(opts.handlers["textDocument/publishDiagnostics"] ==
-    runtime.publish_typescript_diagnostics)
+  assert(opts.handlers["textDocument/publishDiagnostics"] == runtime.publish_typescript_diagnostics)
   local client = { server_capabilities = { semanticTokensProvider = {} } }
   opts.on_attach(client)
   assert(client.server_capabilities.semanticTokensProvider == nil)
@@ -161,7 +171,7 @@ end)
 check("TypeScript diagnostics remove only exact duplicates from tsserver", function()
   local seen
   local original = vim.lsp.diagnostic.on_publish_diagnostics
-  vim.lsp.diagnostic.on_publish_diagnostics = function(err, result, context, config)
+  vim.lsp.diagnostic.on_publish_diagnostics = function(_, result)
     seen = result.diagnostics
     return "handled"
   end
@@ -174,8 +184,7 @@ check("TypeScript diagnostics remove only exact duplicates from tsserver", funct
       { source = "typescript", message = "Repeated", range = { start = { line = 1 } } },
     },
   }
-  local ok, result = pcall(runtime.publish_typescript_diagnostics,
-    nil, data, { client_id = 1 }, {})
+  local ok, result = pcall(runtime.publish_typescript_diagnostics, nil, data, { client_id = 1 }, {})
   vim.lsp.diagnostic.on_publish_diagnostics = original
   assert(ok and result == "handled")
   assert(#seen == 3)
@@ -186,9 +195,10 @@ end)
 
 check("provider options are restart-only and invalid keys are rejected", function()
   local current = orbit.get_config()
-  local ok, err = pcall(orbit.setup, { modules = {
-    lsp_providers = { unsupported = true },
-  } })
+  local ok, err =
+    pcall(orbit.setup, { modules = {
+      lsp_providers = { unsupported = true },
+    } })
   assert(not ok and tostring(err):find("unsupported", 1, true))
   assert(vim.deep_equal(orbit.get_config(), current))
   orbit.setup({ modules = { lsp_providers = { roslyn = false } } })

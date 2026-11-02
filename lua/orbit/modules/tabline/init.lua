@@ -25,7 +25,9 @@ local function sync(active)
   local group = vim.api.nvim_create_augroup(group_name, { clear = true })
   vim.api.nvim_create_autocmd("ColorScheme", {
     group = group,
-    callback = function() require("orbit.modules.tabline.render").define_highlights() end,
+    callback = function()
+      require("orbit.modules.tabline.render").define_highlights()
+    end,
     desc = "Restore Orbit tab line highlight links",
   })
 end
@@ -46,7 +48,9 @@ end
 function M.setup(opts)
   opts = require("orbit.config").resolve_module("tabline", opts)
   if opts.enabled then
-    if not owned then original, owned = options(), true end
+    if not owned then
+      original, owned = options(), true
+    end
     vim.go.tabline, vim.go.showtabline = expression, 2
   elseif owned then
     -- Keep a tab line the user set after Orbit took ownership.

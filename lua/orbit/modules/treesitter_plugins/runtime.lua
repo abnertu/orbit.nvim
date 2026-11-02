@@ -4,7 +4,8 @@ local group
 local pending = {}
 
 local function start(buffer)
-  if not vim.api.nvim_buf_is_valid(buffer)
+  if
+    not vim.api.nvim_buf_is_valid(buffer)
     or vim.api.nvim_get_option_value("buftype", { buf = buffer }) ~= ""
   then
     pending[buffer] = nil
@@ -20,11 +21,12 @@ local function start(buffer)
   local options = require("orbit.modules.treesitter_plugins").current_options()
   if options and options.sql_syntax_fallback then
     local syntax = require("orbit.modules.treesitter_plugins.sql_syntax")
-    local filetype = vim.api.nvim_get_option_value("filetype", { buf = buffer })
+    local current_filetype = vim.api.nvim_get_option_value("filetype", { buf = buffer })
     if syntax.apply(buffer, options) then
       vim.schedule(function()
-        if vim.api.nvim_buf_is_valid(buffer)
-          and vim.api.nvim_get_option_value("filetype", { buf = buffer }) == filetype
+        if
+          vim.api.nvim_buf_is_valid(buffer)
+          and vim.api.nvim_get_option_value("filetype", { buf = buffer }) == current_filetype
         then
           syntax.apply(buffer, options)
         end

@@ -45,8 +45,10 @@ check("fallback uses bundled T-SQL rules and never writes a project config", fun
 end)
 
 check("unrelated config sections are ignored and valid ancestor config wins", function()
-  file(vim.fs.joinpath(project, "queries", "pyproject.toml"),
-    { "[tool.black]", "line-length = 88" })
+  file(
+    vim.fs.joinpath(project, "queries", "pyproject.toml"),
+    { "[tool.black]", "line-length = 88" }
+  )
   file(vim.fs.joinpath(project, "setup.cfg"), { "[flake8]", "ignore = E501" })
   assert(sqlfluff.find_config(source) == nil)
   local config = vim.fs.joinpath(project, ".sqlfluff")
@@ -54,8 +56,10 @@ check("unrelated config sections are ignored and valid ancestor config wins", fu
   assert(vim.fs.normalize(sqlfluff.find_config(source)) == vim.fs.normalize(config))
   assert(not contains(sqlfluff.format_args(source), "--config"))
   assert(not contains(sqlfluff.lint_args(source), "--config"))
-  assert(vim.fs.normalize(sqlfluff.cwd(source)) == vim.fs.normalize(project),
-    "repository marker must outrank nested package markers")
+  assert(
+    vim.fs.normalize(sqlfluff.cwd(source)) == vim.fs.normalize(project),
+    "repository marker must outrank nested package markers"
+  )
 end)
 
 check("TOML and INI SQLFluff sections are recognized", function()
@@ -68,8 +72,7 @@ check("TOML and INI SQLFluff sections are recognized", function()
     local filename = vim.fs.joinpath(dir, "nested", "test.sql")
     local config = vim.fs.joinpath(dir, entry[1])
     file(config, { entry[2] })
-    assert(vim.fs.normalize(sqlfluff.find_config(filename)) ==
-      vim.fs.normalize(config), entry[1])
+    assert(vim.fs.normalize(sqlfluff.find_config(filename)) == vim.fs.normalize(config), entry[1])
   end
 end)
 
@@ -81,8 +84,7 @@ check("Conform and nvim-lint consume the same project context", function()
   assert(formatter_options.stdin and formatter_options.require_cwd)
   assert(formatter_options.env.PYTHONUTF8 == "1")
   local ctx = { filename = source }
-  assert(vim.deep_equal(formatter_options.args(nil, ctx),
-    sqlfluff.format_args(source)))
+  assert(vim.deep_equal(formatter_options.args(nil, ctx), sqlfluff.format_args(source)))
   assert(formatter_options.cwd(nil, ctx) == sqlfluff.cwd(source))
 
   package.preload.lint = function()

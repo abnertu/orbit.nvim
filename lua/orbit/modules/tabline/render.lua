@@ -51,14 +51,16 @@ end
 ---@return string, integer
 local function tab(buffer, label, current, available)
   local group = current and "OrbitTbActive" or "OrbitTbInactive"
-  local glyph, icon_group = require("orbit.modules.icons.render")
-    .file(vim.api.nvim_buf_get_name(buffer), group)
+  local glyph, icon_group =
+    require("orbit.modules.icons.render").file(vim.api.nvim_buf_get_name(buffer), group)
   local modified = vim.bo[buffer].modified
   local mark = modified and "" or "󰅖"
   local mark_group = group .. (modified and "Modified" or "Close")
   local width = math.min(21, available)
   local limit = width - vim.api.nvim_strwidth(glyph .. mark) - 4
-  if limit < 1 then return "", 0 end
+  if limit < 1 then
+    return "", 0
+  end
   if vim.api.nvim_strwidth(label) > limit then
     local length = vim.fn.strchars(label)
     repeat
@@ -69,17 +71,45 @@ local function tab(buffer, label, current, available)
   end
   local remaining = width - vim.api.nvim_strwidth(glyph .. label .. mark) - 2
   local left = math.floor(remaining / 2)
-  local text = string.rep(" ", left) .. "%#" .. icon_group .. "#" .. escape(glyph) .. " "
-    .. "%#" .. group .. "#" .. escape(label) .. string.rep(" ", remaining - left)
-  return "%#" .. group .. "#%" .. buffer .. "@" .. handler .. "select@" .. text .. "%X"
-    .. "%#" .. mark_group .. "#%" .. buffer .. "@" .. handler .. "close@" .. mark .. " %X", width
+  local text = string.rep(" ", left)
+    .. "%#"
+    .. icon_group
+    .. "#"
+    .. escape(glyph)
+    .. " "
+    .. "%#"
+    .. group
+    .. "#"
+    .. escape(label)
+    .. string.rep(" ", remaining - left)
+  return "%#"
+    .. group
+    .. "#%"
+    .. buffer
+    .. "@"
+    .. handler
+    .. "select@"
+    .. text
+    .. "%X"
+    .. "%#"
+    .. mark_group
+    .. "#%"
+    .. buffer
+    .. "@"
+    .. handler
+    .. "close@"
+    .. mark
+    .. " %X",
+    width
 end
 
 ---@return string
 function M.render()
   local width = offset()
-  local parts = { width > 0 and ("%#OrbitTbOffset#" .. string.rep(" ", width - 1)
-    .. "%#OrbitTbOffsetSep#│") or "" }
+  local parts = {
+    width > 0 and ("%#OrbitTbOffset#" .. string.rep(" ", width - 1) .. "%#OrbitTbOffsetSep#│")
+      or "",
+  }
   local buffers = require("orbit.buffers").list()
   local names = labels(buffers)
   local current = vim.api.nvim_get_current_buf()
@@ -88,7 +118,9 @@ function M.render()
   local rendered, widths, focus = {}, {}, 1
   for index, buffer in ipairs(buffers) do
     rendered[index], widths[index] = tab(buffer, names[buffer], buffer == current, available)
-    if buffer == current then focus = index end
+    if buffer == current then
+      focus = index
+    end
   end
   local first, last, used = focus, focus - 1, 0
   while last < #rendered and used + widths[last + 1] <= available do
@@ -99,7 +131,9 @@ function M.render()
     first = first - 1
     used = used + widths[first]
   end
-  for index = first, last do parts[#parts + 1] = rendered[index] end
+  for index = first, last do
+    parts[#parts + 1] = rendered[index]
+  end
   parts[#parts + 1] = "%#OrbitTbFill#%="
   return table.concat(parts)
 end
@@ -107,21 +141,30 @@ end
 ---Mouse handler: switch to the clicked buffer.
 ---@param buffer integer
 function M.select(buffer)
-  if vim.api.nvim_buf_is_valid(buffer) then vim.api.nvim_set_current_buf(buffer) end
+  if vim.api.nvim_buf_is_valid(buffer) then
+    vim.api.nvim_set_current_buf(buffer)
+  end
 end
 
 ---Mouse handler: close the clicked buffer and keep the window layout.
 ---@param buffer integer
 function M.close(buffer)
   local ok, err = require("orbit.buffers").close(buffer)
-  if not ok then vim.notify(tostring(err), vim.log.levels.WARN, { title = "orbit.nvim tabline" }) end
+  if not ok then
+    vim.notify(tostring(err), vim.log.levels.WARN, { title = "orbit.nvim tabline" })
+  end
 end
 
 local defaults = {
-  OrbitTbActive = "TabLineSel", OrbitTbInactive = "TabLine", OrbitTbFill = "TabLineFill",
-  OrbitTbOffset = "NvimTreeNormal", OrbitTbOffsetSep = "NvimTreeWinSeparator",
-  OrbitTbActiveModified = "DiagnosticOk", OrbitTbInactiveModified = "DiagnosticError",
-  OrbitTbActiveClose = "DiagnosticError", OrbitTbInactiveClose = "TabLine",
+  OrbitTbActive = "TabLineSel",
+  OrbitTbInactive = "TabLine",
+  OrbitTbFill = "TabLineFill",
+  OrbitTbOffset = "NvimTreeNormal",
+  OrbitTbOffsetSep = "NvimTreeWinSeparator",
+  OrbitTbActiveModified = "DiagnosticOk",
+  OrbitTbInactiveModified = "DiagnosticError",
+  OrbitTbActiveClose = "DiagnosticError",
+  OrbitTbInactiveClose = "TabLine",
 }
 
 ---Define default links. Colorscheme changes clear them.

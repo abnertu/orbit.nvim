@@ -21,8 +21,10 @@ vim.keymap.set("n", " ur", "<cmd>echo 'old theme reload'<cr>")
 vim.keymap.set("n", ",ut", "<cmd>echo 'comma select'<cr>")
 vim.keymap.set("n", ",ur", "<cmd>echo 'comma reload'<cr>")
 local old = {
-  select = mapping(" ut").rhs, reload = mapping(" ur").rhs,
-  comma_select = mapping(",ut").rhs, comma_reload = mapping(",ur").rhs,
+  select = mapping(" ut").rhs,
+  reload = mapping(" ur").rhs,
+  comma_select = mapping(",ut").rhs,
+  comma_reload = mapping(",ur").rhs,
 }
 
 check("startup never imports theme runtime or opens picker", function()
@@ -39,7 +41,9 @@ check("theme selection lists installed schemes and applies a real default", func
     offered = { items = items, prompt = opts.prompt }
     callback("default")
   end
-  local ok, err = pcall(function() mapping(" ut").callback() end)
+  local ok, err = pcall(function()
+    mapping(" ut").callback()
+  end)
   vim.ui.select = original
   assert(ok, tostring(err))
   assert(type(offered) == "table")
@@ -54,7 +58,9 @@ check("reloading the active colorscheme reports success", function()
   vim.notify = function(message, level)
     notices[#notices + 1] = { message, level }
   end
-  local ok, err = pcall(function() mapping(" ur").callback() end)
+  local ok, err = pcall(function()
+    mapping(" ur").callback()
+  end)
   vim.notify = original
   assert(ok, tostring(err))
   assert(#notices == 1)
@@ -70,7 +76,9 @@ check("cancelled selection and invalid theme never replace accepted scheme", fun
     notices[#notices + 1] = { msg, level }
   end
   local choice
-  vim.ui.select = function(_, _, callback) callback(choice) end
+  vim.ui.select = function(_, _, callback)
+    callback(choice)
+  end
   local ok, err = xpcall(function()
     mapping(" ut").callback()
     assert(vim.g.colors_name == "default")
@@ -90,9 +98,10 @@ check("leader changes preserve old mappings and reject reserved theme keys", fun
   assert(type(mapping(",ut").callback) == "function")
   assert(type(mapping(",ur").callback) == "function")
   local accepted = orbit.get_config()
-  local ok, err = pcall(orbit.setup, { modules = {
-    keymaps = { leader = ",", save = "<leader>ur" },
-  } })
+  local ok, err =
+    pcall(orbit.setup, { modules = {
+      keymaps = { leader = ",", save = "<leader>ur" },
+    } })
   assert(not ok and tostring(err):find("duplicate leader mapping", 1, true))
   assert(vim.deep_equal(orbit.get_config(), accepted))
 end)
@@ -100,10 +109,16 @@ end)
 check("downstream rollback and disable restore physical theme mappings", function()
   local accepted = orbit.get_config()
   local original = commands.setup
-  commands.setup = function() error("injected theme mapping failure") end
-  local ok, err = pcall(orbit.setup, { modules = {
-    keymaps = { leader = ";" }, commands = { enabled = false },
-  } })
+  commands.setup = function()
+    error("injected theme mapping failure")
+  end
+  local ok, err = pcall(
+    orbit.setup,
+    { modules = {
+      keymaps = { leader = ";" },
+      commands = { enabled = false },
+    } }
+  )
   commands.setup = original
   assert(not ok and tostring(err):find("injected theme mapping failure", 1, true))
   assert(vim.deep_equal(orbit.get_config(), accepted))

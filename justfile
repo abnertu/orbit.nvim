@@ -1,9 +1,17 @@
-# Run Orbit checks on Linux and Windows. Each recipe runs one Neovim command.
+# Run Orbit development tools and checks on Linux and Windows.
 set windows-shell := ["pwsh", "-NoLogo", "-NoProfile", "-Command"]
 
 # List the recipes.
 default:
     @just --list
+
+# Format Lua files with the project StyLua configuration.
+format:
+    stylua --verify . .luacheckrc
+
+# Lint Lua files with the project Luacheck configuration.
+lint:
+    luacheck . .luacheckrc
 
 # Run the offline test suites.
 test pattern="":

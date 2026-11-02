@@ -38,13 +38,17 @@ end
 -- Use an argv-safe Ex call. User input must not be parsed as another command.
 function M.query()
   local query = vim.fn.input("WhichKey: ")
-  if type(query) ~= "string" or query == "" then return end
+  if type(query) ~= "string" or query == "" then
+    return
+  end
   vim.api.nvim_cmd({ cmd = "WhichKey", args = { query } }, {})
 end
 
 ---@return LazySpec
 function M.spec()
-  if not accepted or not accepted.enabled then return {} end
+  if not accepted or not accepted.enabled then
+    return {}
+  end
   local opts = vim.deepcopy(accepted)
   return {
     {

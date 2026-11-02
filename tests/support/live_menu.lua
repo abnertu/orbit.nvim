@@ -64,12 +64,20 @@ return function(opts)
   local orbit = require("orbit")
   local source = vim.fs.normalize(debug.getinfo(orbit.setup, "S").source:sub(2))
   local installed = vim.fs.normalize(opts.installed)
-  if vim.fn.has("win32") == 1 then source, installed = source:lower(), installed:lower() end
+  if vim.fn.has("win32") == 1 then
+    source, installed = source:lower(), installed:lower()
+  end
   assert(source:sub(1, #installed + 1) == installed .. "/", "loaded a different Orbit package")
-  local manifest = vim.json.decode(table.concat(vim.fn.readfile(
-    vim.fs.joinpath(opts.installed, "lua/orbit/modules/manifest.json")), "\n"))
+  local manifest = vim.json.decode(
+    table.concat(
+      vim.fn.readfile(vim.fs.joinpath(opts.installed, "lua/orbit/modules/manifest.json")),
+      "\n"
+    )
+  )
   local modules = {}
-  for _, name in ipairs(manifest.order) do modules[name] = { enabled = false } end
+  for _, name in ipairs(manifest.order) do
+    modules[name] = { enabled = false }
+  end
   modules.menu = { enabled = opts.enabled }
   modules.corekeys = { enabled = opts.corekeys, save = "<F6>" }
   modules.keymaps = { enabled = true }
@@ -89,7 +97,9 @@ return function(opts)
   ---@param level? integer
   ---@param config? {title?: string}
   vim.notify = function(message, level, config)
-    if level and level >= vim.log.levels.WARN then errors[#errors + 1] = tostring(message) end
+    if level and level >= vim.log.levels.WARN then
+      errors[#errors + 1] = tostring(message)
+    end
     return original_notify(message, level, config)
   end
   local group = vim.api.nvim_create_augroup("OrbitLiveMenu", {})
@@ -97,17 +107,25 @@ return function(opts)
   local journal = {}
   ---@param event string
   local function mark(event)
-    journal[#journal + 1] = event .. ': ' .. vim.api.nvim_get_current_win()
-      .. ' ' .. vim.api.nvim_buf_get_name(0)
+    journal[#journal + 1] = event
+      .. ": "
+      .. vim.api.nvim_get_current_win()
+      .. " "
+      .. vim.api.nvim_buf_get_name(0)
   end
   vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter" }, {
-    group = group, callback = function(event)
+    group = group,
+    callback = function(event)
       mark(event.event)
     end,
   })
-  vim.api.nvim_create_autocmd("User", { group = group, pattern = "LazyLoad", callback = function(event)
-    loaded[event.data] = (loaded[event.data] or 0) + 1
-  end })
+  vim.api.nvim_create_autocmd("User", {
+    group = group,
+    pattern = "LazyLoad",
+    callback = function(event)
+      loaded[event.data] = (loaded[event.data] or 0) + 1
+    end,
+  })
   orbit.setup(options)
   vim.o.mouse = "a"
   vim.o.mousemodel = "popup_setpos"
@@ -125,13 +143,21 @@ return function(opts)
           return lhs == "<Esc>" and "<Esc>" or ""
         end
         vim.keymap.set(mode, lhs, callback, { buffer = buffer, expr = true, desc = id })
-        local maps = buffer and vim.api.nvim_buf_get_keymap(buffer, mode) or vim.api.nvim_get_keymap(mode)
+        local maps = buffer and vim.api.nvim_buf_get_keymap(buffer, mode)
+          or vim.api.nvim_get_keymap(mode)
         local original
         for _, value in ipairs(maps) do
-          if vim.keycode(value.lhs) == vim.keycode(lhs) then original = value end
+          if vim.keycode(value.lhs) == vim.keycode(lhs) then
+            original = value
+          end
         end
         originals[#originals + 1] = {
-          mode = mode, lhs = lhs, buffer = buffer, callback = callback, id = id, mapping = assert(original),
+          mode = mode,
+          lhs = lhs,
+          buffer = buffer,
+          callback = callback,
+          id = id,
+          mapping = assert(original),
         }
       end
     end
@@ -145,7 +171,9 @@ return function(opts)
     same_path = function(first, second)
       first = vim.fs.normalize(vim.uv.fs_realpath(first) or first)
       second = vim.fs.normalize(vim.uv.fs_realpath(second) or second)
-      if vim.fn.has("win32") == 1 then first, second = first:lower(), second:lower() end
+      if vim.fn.has("win32") == 1 then
+        first, second = first:lower(), second:lower()
+      end
       return first == second
     end,
     ---@return LazySpec
@@ -168,10 +196,18 @@ return function(opts)
       remember(vim.api.nvim_get_current_buf())
       local buffer = vim.api.nvim_create_buf(false, true)
       vim.api.nvim_open_win(buffer, false, {
-        relative = "editor", row = 38, col = 115, width = 15, height = 2, style = "minimal",
+        relative = "editor",
+        row = 38,
+        col = 115,
+        width = 15,
+        height = 2,
+        style = "minimal",
       })
     end,
-    repeat_setup = function() orbit.setup(options); orbit.setup(options) end,
+    repeat_setup = function()
+      orbit.setup(options)
+      orbit.setup(options)
+    end,
     exercise_maps = function()
       for _, old in ipairs(originals) do
         local maps = old.buffer and vim.api.nvim_buf_get_keymap(old.buffer, old.mode)
@@ -196,9 +232,16 @@ return function(opts)
             calls[old.id] = (calls[old.id] or 0) + 1
             return "<Esc>"
           end
-          vim.keymap.set("x", "<Esc>", old.callback, { buffer = old.buffer, expr = true, desc = old.id })
+          vim.keymap.set(
+            "x",
+            "<Esc>",
+            old.callback,
+            { buffer = old.buffer, expr = true, desc = old.id }
+          )
           for _, value in ipairs(vim.api.nvim_buf_get_keymap(old.buffer, "x")) do
-            if vim.keycode(value.lhs) == vim.keycode(old.lhs) then old.mapping = value end
+            if vim.keycode(value.lhs) == vim.keycode(old.lhs) then
+              old.mapping = value
+            end
           end
         end
       end
@@ -212,19 +255,28 @@ return function(opts)
         if vim.api.nvim_buf_is_valid(buf) then
           local win = vim.fn.bufwinid(buf)
           local rows = {}
-          for _, mark in ipairs(vim.api.nvim_buf_get_extmarks(buf, -1, 0, -1, { details = true })) do
-            if mark[4].virt_text then
+          for _, extmark in
+            ipairs(vim.api.nvim_buf_get_extmarks(buf, -1, 0, -1, { details = true }))
+          do
+            if extmark[4].virt_text then
               local text = {}
-              for _, part in ipairs(mark[4].virt_text) do text[#text + 1] = part[1] end
-              rows[mark[2] + 1] = (rows[mark[2] + 1] or "") .. table.concat(text)
+              for _, part in ipairs(extmark[4].virt_text) do
+                text[#text + 1] = part[1]
+              end
+              rows[extmark[2] + 1] = (rows[extmark[2] + 1] or "") .. table.concat(text)
             end
           end
           local positions = {}
           for row = 1, vim.api.nvim_buf_line_count(buf) do
             positions[row] = vim.fn.screenpos(win, row, 1)
           end
-          menus[#menus + 1] = { buf = buf, win = win, rows = rows, positions = positions,
-            origin = vim.api.nvim_win_get_position(win) }
+          menus[#menus + 1] = {
+            buf = buf,
+            win = win,
+            rows = rows,
+            positions = positions,
+            origin = vim.api.nvim_win_get_position(win),
+          }
         end
       end
       local preserved = true
@@ -244,15 +296,28 @@ return function(opts)
       for _, win in ipairs(vim.api.nvim_list_wins()) do
         windows[#windows + 1] = win
         local key = vim.wo[win].statusline:match("^%%=([A-Z])%%=$")
-        if key then picker[#picker + 1] = { win = win, key = key } end
+        if key then
+          picker[#picker + 1] = { win = win, key = key }
+        end
       end
       return {
-        menus = menus, loaded = loaded, errors = errors, errmsg = vim.v.errmsg,
-        menu_loaded = package.loaded.menu ~= nil, tree_loaded = package.loaded["nvim-tree.api"] ~= nil,
+        menus = menus,
+        loaded = loaded,
+        errors = errors,
+        errmsg = vim.v.errmsg,
+        menu_loaded = package.loaded.menu ~= nil,
+        tree_loaded = package.loaded["nvim-tree.api"] ~= nil,
         runtime_loaded = package.loaded["orbit.modules.menu.runtime"] ~= nil,
-        current = vim.api.nvim_get_current_buf(), win = vim.api.nvim_get_current_win(), mode = vim.fn.mode(),
-        cursor = vim.api.nvim_win_get_cursor(0), windows = windows, preserved = preserved, calls = calls,
-        lines = vim.api.nvim_buf_get_lines(0, 0, -1, false), mouse = vim.fn.getmousepos(), journal = journal,
+        current = vim.api.nvim_get_current_buf(),
+        win = vim.api.nvim_get_current_win(),
+        mode = vim.fn.mode(),
+        cursor = vim.api.nvim_win_get_cursor(0),
+        windows = windows,
+        preserved = preserved,
+        calls = calls,
+        lines = vim.api.nvim_buf_get_lines(0, 0, -1, false),
+        mouse = vim.fn.getmousepos(),
+        journal = journal,
         picker = picker,
       }
     end,

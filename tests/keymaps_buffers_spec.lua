@@ -20,8 +20,10 @@ vim.keymap.set("n", " x", "<cmd>echo 'original close'<cr>")
 vim.keymap.set("n", ",bD", "<cmd>echo 'comma others'<cr>")
 vim.keymap.set("n", ",x", "<cmd>echo 'comma close'<cr>")
 local original = {
-  other = mapping(" bD").rhs, close = mapping(" x").rhs,
-  comma_other = mapping(",bD").rhs, comma_close = mapping(",x").rhs,
+  other = mapping(" bD").rhs,
+  close = mapping(" x").rhs,
+  comma_other = mapping(",bD").rhs,
+  comma_close = mapping(",x").rhs,
 }
 
 local previous = vim.api.nvim_get_current_buf()
@@ -71,7 +73,9 @@ check("modified candidates abort bulk deletion before any buffer is removed", fu
   local modified = vim.api.nvim_create_buf(true, false)
   vim.api.nvim_buf_set_lines(modified, 0, -1, false, { "unsaved" })
   vim.api.nvim_set_current_buf(current)
-  local ok, err = pcall(function() mapping(" bD").callback() end)
+  local ok, err = pcall(function()
+    mapping(" bD").callback()
+  end)
   assert(not ok and tostring(err):find("unsaved", 1, true))
   assert(vim.api.nvim_buf_is_valid(first))
   assert(vim.api.nvim_buf_is_valid(modified))
@@ -88,7 +92,9 @@ check("current close refuses unsaved content then safely deletes it", function()
   local current = vim.api.nvim_create_buf(true, false)
   vim.api.nvim_set_current_buf(current)
   vim.api.nvim_buf_set_lines(current, 0, -1, false, { "unsaved" })
-  local ok, err = pcall(function() mapping(" x").callback() end)
+  local ok, err = pcall(function()
+    mapping(" x").callback()
+  end)
   assert(not ok and tostring(err):find("unsaved", 1, true))
   assert(vim.api.nvim_buf_is_valid(current))
   vim.bo[current].modified = false
@@ -100,7 +106,9 @@ check("special buffers cannot be closed through the normal-file action", functio
   local special = vim.api.nvim_create_buf(true, false)
   vim.bo[special].buftype = "nofile"
   vim.api.nvim_set_current_buf(special)
-  local ok, err = pcall(function() mapping(" x").callback() end)
+  local ok, err = pcall(function()
+    mapping(" x").callback()
+  end)
   assert(not ok and tostring(err):find("special", 1, true))
   assert(vim.api.nvim_buf_is_valid(special))
   vim.api.nvim_set_current_buf(previous)
@@ -117,17 +125,23 @@ end)
 
 check("collision and downstream rollback leave mappings unchanged", function()
   local accepted = orbit.get_config()
-  local ok, err = pcall(orbit.setup, { modules = {
-    keymaps = { leader = ",", save = "<leader>x" },
-  } })
+  local ok, err =
+    pcall(orbit.setup, { modules = {
+      keymaps = { leader = ",", save = "<leader>x" },
+    } })
   assert(not ok and tostring(err):find("duplicate leader mapping", 1, true))
   assert(vim.deep_equal(orbit.get_config(), accepted))
   local before = commands.setup
-  commands.setup = function() error("injected buffer actions failure") end
-  ok, err = pcall(orbit.setup, { modules = {
-    keymaps = { leader = ";" },
-    commands = { enabled = false },
-  } })
+  commands.setup = function()
+    error("injected buffer actions failure")
+  end
+  ok, err = pcall(
+    orbit.setup,
+    { modules = {
+      keymaps = { leader = ";" },
+      commands = { enabled = false },
+    } }
+  )
   commands.setup = before
   assert(not ok and tostring(err):find("injected buffer actions failure", 1, true))
   assert(vim.g.mapleader == ",")
@@ -145,6 +159,8 @@ end)
 
 vim.api.nvim_set_current_buf(previous)
 for buffer, listed in pairs(saved) do
-  if vim.api.nvim_buf_is_valid(buffer) then vim.bo[buffer].buflisted = listed end
+  if vim.api.nvim_buf_is_valid(buffer) then
+    vim.bo[buffer].buflisted = listed
+  end
 end
 print(string.format("%d buffer action tests passed.", passed))

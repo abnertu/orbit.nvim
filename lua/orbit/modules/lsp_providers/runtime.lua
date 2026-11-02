@@ -7,19 +7,29 @@ local M = {}
 ---@param targets string[]
 ---@return string?
 function M.choose_target(targets)
-  if type(targets) ~= "table" or #targets == 0 then return end
+  if type(targets) ~= "table" or #targets == 0 then
+    return
+  end
   local root = vim.fs.root(targets[1], ".git")
-  if not root then return end
+  if not root then
+    return
+  end
   local match
   for name, kind in vim.fs.dir(root) do
     if kind == "file" and name:match("%.sln$") then
-      if match then return end
+      if match then
+        return
+      end
       match = vim.fs.normalize(vim.fs.joinpath(root, name))
     end
   end
-  if not match then return end
+  if not match then
+    return
+  end
   for _, target in ipairs(targets) do
-    if vim.fs.normalize(target) == match then return target end
+    if vim.fs.normalize(target) == match then
+      return target
+    end
   end
 end
 
@@ -36,9 +46,13 @@ function M.publish_typescript_diagnostics(err, result, ctx, config)
             break
           end
         end
-        if not duplicate then seen[#seen + 1] = diagnostic end
+        if not duplicate then
+          seen[#seen + 1] = diagnostic
+        end
       end
-      if not duplicate then filtered[#filtered + 1] = diagnostic end
+      if not duplicate then
+        filtered[#filtered + 1] = diagnostic
+      end
     end
     result = vim.tbl_extend("force", result, { diagnostics = filtered })
   end
@@ -48,15 +62,25 @@ end
 ---@param opts Orbit.LspProvidersOptions
 ---@return Orbit.TypescriptToolOptions
 function M.typescript_options(opts)
-  local path = opts.tsserver_path ~= "" and opts.tsserver_path or
-    vim.fs.joinpath(vim.fn.stdpath("data"), "mason", "packages",
-      "typescript-language-server", "node_modules", "typescript", "lib",
-      "tsserver.js")
+  local path = opts.tsserver_path ~= "" and opts.tsserver_path
+    or vim.fs.joinpath(
+      vim.fn.stdpath("data"),
+      "mason",
+      "packages",
+      "typescript-language-server",
+      "node_modules",
+      "typescript",
+      "lib",
+      "tsserver.js"
+    )
   local hints = opts.ts_inlay_hints
   return {
     filetypes = {
-      "typescript", "typescriptreact", "javascript",
-      "javascriptreact", "jsx",
+      "typescript",
+      "typescriptreact",
+      "javascript",
+      "javascriptreact",
+      "jsx",
     },
     on_attach = function(client)
       client.server_capabilities.semanticTokensProvider = nil

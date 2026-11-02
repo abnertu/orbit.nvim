@@ -7,11 +7,9 @@ assert(arg[1] == nil, "usage: nvim -l scripts/schema_preview.lua")
 local result = require("orbit.tooling.schema").generate(root)
 local chunk_size = 1024
 local count = math.ceil(#result / chunk_size)
-print(string.format("ORBIT_SCHEMA_BEGIN:%d:%d:%s",
-  count, #result, vim.fn.sha256(result)))
+print(string.format("ORBIT_SCHEMA_BEGIN:%d:%d:%s", count, #result, vim.fn.sha256(result)))
 for index = 1, count do
   local fragment = result:sub((index - 1) * chunk_size + 1, index * chunk_size)
-  print(string.format("ORBIT_SCHEMA_PART:%d:%s",
-    index, vim.json.encode(fragment)))
+  print(string.format("ORBIT_SCHEMA_PART:%d:%s", index, vim.json.encode(fragment)))
 end
 print(string.format("ORBIT_SCHEMA_END:%d:%d", count, #result))

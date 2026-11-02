@@ -11,8 +11,10 @@ local workspace = vim.fn.tempname() .. " live sqlfluff with spaces"
 
 local function run(argv)
   local result = vim.system(argv, { text = true, timeout = 120000 }):wait()
-  assert(result.code == 0, vim.inspect(argv) ..
-    " failed: " .. tostring(result.stderr or result.stdout))
+  assert(
+    result.code == 0,
+    vim.inspect(argv) .. " failed: " .. tostring(result.stderr or result.stdout)
+  )
   return result.stdout or ""
 end
 
@@ -53,8 +55,10 @@ local ok, err = xpcall(function()
       files = {
         [".git/HEAD"] = { "ref: refs/heads/main" },
         [".sqlfluff"] = {
-          "[sqlfluff]", "dialect = ansi",
-          "[sqlfluff:rules:capitalisation.keywords]", "capitalisation_policy = upper",
+          "[sqlfluff]",
+          "dialect = ansi",
+          "[sqlfluff:rules:capitalisation.keywords]",
+          "capitalisation_policy = upper",
         },
         ["queries/report.sql"] = { "select a from b" },
       },
@@ -66,8 +70,10 @@ local ok, err = xpcall(function()
       files = {
         [".git/HEAD"] = { "ref: refs/heads/main" },
         ["pyproject.toml"] = {
-          "[tool.sqlfluff.core]", 'dialect = "ansi"',
-          "[tool.sqlfluff.rules.capitalisation.keywords]", 'capitalisation_policy = "lower"',
+          "[tool.sqlfluff.core]",
+          'dialect = "ansi"',
+          "[tool.sqlfluff.rules.capitalisation.keywords]",
+          'capitalisation_policy = "lower"',
         },
         ["sql/report.sql"] = { "SELECT a FROM b" },
       },
@@ -90,7 +96,9 @@ local ok, err = xpcall(function()
     write(project, case.files)
     local sql
     for name in pairs(case.files) do
-      if name:match("%.sql$") then sql = vim.fs.joinpath(project, name) end
+      if name:match("%.sql$") then
+        sql = vim.fs.joinpath(project, name)
+      end
     end
     vim.cmd.edit(vim.fn.fnameescape(sql))
     vim.bo.filetype = "sql"
@@ -98,18 +106,29 @@ local ok, err = xpcall(function()
 
     local ns = lint.get_namespace("sqlfluff")
     lint.try_lint("sqlfluff")
-    assert(vim.wait(60000, function()
-      return #vim.diagnostic.get(buffer, { namespace = ns }) > 0
-    end, 100), case.name .. ": real SQLFluff lint published no diagnostics")
-    local codes = vim.tbl_map(function(item) return item.code end,
-      vim.diagnostic.get(buffer, { namespace = ns }))
+    assert(
+      vim.wait(60000, function()
+        return #vim.diagnostic.get(buffer, { namespace = ns }) > 0
+      end, 100),
+      case.name .. ": real SQLFluff lint published no diagnostics"
+    )
+    local codes = vim.tbl_map(function(item)
+      return item.code
+    end, vim.diagnostic.get(buffer, { namespace = ns }))
     assert(vim.list_contains(codes, case.code), case.name .. " codes: " .. vim.inspect(codes))
     for _, code in ipairs(codes) do
-      assert(not tostring(code):match("^PRS"), case.name .. " failed to parse: " .. vim.inspect(codes))
+      assert(
+        not tostring(code):match("^PRS"),
+        case.name .. " failed to parse: " .. vim.inspect(codes)
+      )
     end
 
-    local formatted = conform.format({ bufnr = buffer, formatters = { "sqlfluff" },
-      async = false, timeout_ms = 60000 })
+    local formatted = conform.format({
+      bufnr = buffer,
+      formatters = { "sqlfluff" },
+      async = false,
+      timeout_ms = 60000,
+    })
     assert(formatted, case.name .. ": Conform did not run SQLFluff")
     local text = vim.api.nvim_buf_get_lines(buffer, 0, 1, false)[1]
     assert(text == case.formatted, case.name .. " formatted to " .. vim.inspect(text))

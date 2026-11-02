@@ -50,13 +50,17 @@ check("Conform receives Hangar-filtered filetype formatters at config time", fun
   orbit.setup()
   local received
   package.preload.conform = function()
-    return { setup = function(opts)
-      received = opts
-    end }
+    return {
+      setup = function(opts)
+        received = opts
+      end,
+    }
   end
   local item = require("orbit.modules.formatter").spec()[1]
-  assert(item.opts.formatters_by_ft.lua[1] == "stylua",
-    "source formatter defaults must stay immutable")
+  assert(
+    item.opts.formatters_by_ft.lua[1] == "stylua",
+    "source formatter defaults must stay immutable"
+  )
   item.config(nil, vim.deepcopy(item.opts))
   assert(received ~= nil and #received.formatters_by_ft.lua == 0)
   assert(received.formatters_by_ft.python[1] == "ruff_fix")

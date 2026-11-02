@@ -21,23 +21,32 @@ local function is_active(name)
 end
 
 local function release_startup_buffer()
-  if not is_active("startup_buffer") then return end
+  if not is_active("startup_buffer") then
+    return
+  end
   local buffer = startup_buffer
-  if not buffer then return end
+  if not buffer then
+    return
+  end
   startup_buffer = nil
-  if not vim.api.nvim_buf_is_valid(buffer)
+  if
+    not vim.api.nvim_buf_is_valid(buffer)
     or not vim.api.nvim_buf_is_loaded(buffer)
-    or vim.bo[buffer].modified or vim.bo[buffer].buftype ~= ""
+    or vim.bo[buffer].modified
+    or vim.bo[buffer].buftype ~= ""
     or vim.api.nvim_buf_get_name(buffer) ~= ""
     or #vim.fn.win_findbuf(buffer) > 0
     or not vim.deep_equal(vim.api.nvim_buf_get_lines(buffer, 0, -1, false), { "" })
-  then return end
+  then
+    return
+  end
   vim.api.nvim_buf_delete(buffer, { force = false })
 end
 
 local function has_listed_unnamed_buffer()
   for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
-    if vim.api.nvim_buf_is_valid(buffer)
+    if
+      vim.api.nvim_buf_is_valid(buffer)
       and vim.api.nvim_buf_is_loaded(buffer)
       and vim.bo[buffer].buflisted
       and vim.bo[buffer].buftype == ""
@@ -52,7 +61,8 @@ end
 -- On-demand startup re-applies EditorConfig after FileType.
 -- Do not import it on startup when the existing flag is unset.
 local function replay_editorconfig(buffer)
-  if not vim.g.editorconfig
+  if
+    not vim.g.editorconfig
     or not vim.api.nvim_buf_is_valid(buffer)
     or not vim.api.nvim_buf_is_loaded(buffer)
   then
@@ -71,13 +81,14 @@ end
 local function register()
   -- Never silently replace unrelated autocommands with the same group name.
   local found, previous = pcall(vim.api.nvim_get_autocmds, { group = "OrbitCoreEvents" })
-  assert(not found or #previous == 0,
-    "refusing to overwrite existing OrbitCoreEvents group")
+  assert(not found or #previous == 0, "refusing to overwrite existing OrbitCoreEvents group")
 
   group = vim.api.nvim_create_augroup("OrbitCoreEvents", { clear = true })
 
   filepost_id = vim.api.nvim_create_autocmd({
-    "UIEnter", "BufReadPost", "BufNewFile",
+    "UIEnter",
+    "BufReadPost",
+    "BufNewFile",
   }, {
     group = group,
     desc = "Emit FilePost exactly once after the UI and a file are ready",
@@ -110,9 +121,7 @@ local function register()
         modeline = false,
       })
       vim.schedule(function()
-        if vim.api.nvim_buf_is_valid(buffer)
-          and vim.api.nvim_buf_is_loaded(buffer)
-        then
+        if vim.api.nvim_buf_is_valid(buffer) and vim.api.nvim_buf_is_loaded(buffer) then
           vim.api.nvim_exec_autocmds("FileType", {
             buffer = buffer,
             modeline = false,
@@ -135,8 +144,11 @@ local function register()
     group = group,
     desc = "Release an unused Orbit startup buffer after opening a file",
     callback = function(event)
-      if startup_buffer and is_active("startup_buffer")
-        and vim.bo[event.buf].buftype == "" and vim.api.nvim_buf_get_name(event.buf) ~= ""
+      if
+        startup_buffer
+        and is_active("startup_buffer")
+        and vim.bo[event.buf].buftype == ""
+        and vim.api.nvim_buf_get_name(event.buf) ~= ""
       then
         vim.schedule(release_startup_buffer)
       end
@@ -146,16 +158,14 @@ local function register()
     group = group,
     desc = "Keep an unnamed listed buffer behind the startup UI",
     callback = function(event)
-      if not is_active("startup_buffer")
-        or vim.fn.argc() > 0
-        or (event.file or "") ~= ""
-      then
+      if not is_active("startup_buffer") or vim.fn.argc() > 0 or (event.file or "") ~= "" then
         return
       end
 
       vim.schedule(function()
         local current = vim.api.nvim_get_current_buf()
-        local file_ready = vim.bo[current].buftype == "" and vim.api.nvim_buf_get_name(current) ~= ""
+        local file_ready = vim.bo[current].buftype == ""
+          and vim.api.nvim_buf_get_name(current) ~= ""
         if is_active("startup_buffer") and not file_ready and not has_listed_unnamed_buffer() then
           startup_buffer = vim.api.nvim_create_buf(true, false)
         end
@@ -166,7 +176,8 @@ local function register()
     group = group,
     desc = "Use a directory startup argument as the working directory",
     callback = function(event)
-      if not is_active("directory_argument")
+      if
+        not is_active("directory_argument")
         or type(event.file) ~= "string"
         or vim.fn.isdirectory(event.file) ~= 1
       then

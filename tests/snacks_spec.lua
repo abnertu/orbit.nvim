@@ -12,7 +12,9 @@ local function check(name, fn)
 end
 local function key(keys, lhs)
   for _, entry in ipairs(keys) do
-    if entry[1] == lhs then return entry end
+    if entry[1] == lhs then
+      return entry
+    end
   end
   error("missing Snacks key " .. lhs)
 end
@@ -43,10 +45,16 @@ check("picker and buffer commands resolve only at the Lazy callback boundary", f
   package.preload.snacks = function()
     return {
       picker = {
-        files = function() calls[#calls + 1] = "files" end,
-        grep = function() calls[#calls + 1] = "grep" end,
+        files = function()
+          calls[#calls + 1] = "files"
+        end,
+        grep = function()
+          calls[#calls + 1] = "grep"
+        end,
       },
-      bufdelete = function() calls[#calls + 1] = "bufdelete" end,
+      bufdelete = function()
+        calls[#calls + 1] = "bufdelete"
+      end,
     }
   end
   local keys = feature.spec()[1].keys
@@ -61,11 +69,17 @@ check("redraw suppression is narrow and installed once", function()
   local count, setups = 0, 0
   package.preload.snacks = function()
     return {
-      util = { redraw_range = function(v)
-        count = count + 1
-        if v == 1 then error("Invalid window id: 14") end
-        if v == 2 then error("bad redraw") end
-      end },
+      util = {
+        redraw_range = function(v)
+          count = count + 1
+          if v == 1 then
+            error("Invalid window id: 14")
+          end
+          if v == 2 then
+            error("bad redraw")
+          end
+        end,
+      },
       setup = function(opts)
         assert(opts.statuscolumn.refresh == 50)
         setups = setups + 1

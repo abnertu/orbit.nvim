@@ -35,11 +35,15 @@ check("first saved setup applies startup-only settings", function()
 end)
 
 check("reload applies safe fields and defers startup-only changes", function()
-  write({ modules = { events = {
-    startup_buffer = true,
-    directory_argument = true,
-    diagnostics_redraw = false,
-  } } })
+  write({
+    modules = {
+      events = {
+        startup_buffer = true,
+        directory_argument = true,
+        diagnostics_redraw = false,
+      },
+    },
+  })
   local ok, err = orbit.reload_from_file(path)
   assert(ok, tostring(err))
   local effective = orbit.get_config().modules.events
@@ -77,14 +81,16 @@ end)
 check("failed live activation restores effective and pending state", function()
   local effective = orbit.get_config()
   local pending = orbit.get_pending_restart()
-  write({ modules = {
-    events = {
-      startup_buffer = true,
-      directory_argument = true,
-      diagnostics_redraw = true,
+  write({
+    modules = {
+      events = {
+        startup_buffer = true,
+        directory_argument = true,
+        diagnostics_redraw = true,
+      },
+      commands = { name = "OrbitRestartBroken" },
     },
-    commands = { name = "OrbitRestartBroken" },
-  } })
+  })
   local previous = commands.setup
   commands.setup = function(opts)
     previous(opts)
@@ -100,11 +106,15 @@ check("failed live activation restores effective and pending state", function()
 end)
 
 check("reverting pending fields clears the restart requirement", function()
-  write({ modules = { events = {
-    startup_buffer = false,
-    directory_argument = false,
-    diagnostics_redraw = false,
-  } } })
+  write({
+    modules = {
+      events = {
+        startup_buffer = false,
+        directory_argument = false,
+        diagnostics_redraw = false,
+      },
+    },
+  })
   local ok, err = orbit.reload_from_file(path)
   assert(ok, tostring(err))
   assert(vim.tbl_isempty(orbit.get_pending_restart()))

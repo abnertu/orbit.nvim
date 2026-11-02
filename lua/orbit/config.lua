@@ -76,9 +76,7 @@ local function resolve(value, node, path)
       and (not vim.islist(value) or next(value) == nil)
       and value ~= vim.NIL
   elseif kind == "array" then
-    matches = type(value) == "table"
-      and vim.islist(value)
-      and value ~= vim.NIL
+    matches = type(value) == "table" and vim.islist(value) and value ~= vim.NIL
   elseif kind == "integer" then
     matches = type(value) == "number" and value == math.floor(value)
   end
@@ -88,9 +86,7 @@ local function resolve(value, node, path)
   end
 
   if kind == "integer" or kind == "number" then
-    if (node.minimum and value < node.minimum) or
-      (node.maximum and value > node.maximum)
-    then
+    if (node.minimum and value < node.minimum) or (node.maximum and value > node.maximum) then
       error(path .. ": out of range", 0)
     end
   elseif kind == "string" then
@@ -118,8 +114,8 @@ local function resolve(value, node, path)
   elseif kind == "array" then
     local result = {}
     for index, item in ipairs(value) do
-      result[index] = resolve(item, assert(node.items, "array schema needs items"),
-        path .. "[" .. index .. "]")
+      result[index] =
+        resolve(item, assert(node.items, "array schema needs items"), path .. "[" .. index .. "]")
     end
     return result
   end
@@ -147,9 +143,7 @@ local function has_restart(node)
 end
 
 local function defer_node(current, requested, node, path, pending)
-  if node["x-orbit-restart"] or
-    (node.type == "array" and has_restart(node.items))
-  then
+  if node["x-orbit-restart"] or (node.type == "array" and has_restart(node.items)) then
     if not vim.deep_equal(current, requested) then
       pending[path] = vim.deepcopy(requested)
       return vim.deepcopy(current)
@@ -160,8 +154,8 @@ local function defer_node(current, requested, node, path, pending)
   if node.type == "object" then
     local effective = vim.deepcopy(requested)
     for name, child in pairs(node.properties or {}) do
-      effective[name] = defer_node(current[name], requested[name], child,
-        path .. "." .. name, pending)
+      effective[name] =
+        defer_node(current[name], requested[name], child, path .. "." .. name, pending)
     end
     return effective
   end
@@ -179,8 +173,8 @@ function M.defer_restart(current, requested, supplied_schema)
     return vim.deepcopy(requested), {}
   end
   local pending = {}
-  local effective = defer_node(current, requested, supplied_schema or get_schema(),
-    "orbit", pending)
+  local effective =
+    defer_node(current, requested, supplied_schema or get_schema(), "orbit", pending)
   return effective, pending
 end
 

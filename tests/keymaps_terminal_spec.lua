@@ -17,9 +17,14 @@ local function map(mode, lhs)
 end
 
 local user_keys = {
-  { "n", " h" }, { "n", " v" },
-  { "n", "<M-h>" }, { "n", "<M-v>" }, { "n", "<M-i>" },
-  { "t", "<M-h>" }, { "t", "<M-v>" }, { "t", "<M-i>" },
+  { "n", " h" },
+  { "n", " v" },
+  { "n", "<M-h>" },
+  { "n", "<M-v>" },
+  { "n", "<M-i>" },
+  { "t", "<M-h>" },
+  { "t", "<M-v>" },
+  { "t", "<M-i>" },
 }
 local old = {}
 for _, target in ipairs(user_keys) do
@@ -41,13 +46,17 @@ local actual_spawn, actual_start_insert = term.spawn, term.start_insert
 local actual_is_live_terminal = term.is_live_terminal
 -- Mapping tests stub spawn(), so no real PTY exists in their buffers.
 -- The dedicated real-terminal suite exercises the production liveness check.
-term.is_live_terminal = function() return true end
+term.is_live_terminal = function()
+  return true
+end
 local spawns, inserts = 0, 0
 term.spawn = function()
   spawns = spawns + 1
   return spawns
 end
-term.start_insert = function() inserts = inserts + 1 end
+term.start_insert = function()
+  inserts = inserts + 1
+end
 
 check("horizontal terminal creates a split with window-local options", function()
   local origin = vim.api.nvim_get_current_win()
@@ -77,15 +86,23 @@ check("terminal display failure restores the original window and buffer state", 
     vim.api.nvim_set_current_win(origin)
     error("injected terminal display failure")
   end
-  local ok, err = pcall(function() map("n", " v").callback() end)
+  local ok, err = pcall(function()
+    map("n", " v").callback()
+  end)
   vim.api.nvim_win_set_buf = set_buf
   assert(not ok and tostring(err):find("injected terminal display failure", 1, true))
-  assert(allocated and not vim.api.nvim_buf_is_valid(allocated),
-    "failed display must not leak its scratch buffer")
-  assert(vim.api.nvim_get_current_win() == origin,
-    "failed display must restore the original window")
-  assert(#vim.api.nvim_tabpage_list_wins(0) == before_windows,
-    "failed display must close its partial split")
+  assert(
+    allocated and not vim.api.nvim_buf_is_valid(allocated),
+    "failed display must not leak its scratch buffer"
+  )
+  assert(
+    vim.api.nvim_get_current_win() == origin,
+    "failed display must restore the original window"
+  )
+  assert(
+    #vim.api.nvim_tabpage_list_wins(0) == before_windows,
+    "failed display must close its partial split"
+  )
   assert(spawns == before_spawns, "failed display must not start a job")
 end)
 
@@ -123,8 +140,11 @@ check("floating toggle preserves window layout and blocks foreign floats", funct
 
   local scratch = vim.api.nvim_create_buf(false, true)
   local float = vim.api.nvim_open_win(scratch, true, {
-    relative = "editor", row = 1, col = 1,
-    width = 20, height = 3,
+    relative = "editor",
+    row = 1,
+    col = 1,
+    width = 20,
+    height = 3,
   })
   assert(not term.can_toggle())
   -- A foreign float can impersonate the terminal filetype without owning a session.
@@ -151,7 +171,11 @@ check("terminal toggle preserves the last normal window beside a foreign float",
   -- Floating windows do not count as a second normal window.
   local popup_buffer = vim.api.nvim_create_buf(false, true)
   local popup = vim.api.nvim_open_win(popup_buffer, false, {
-    relative = "editor", row = 1, col = 1, width = 10, height = 2,
+    relative = "editor",
+    row = 1,
+    col = 1,
+    width = 10,
+    height = 2,
   })
   assert(#vim.api.nvim_tabpage_list_wins(tab) == 2)
   assert(term.toggle("vsp", "lastNormalTerm"))
@@ -222,7 +246,10 @@ check("an actual Neovim subprocess starts in a terminal buffer", function()
     vim.api.nvim_buf_delete(buffer, { force = true })
   end, debug.traceback)
   term.shell_argv = original_argv
-  term.spawn = function() spawns = spawns + 1; return spawns end
+  term.spawn = function()
+    spawns = spawns + 1
+    return spawns
+  end
   assert(ok, err)
 end)
 
@@ -241,9 +268,12 @@ check("exited saved PTY is replaced on reopen, not reused", function()
     buffers[#buffers + 1] = first
     local first_job = vim.b[first].terminal_job_id
     assert(vim.bo[first].buftype == "terminal" and first_job > 0)
-    assert(vim.wait(10000, function()
-      return vim.fn.jobwait({ first_job }, 0)[1] ~= -1
-    end, 20), "short-lived terminal command did not exit")
+    assert(
+      vim.wait(10000, function()
+        return vim.fn.jobwait({ first_job }, 0)[1] ~= -1
+      end, 20),
+      "short-lived terminal command did not exit"
+    )
 
     assert(term.toggle("vsp", "exited-pty"))
     assert(vim.api.nvim_get_current_win() == origin)
@@ -252,9 +282,11 @@ check("exited saved PTY is replaced on reopen, not reused", function()
     buffers[#buffers + 1] = second
     assert(second ~= first, "exited terminal buffer was incorrectly reused")
     assert(vim.bo[second].buftype == "terminal")
-    assert(type(vim.b[second].terminal_job_id) == "number"
-      and vim.b[second].terminal_job_id ~= first_job,
-      "reopening an exited session must start a new PTY")
+    local second_job = vim.b[second].terminal_job_id
+    assert(
+      type(second_job) == "number" and second_job ~= first_job,
+      "reopening an exited session must start a new PTY"
+    )
   end, debug.traceback)
 
   term.spawn, term.shell_argv = previous_spawn, previous_argv
@@ -272,11 +304,16 @@ end)
 check("leader and mode mappings survive injected failure and disable", function()
   local accepted = orbit.get_config()
   local original = commands.setup
-  commands.setup = function() error("terminal rollback injected") end
-  local ok, err = pcall(orbit.setup, { modules = {
-    keymaps = { leader = "," },
-    commands = { enabled = false },
-  } })
+  commands.setup = function()
+    error("terminal rollback injected")
+  end
+  local ok, err = pcall(
+    orbit.setup,
+    { modules = {
+      keymaps = { leader = "," },
+      commands = { enabled = false },
+    } }
+  )
   commands.setup = original
   assert(not ok and tostring(err):find("terminal rollback injected", 1, true))
   assert(vim.deep_equal(orbit.get_config(), accepted))

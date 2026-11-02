@@ -22,18 +22,30 @@ end
 
 ---@return LazySpec
 function M.spec()
-  if not accepted or not accepted.enabled then return {} end
+  if not accepted or not accepted.enabled then
+    return {}
+  end
   local keys = {}
   for _, lhs in ipairs({ "<RightMouse>", "<2-RightMouse>", "<3-RightMouse>", "<4-RightMouse>" }) do
     keys[#keys + 1] = {
-      lhs, function() require("orbit.modules.menu.runtime").open() end,
-      mode = { "n", "v" }, desc = "Open context menu",
+      lhs,
+      function()
+        require("orbit.modules.menu.runtime").open()
+      end,
+      mode = { "n", "v" },
+      desc = "Open context menu",
     }
   end
-  return { {
-    "Orbit-Lua/menu", dependencies = { "Orbit-Lua/volt" }, keys = keys,
-    config = function() require("orbit.modules.menu.runtime").install() end,
-  } }
+  return {
+    {
+      "Orbit-Lua/menu",
+      dependencies = { "Orbit-Lua/volt" },
+      keys = keys,
+      config = function()
+        require("orbit.modules.menu.runtime").install()
+      end,
+    },
+  }
 end
 
 return M

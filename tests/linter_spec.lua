@@ -45,10 +45,14 @@ check("TextChanged excludes SQLFluff but BufWritePost can run it", function()
   local buf = vim.api.nvim_create_buf(true, false)
   vim.bo[buf].filetype = "sql"
   vim.api.nvim_exec_autocmds("TextChanged", { buffer = buf, modeline = false })
-  vim.wait(450, function() return #runs > 0 end, 10)
+  vim.wait(450, function()
+    return #runs > 0
+  end, 10)
   assert(#runs == 0, "SQLFluff must be skipped while editing")
   vim.api.nvim_exec_autocmds("BufWritePost", { buffer = buf, modeline = false })
-  assert(vim.wait(1000, function() return #runs == 1 end, 10))
+  assert(vim.wait(1000, function()
+    return #runs == 1
+  end, 10))
   assert(vim.deep_equal(runs[1], { "sqlfluff" }))
 end)
 
@@ -60,20 +64,26 @@ check("the latest debounce event determines SQLFluff suppression", function()
   -- Reading followed by an edit must not lint SQLFluff during typing.
   vim.api.nvim_exec_autocmds("BufReadPost", { buffer = buf, modeline = false })
   vim.api.nvim_exec_autocmds("TextChanged", { buffer = buf, modeline = false })
-  vim.wait(450, function() return false end, 10)
+  vim.wait(450, function()
+    return false
+  end, 10)
   assert(#runs == before, "the latest TextChanged must skip SQLFluff")
 
   -- A save supersedes the edit and must run SQLFluff exactly once.
   vim.api.nvim_exec_autocmds("TextChanged", { buffer = buf, modeline = false })
   vim.api.nvim_exec_autocmds("BufWritePost", { buffer = buf, modeline = false })
-  assert(vim.wait(1000, function() return #runs > before end, 10))
+  assert(vim.wait(1000, function()
+    return #runs > before
+  end, 10))
   assert(#runs == before + 1)
   assert(vim.deep_equal(runs[#runs], { "sqlfluff" }))
 
   -- Editing after a save must suppress the replaced save timer.
   vim.api.nvim_exec_autocmds("BufWritePost", { buffer = buf, modeline = false })
   vim.api.nvim_exec_autocmds("TextChanged", { buffer = buf, modeline = false })
-  vim.wait(450, function() return false end, 10)
+  vim.wait(450, function()
+    return false
+  end, 10)
   assert(#runs == before + 1, "a later edit must cancel save-time lint")
 end)
 
@@ -83,7 +93,9 @@ check("pending lint is cancelled when buffer is wiped", function()
   vim.bo[buf].filetype = "lua"
   vim.api.nvim_exec_autocmds("BufReadPost", { buffer = buf, modeline = false })
   vim.api.nvim_buf_delete(buf, { force = true })
-  vim.wait(400, function() return false end, 10)
+  vim.wait(400, function()
+    return false
+  end, 10)
   assert(#runs == before)
 end)
 
@@ -91,13 +103,16 @@ check("repeated setup replaces its subscription without duplicates", function()
   local spec = module.spec()[1]
   spec.config(nil, spec.opts)
   assert(#vim.api.nvim_get_autocmds({
-    group = "OrbitLint", event = "BufReadPost",
+    group = "OrbitLint",
+    event = "BufReadPost",
   }) == 1)
   local buf = vim.api.nvim_create_buf(true, false)
   vim.bo[buf].filetype = "lua"
   local before = #runs
   vim.api.nvim_exec_autocmds("BufReadPost", { buffer = buf, modeline = false })
-  assert(vim.wait(1000, function() return #runs > before end, 10))
+  assert(vim.wait(1000, function()
+    return #runs > before
+  end, 10))
   assert(#runs == before + 1)
   assert(vim.deep_equal(runs[#runs], { "luacheck" }))
 end)

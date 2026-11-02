@@ -7,14 +7,34 @@ local root = vim.fn.fnamemodify(source, ":p:h:h:h")
 M.fallback_config = vim.fs.joinpath(root, "config", "sqlfluff.cfg")
 
 local config_names = {
-  ".sqlfluff", "pep8.ini", "pyproject.toml", "setup.cfg", "tox.ini",
+  ".sqlfluff",
+  "pep8.ini",
+  "pyproject.toml",
+  "setup.cfg",
+  "tox.ini",
 }
 local project_markers = {
-  ".git", ".hg", ".svn", ".bzr", "package.json", "pyproject.toml",
-  "setup.py", "requirements.txt", "Pipfile", "Cargo.toml", "go.mod",
-  "composer.json", "Gemfile", "Makefile", "CMakeLists.txt",
-  "meson.build", "build.gradle", "build.gradle.kts", "pom.xml",
-  ".idea", ".vscode",
+  ".git",
+  ".hg",
+  ".svn",
+  ".bzr",
+  "package.json",
+  "pyproject.toml",
+  "setup.py",
+  "requirements.txt",
+  "Pipfile",
+  "Cargo.toml",
+  "go.mod",
+  "composer.json",
+  "Gemfile",
+  "Makefile",
+  "CMakeLists.txt",
+  "meson.build",
+  "build.gradle",
+  "build.gradle.kts",
+  "pom.xml",
+  ".idea",
+  ".vscode",
 }
 
 local function directory(filename)
@@ -26,18 +46,16 @@ end
 
 local function declares_sqlfluff(path)
   local ok, lines = pcall(vim.fn.readfile, path)
-  if not ok then return false end
+  if not ok then
+    return false
+  end
   local toml = vim.fs.basename(path) == "pyproject.toml"
   for _, line in ipairs(lines) do
     if toml then
-      if line:match("^%s*%[tool%.sqlfluff%]") or
-        line:match("^%s*%[tool%.sqlfluff%.")
-      then
+      if line:match("^%s*%[tool%.sqlfluff%]") or line:match("^%s*%[tool%.sqlfluff%.") then
         return true
       end
-    elseif line:match("^%s*%[sqlfluff%]") or
-      line:match("^%s*%[sqlfluff:")
-    then
+    elseif line:match("^%s*%[sqlfluff%]") or line:match("^%s*%[sqlfluff:") then
       return true
     end
   end
@@ -48,11 +66,15 @@ end
 ---@return string?
 function M.find_config(filename)
   local candidates = vim.fs.find(config_names, {
-    path = directory(filename), upward = true, type = "file",
+    path = directory(filename),
+    upward = true,
+    type = "file",
     limit = math.huge,
   })
   for _, path in ipairs(candidates) do
-    if declares_sqlfluff(path) then return path end
+    if declares_sqlfluff(path) then
+      return path
+    end
   end
 end
 
@@ -64,9 +86,13 @@ function M.cwd(filename)
   -- closer package manifest when both are present.
   for _, marker in ipairs(project_markers) do
     local found = vim.fs.find(marker, {
-      path = start, upward = true, limit = 1,
+      path = start,
+      upward = true,
+      limit = 1,
     })
-    if found[1] then return vim.fs.dirname(found[1]) end
+    if found[1] then
+      return vim.fs.dirname(found[1])
+    end
   end
   return start
 end

@@ -42,7 +42,9 @@ local ignored_notifications = {
 ---@return boolean
 local function notification_filter(notif)
   for _, pattern in ipairs(ignored_notifications) do
-    if tostring(notif.msg):find(pattern) then return false end
+    if tostring(notif.msg):find(pattern) then
+      return false
+    end
   end
   return true
 end
@@ -50,18 +52,32 @@ end
 local layouts = {
   default = {
     layout = {
-      backdrop = false, box = "horizontal", width = 0.87, height = 0.80, border = "none",
+      backdrop = false,
+      box = "horizontal",
+      width = 0.87,
+      height = 0.80,
+      border = "none",
       {
         box = "vertical",
         { win = "list", border = "rounded", flex = 1 },
         { win = "input", height = 1, border = "rounded", title = "Find {title} {live} {flags}" },
       },
-      { win = "preview", title = "Preview {preview}", border = "rounded", flex = 1, min_width = 30 },
+      {
+        win = "preview",
+        title = "Preview {preview}",
+        border = "rounded",
+        flex = 1,
+        min_width = 30,
+      },
     },
   },
   select = {
     layout = {
-      backdrop = false, box = "vertical", border = "none", width = 0.6, height = 0.4,
+      backdrop = false,
+      box = "vertical",
+      border = "none",
+      width = 0.6,
+      height = 0.4,
       { win = "input", height = 0.1, border = "rounded", title = "{title}" },
       { win = "list", border = "rounded", flex = 1 },
     },
@@ -69,17 +85,35 @@ local layouts = {
   vscode = {
     hidden = { "preview" },
     layout = {
-      backdrop = false, row = 1, width = 0.4, min_width = 80, height = 0.4,
-      border = "none", box = "vertical",
-      { win = "input", height = 1, border = "rounded", title = "{title} {live} {flags}", title_pos = "center" },
+      backdrop = false,
+      row = 1,
+      width = 0.4,
+      min_width = 80,
+      height = 0.4,
+      border = "none",
+      box = "vertical",
+      {
+        win = "input",
+        height = 1,
+        border = "rounded",
+        title = "{title} {live} {flags}",
+        title_pos = "center",
+      },
       { win = "list", border = "hpad" },
       { win = "preview", title = "{preview}", border = true },
     },
   },
   vertical = {
     layout = {
-      backdrop = false, width = 0.5, min_width = 80, height = 0.8, min_height = 30,
-      box = "vertical", border = "rounded", title = "{title} {live} {flags}", title_pos = "center",
+      backdrop = false,
+      width = 0.5,
+      min_width = 80,
+      height = 0.8,
+      min_height = 30,
+      box = "vertical",
+      border = "rounded",
+      title = "{title} {live} {flags}",
+      title_pos = "center",
       { win = "input", height = 1, border = "bottom" },
       { win = "list", border = "none" },
       { win = "preview", title = "{preview}", height = 0.4, border = "top" },
@@ -120,7 +154,13 @@ local function options(c)
       sections = {
         { section = "header", align = "center" },
         { pane = 2, section = "keys", gap = 1, padding = 1 },
-        { pane = 2, title = "Recent Files", section = "recent_files", indent = 2, padding = { 1, 1 } },
+        {
+          pane = 2,
+          title = "Recent Files",
+          section = "recent_files",
+          indent = 2,
+          padding = { 1, 1 },
+        },
         { pane = 2, title = "Projects", section = "projects", indent = 2, padding = 1 },
         { pane = 2, section = "startup" },
       },
@@ -137,16 +177,20 @@ local function options(c)
       sources = { files = { hidden = true }, grep = { hidden = true } },
       win = {
         list = { wo = { wrap = false } },
-        input = { keys = {
-          ["<C-u>"] = { "preview_scroll_up", mode = { "i", "n" } },
-          ["<C-d>"] = { "preview_scroll_down", mode = { "i", "n" } },
-          ["<C-l>"] = { "focus_preview", mode = { "i", "n" } },
-          ["<C-h>"] = { "focus_input", mode = { "i", "n" } },
-        } },
-        preview = { keys = {
-          ["<C-l>"] = { "focus_preview", mode = { "i", "n" } },
-          ["<C-h>"] = { "focus_input", mode = { "i", "n" } },
-        } },
+        input = {
+          keys = {
+            ["<C-u>"] = { "preview_scroll_up", mode = { "i", "n" } },
+            ["<C-d>"] = { "preview_scroll_down", mode = { "i", "n" } },
+            ["<C-l>"] = { "focus_preview", mode = { "i", "n" } },
+            ["<C-h>"] = { "focus_input", mode = { "i", "n" } },
+          },
+        },
+        preview = {
+          keys = {
+            ["<C-l>"] = { "focus_preview", mode = { "i", "n" } },
+            ["<C-h>"] = { "focus_input", mode = { "i", "n" } },
+          },
+        },
       },
       layouts = vim.deepcopy(layouts),
     },

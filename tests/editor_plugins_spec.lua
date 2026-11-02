@@ -70,9 +70,10 @@ end)
 
 check("configuration is validated and deferred after initial setup", function()
   local accepted = orbit.get_config()
-  local ok, err = pcall(orbit.setup, { modules = {
-    editor_plugins = { matchup_stopline = -1 },
-  } })
+  local ok, err =
+    pcall(orbit.setup, { modules = {
+      editor_plugins = { matchup_stopline = -1 },
+    } })
   assert(not ok and tostring(err):find("matchup_stopline", 1, true))
   assert(vim.deep_equal(orbit.get_config(), accepted))
 

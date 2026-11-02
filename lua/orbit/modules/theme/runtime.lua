@@ -28,14 +28,17 @@ end
 ---@return table<string, vim.api.keyset.highlight>
 function M.groups(c)
   local term, program = vim.env.TERM or "", vim.env.TERM_PROGRAM or ""
-  local curly = not not vim.g.neovide or vim.fn.has("gui_running") == 1
+  local curly = not not vim.g.neovide
+    or vim.fn.has("gui_running") == 1
     or term:find("kitty", 1, true) ~= nil
     or ({ WezTerm = true, ["iTerm.app"] = true, ghostty = true })[program] == true
   local curl = { undercurl = curly, underline = not curly }
-  local inherited = vim.tbl_extend("force",
+  local inherited = vim.tbl_extend(
+    "force",
     require("orbit.modules.theme.editor")(c),
     require("orbit.modules.theme.plugins")(c),
-    require("orbit.modules.theme.bars")(c))
+    require("orbit.modules.theme.bars")(c)
+  )
   return vim.tbl_extend("force", inherited, {
     ["@comment"] = { fg = c.grey_fg, italic = true },
     ["@comment.todo"] = { fg = c.grey, bg = c.green },
@@ -116,16 +119,22 @@ end
 
 ---Reapply owned colors after a plugin installs unconditional fallback groups.
 function M.refresh()
-  if started and options and options.highlights then M.apply_highlights() end
+  if started and options and options.highlights then
+    M.apply_highlights()
+  end
 end
 
 local function sync_group()
   pcall(vim.api.nvim_del_augroup_by_name, group_name)
-  if not (started and options and options.highlights) then return end
+  if not (started and options and options.highlights) then
+    return
+  end
   local group = vim.api.nvim_create_augroup(group_name, { clear = true })
   vim.api.nvim_create_autocmd("ColorScheme", {
     group = group,
-    callback = function() M.apply_highlights(true) end,
+    callback = function()
+      M.apply_highlights(true)
+    end,
     desc = "Apply Orbit highlight overrides",
   })
 end
@@ -142,7 +151,9 @@ end
 
 local function activate()
   sync_group()
-  if not options then return end
+  if not options then
+    return
+  end
   if vim.g.colors_name ~= options.colorscheme then
     M.apply(options.colorscheme)
   elseif options.highlights then
@@ -161,7 +172,9 @@ end
 function M.update(next_options)
   local had_highlights = options ~= nil and options.highlights
   options = vim.deepcopy(next_options)
-  if not started then return end
+  if not started then
+    return
+  end
   activate()
   -- Reapplying the scheme removes overrides that are no longer wanted.
   if had_highlights and not options.highlights and vim.g.colors_name then
@@ -185,7 +198,9 @@ function M.restore(state)
   started = state.started
   options = require("orbit.modules.theme").current_options()
   sync_group()
-  if not started or not state.colorscheme then return end
+  if not started or not state.colorscheme then
+    return
+  end
   if vim.g.colors_name ~= state.colorscheme or had_highlights ~= state.highlights then
     M.apply(state.colorscheme)
   end

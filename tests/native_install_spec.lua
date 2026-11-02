@@ -9,16 +9,17 @@ local original_packpath = vim.o.packpath
 
 local function run(argv)
   local result = vim.system(argv, { text = true, timeout = 120000 }):wait()
-  assert(result.code == 0,
-    "local package checkout failed: " .. tostring(result.stderr or result.stdout))
+  assert(
+    result.code == 0,
+    "local package checkout failed: " .. tostring(result.stderr or result.stdout)
+  )
 end
 
 local ok, err = xpcall(function()
   assert(vim.fn.executable("git") == 1, "Git is required")
   assert(vim.fn.mkdir(parent, "p") == 1)
   run({ "git", "clone", "--no-hardlinks", "--quiet", root, installed })
-  assert(vim.fn.filereadable(vim.fs.joinpath(installed,
-    "lua", "orbit", "init.lua")) == 1)
+  assert(vim.fn.filereadable(vim.fs.joinpath(installed, "lua", "orbit", "init.lua")) == 1)
   vim.opt.packpath:prepend(site)
 
   assert(package.loaded.orbit == nil, "orbit loaded before explicit packadd")
@@ -28,36 +29,55 @@ local ok, err = xpcall(function()
   assert(source:sub(1, 1) == "@", "Orbit setup is not loaded from a file")
   local path = vim.fs.normalize(source:sub(2))
   local dir = vim.fs.normalize(installed)
-  assert(path:sub(1, #dir) == dir,
-    "native package loaded the wrong source: " .. path)
+  assert(path:sub(1, #dir) == dir, "native package loaded the wrong source: " .. path)
   print("PASS isolated native pack/start checkout with explicit packadd")
 
   orbit.setup()
   local accepted = orbit.get_config()
   assert(type(accepted) == "table" and accepted.modules.plugins.enabled == false)
   assert(require("orbit.modules.plugins").status() == "disabled")
-  assert(package.loaded.lazy == nil,
-    "native package install must not download or import Lazy")
-  assert(vim.api.nvim_get_commands({}).OrbitSettings ~= nil,
-    "native installation did not register :OrbitSettings")
-  assert(vim.fn.filereadable(vim.fs.joinpath(installed,
-    "settings.schema.json")) == 1)
+  assert(package.loaded.lazy == nil, "native package install must not download or import Lazy")
+  assert(
+    vim.api.nvim_get_commands({}).OrbitSettings ~= nil,
+    "native installation did not register :OrbitSettings"
+  )
+  assert(vim.fn.filereadable(vim.fs.joinpath(installed, "settings.schema.json")) == 1)
   orbit.setup()
-  assert(vim.deep_equal(orbit.get_config(), accepted),
-    "repeated initialization replaced accepted config")
+  assert(
+    vim.deep_equal(orbit.get_config(), accepted),
+    "repeated initialization replaced accepted config"
+  )
   print("PASS installed init.lua setup, disabled plugin bootstrap and settings command")
 
   -- The bundled init.lua enables plugins; setup alone must not clone Lazy.
   local data = vim.fs.joinpath(base, "data")
-  local probe = vim.system({ vim.v.progpath, "--headless", "-i", "NONE",
-    "--cmd", "set packpath^=" .. vim.fn.fnameescape(site),
-    "-u", vim.fs.joinpath(installed, "init.lua"),
-    "-c", "lua io.stdout:write(require('orbit.modules.plugins').status())", "-c", "qa!",
-  }, { text = true, env = { XDG_DATA_HOME = data, XDG_STATE_HOME = data, XDG_CACHE_HOME = data } }):wait(60000)
-  assert(probe.code == 0 and probe.stdout == "pending",
-    "bundled init.lua did not enable plugins: " .. vim.inspect(probe))
-  assert(not vim.uv.fs_stat(vim.fs.joinpath(data, "nvim", "lazy", "lazy.nvim")),
-    "bundled init.lua cloned Lazy before first demand")
+  local probe = vim
+    .system(
+      {
+        vim.v.progpath,
+        "--headless",
+        "-i",
+        "NONE",
+        "--cmd",
+        "set packpath^=" .. vim.fn.fnameescape(site),
+        "-u",
+        vim.fs.joinpath(installed, "init.lua"),
+        "-c",
+        "lua io.stdout:write(require('orbit.modules.plugins').status())",
+        "-c",
+        "qa!",
+      },
+      { text = true, env = { XDG_DATA_HOME = data, XDG_STATE_HOME = data, XDG_CACHE_HOME = data } }
+    )
+    :wait(60000)
+  assert(
+    probe.code == 0 and probe.stdout == "pending",
+    "bundled init.lua did not enable plugins: " .. vim.inspect(probe)
+  )
+  assert(
+    not vim.uv.fs_stat(vim.fs.joinpath(data, "nvim", "lazy", "lazy.nvim")),
+    "bundled init.lua cloned Lazy before first demand"
+  )
   print("PASS bundled init.lua enables plugins without cloning at setup")
 end, debug.traceback)
 

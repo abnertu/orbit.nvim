@@ -10,13 +10,17 @@ local function close_timer(buf)
   timers[buf] = nil
   if timer then
     timer:stop()
-    if not timer:is_closing() then timer:close() end
+    if not timer:is_closing() then
+      timer:close()
+    end
   end
 end
 
 local function linters_for(lint, ft)
   local exact = lint.linters_by_ft[ft]
-  if exact then return vim.deepcopy(exact) end
+  if exact then
+    return vim.deepcopy(exact)
+  end
   local result, seen = {}, {}
   for _, part in ipairs(vim.split(ft, ".", { plain = true })) do
     for _, name in ipairs(lint.linters_by_ft[part] or {}) do
@@ -30,14 +34,17 @@ local function linters_for(lint, ft)
 end
 
 local function run(lint, opts, buf, only_edit)
-  if not vim.api.nvim_buf_is_valid(buf) or
-    not vim.api.nvim_buf_is_loaded(buf) or
-    vim.api.nvim_get_option_value("buftype", { buf = buf }) ~= ""
+  if
+    not vim.api.nvim_buf_is_valid(buf)
+    or not vim.api.nvim_buf_is_loaded(buf)
+    or vim.api.nvim_get_option_value("buftype", { buf = buf }) ~= ""
   then
     return
   end
   local ft = vim.api.nvim_get_option_value("filetype", { buf = buf })
-  if ft == "bigfile" then return end
+  if ft == "bigfile" then
+    return
+  end
 
   local names = linters_for(lint, ft)
   if only_edit then
@@ -45,11 +52,14 @@ local function run(lint, opts, buf, only_edit)
       return not vim.tbl_contains(opts.skip_while_editing, name)
     end, names)
   end
-  if #names == 0 then return end
+  if #names == 0 then
+    return
+  end
   vim.api.nvim_buf_call(buf, function()
     lint.try_lint(names)
     vim.api.nvim_exec_autocmds("User", {
-      pattern = "NvimLintRunPost", modeline = false,
+      pattern = "NvimLintRunPost",
+      modeline = false,
     })
   end)
 end
@@ -57,15 +67,16 @@ end
 function M.setup(opts)
   generation = generation + 1
   local current_generation = generation
-  for buf in pairs(timers) do close_timer(buf) end
+  for buf in pairs(timers) do
+    close_timer(buf)
+  end
   editing = {}
   local lint = require("lint")
   lint.linters = lint.linters or {}
   for name, definition in pairs(opts.linters or {}) do
     lint.linters[name] = definition
   end
-  lint.linters_by_ft = require("orbit.hangar_bridge")
-    .filter("linter", opts.linters_by_ft)
+  lint.linters_by_ft = require("orbit.hangar_bridge").filter("linter", opts.linters_by_ft)
   vim.env.ESLINT_D_PPID = tostring(vim.fn.getpid())
 
   group = vim.api.nvim_create_augroup("OrbitLint", { clear = true })

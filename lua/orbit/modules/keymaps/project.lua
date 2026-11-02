@@ -3,11 +3,27 @@ local M = {}
 
 -- Keep the marker precedence, including Git worktree .git files.
 local markers = {
-  ".git", ".hg", ".svn", ".bzr",
-  "package.json", "pyproject.toml", "setup.py", "requirements.txt",
-  "Pipfile", "Cargo.toml", "go.mod", "composer.json", "Gemfile",
-  "Makefile", "CMakeLists.txt", "meson.build", "build.gradle",
-  "build.gradle.kts", "pom.xml", ".idea", ".vscode",
+  ".git",
+  ".hg",
+  ".svn",
+  ".bzr",
+  "package.json",
+  "pyproject.toml",
+  "setup.py",
+  "requirements.txt",
+  "Pipfile",
+  "Cargo.toml",
+  "go.mod",
+  "composer.json",
+  "Gemfile",
+  "Makefile",
+  "CMakeLists.txt",
+  "meson.build",
+  "build.gradle",
+  "build.gradle.kts",
+  "pom.xml",
+  ".idea",
+  ".vscode",
 }
 
 ---Get the project root. Explicit paths do not use the current buffer's LSP.
@@ -24,13 +40,16 @@ function M.root(path)
     end
   end
 
-  if filename == "" then return vim.fs.normalize(vim.fn.getcwd()) end
+  if filename == "" then
+    return vim.fs.normalize(vim.fn.getcwd())
+  end
   local expanded = vim.fs.normalize(vim.fn.expand(filename))
-  local directory = vim.fn.isdirectory(expanded) == 1
-    and expanded or vim.fs.dirname(expanded)
+  local directory = vim.fn.isdirectory(expanded) == 1 and expanded or vim.fs.dirname(expanded)
   for _, marker in ipairs(markers) do
     local result = vim.fs.find(marker, { path = directory, upward = true })[1]
-    if result then return vim.fs.dirname(result) end
+    if result then
+      return vim.fs.dirname(result)
+    end
   end
   return directory
 end

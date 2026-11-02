@@ -8,7 +8,9 @@ local namespace = vim.api.nvim_create_namespace("orbit.harpoon")
 ---@param root? string
 ---@return string
 function M.pretty_path(path, length, root)
-  if path == "" then return "" end
+  if path == "" then
+    return ""
+  end
   local normalized = vim.fs.normalize(path)
   if root then
     local prefix = vim.fs.normalize(root)
@@ -19,18 +21,23 @@ function M.pretty_path(path, length, root)
     end
   end
   local parts = vim.split(normalized, "[\\/]", { plain = false })
-  if length == 1 then return parts[#parts] end
-  if #parts <= length then return table.concat(parts, "/") end
+  if length == 1 then
+    return parts[#parts]
+  end
+  if #parts <= length then
+    return table.concat(parts, "/")
+  end
   local trimmed = { parts[1], "…" }
-  vim.list_extend(trimmed,
-    vim.list_slice(parts, #parts - length + 2, #parts))
+  vim.list_extend(trimmed, vim.list_slice(parts, #parts - length + 2, #parts))
   return table.concat(trimmed, "/")
 end
 
 function M.format_display(path)
   local icon = ""
   local ok, icons = pcall(require, "mini.icons")
-  if ok then icon = icons.get("file", path) or "" end
+  if ok then
+    icon = icons.get("file", path) or ""
+  end
   return "  " .. icon .. " " .. path
 end
 
@@ -49,7 +56,8 @@ function M.create_list_item(config, value, length)
   return {
     value = value,
     context = {
-      row = pos[1], col = pos[2],
+      row = pos[1],
+      col = pos[2],
       short_path = M.pretty_path(value, length, vim.fn.getcwd()),
     },
   }
@@ -59,14 +67,18 @@ function M.highlight_current_file(length)
   return {
     UI_CREATE = function(cx)
       local current = M.pretty_path(cx.current_file, length, vim.fn.getcwd())
-      if current == "" or not vim.api.nvim_buf_is_valid(cx.bufnr) then return end
+      if current == "" or not vim.api.nvim_buf_is_valid(cx.bufnr) then
+        return
+      end
       local display = M.format_display(current)
       for line, entry in pairs(cx.contents or {}) do
-        if type(line) == "number" and type(entry) == "string" and entry ~= ""
+        if
+          type(line) == "number"
+          and type(entry) == "string"
+          and entry ~= ""
           and entry == display
         then
-          local content = vim.api.nvim_buf_get_lines(
-            cx.bufnr, line - 1, line, false)[1]
+          local content = vim.api.nvim_buf_get_lines(cx.bufnr, line - 1, line, false)[1]
           if content and #content >= 2 then
             vim.api.nvim_buf_set_extmark(cx.bufnr, namespace, line - 1, 2, {
               end_col = #content,
@@ -85,7 +97,9 @@ end
 local started = false
 ---@param length integer
 function M.setup(length)
-  if started then return end
+  if started then
+    return
+  end
   local harpoon = require("harpoon")
   harpoon:setup({
     default = {
