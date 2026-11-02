@@ -17,7 +17,7 @@ check("feature import never loads Conform", function()
   assert(package.loaded.conform == nil)
 end)
 
-check("legacy formatter mapping and filetypes are retained", function()
+check("formatter mapping and filetypes are configured", function()
   orbit.setup()
   local item = formatter.spec()[1]
   assert(item[1] == "stevearc/conform.nvim")

@@ -52,7 +52,7 @@ check("core mappings replace their five owned slots", function()
   assert(rhs("<C-l>"):lower() == "<c-w>l")
 end)
 
-check("common editing shortcuts use the legacy modes and actions", function()
+check("common editing shortcuts use their modes and actions", function()
   local expected = {
     { "n", "<C-c>", "%y+" },
     { "n", ";", ":" },

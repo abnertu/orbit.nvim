@@ -75,12 +75,12 @@ local ok, err = xpcall(function()
   print("PASS pinned upstream Noice and NUI checkout")
   print("PASS real Noice Lazy activation and command")
   -- Formatter routing is based on the presence of the tag, not truthiness.
-  -- The legacy contract deliberately accepts an explicit false value.
+  -- The contract deliberately accepts an explicit false value.
   local formatter_filter = config.routes[1].filter.cond
   assert(not formatter_filter({ opts = {} }),
     "ordinary notification unexpectedly matched formatter progress")
   assert(formatter_filter({ opts = { orbit_formatter = false } }),
-    "explicit false formatter tag lost its legacy route")
+    "explicit false formatter tag lost its route")
   print("PASS real Noice formatter route preserves explicit false tags")
   print("PASS real Noice merged formatter progress route")
 
@@ -138,7 +138,7 @@ local ok, err = xpcall(function()
   print("PASS real Noice formatter popup dismisses and reopens without stale content")
 
   -- False is an explicit formatter tag. Exercise the actual notify/router/NUI
-  -- path to guard the legacy contract, not only the route predicate.
+  -- path to guard the contract, not only the route predicate.
   local resumed_window = reopened.winid
   router.dismiss()
   assert(vim.wait(2000, function()

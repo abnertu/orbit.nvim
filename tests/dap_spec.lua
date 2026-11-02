@@ -32,7 +32,7 @@ local opts = orbit.get_config().modules.dap
 local defs = definitions.build(opts)
 local python = defs.adapters.python
 
-check("Python attach keeps the legacy server host and port", function()
+check("Python attach keeps the default server host and port", function()
   local received
   python(function(spec) received = spec end, { request = "attach" })
   assert(received.type == "server")

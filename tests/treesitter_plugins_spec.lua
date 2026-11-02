@@ -11,7 +11,7 @@ local function check(label, fn)
   print("PASS " .. label)
 end
 
-check("feature import is inert and defaults preserve legacy declarations", function()
+check("feature import is inert and defaults keep their declarations", function()
   assert(#feature.spec() == 0)
   orbit.setup()
   local s = feature.spec()

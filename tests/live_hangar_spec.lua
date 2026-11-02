@@ -76,7 +76,7 @@ local ok, err = xpcall(function()
     "ruff_format", "ruff_organize_imports", "ruff_fix",
   }))
   assert(vim.fn.filereadable(decoy) == 0,
-    "Hangar wrote the legacy/global override instead of the explicit path")
+    "Hangar wrote the global override instead of the explicit path")
   print("PASS real Hangar persists LSP/linter/formatter flags and order")
 
   local initial = {

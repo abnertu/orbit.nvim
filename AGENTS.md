@@ -16,7 +16,6 @@
 - Report a blocked branch deletion; never report deletion without confirmation.
 - Do not force-push or merge failed, incomplete, or unreviewed changes.
 - Keep `.plans/`, logs, throwaway tests and personal settings outside tracked files.
-- Do not modify the legacy configuration's default branch as part of a migration experiment.
 
 ## Releases
 
@@ -61,7 +60,7 @@
 - Mark defaulted LuaDoc options as optional (`---@field name? type`); keep generated JSON property names unchanged.
 - Generate `settings.schema.json` from LuaDoc annotations. Do not author module `schema.json` files.
 - Use local LuaDoc classes for nested objects and typed arrays. Reject recursive class schemas.
-- Preserve global, buffer-local and window-local option scope during migrations.
+- Preserve global, buffer-local and window-local option scope when options change owners.
 - Preserve pre-existing Neovim filetype mappings when a feature disables or rolls back.
 - Restore prior user key mappings when disabling or rolling back a mapping owner.
 - Do not introduce global variables for internal state.
@@ -69,7 +68,7 @@
 - Never overwrite a user-owned command. Create settings files only on explicit open.
 - Own and reuse Neovim autocommand groups. Do not replay or duplicate event handlers on reload.
 - Emit FilePost only once after a ready file; preserve existing observer execution counts.
-- Keep Linux and Windows as equal targets for migrated features.
+- Keep Linux and Windows as equal targets for every feature.
 
 ## Tests
 
@@ -119,5 +118,4 @@
 - Preserve commands, paths and code in translations.
 - Keep user installation and configuration instructions in `README.md`.
 - Read [architecture](doc/architecture.md) before changing module boundaries.
-- Read [migration](doc/migration.md) before renaming interfaces or moving persistent state.
 - Read [settings](doc/settings.md) before changing saved settings or validation behavior.

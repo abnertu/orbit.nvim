@@ -42,7 +42,7 @@ check("restart-only message options build one VeryLazy Noice spec", function()
   assert(opts.lsp.hover.opts.size.max_height <= 18)
 end)
 
-check("formatter and ignored-message routes preserve legacy behavior", function()
+check("formatter and ignored-message routes keep their behavior", function()
   local opts = messages.spec()[1].opts()
   local formatter, ignored, progress = unpack(opts.routes)
   assert(formatter.view == "formatter_progress")

@@ -23,7 +23,7 @@ function M.frontmatter(note)
     return {}
   end
 
-  -- Keep the legacy portable local-time format (no POSIX-only strftime tokens).
+  -- Keep a portable local-time format (no POSIX-only strftime tokens).
   local now = os.date("%Y-%m-%d %H:%M:%S")
   -- Preserve arbitrary frontmatter metadata. The refreshed timestamp must
   -- win even when the note supplied an earlier modified value.

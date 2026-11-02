@@ -1,4 +1,4 @@
--- Pure Lua buffer operations replacing tabufline and the destructive %bd|e#.
+-- Pure Lua buffer operations; never the destructive %bd|e#.
 -- No external plugin import or implicit writes.
 local M = {}
 

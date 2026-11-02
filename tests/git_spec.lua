@@ -18,7 +18,7 @@ check("importing module does not initialize plugin code", function()
   assert(not package.loaded.gitsigns)
 end)
 
-check("module defaults preserve legacy marker values", function()
+check("module defaults keep the sign marker values", function()
   local defaults = require("orbit.config").resolve_module("git", {})
   assert(defaults.marks.add == "▎")
   assert(defaults.marks.delete == "")

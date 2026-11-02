@@ -21,7 +21,7 @@ for _, mode in ipairs({ "n", "i", "s" }) do
   originals[mode] = map(mode)
 end
 
-check("smart Escape is lazy and expression-mapped in every legacy mode", function()
+check("smart Escape is lazy and expression-mapped in every mapped mode", function()
   orbit.setup()
   assert(package.loaded["orbit.modules.corekeys.escape"] == nil)
   for _, mode in ipairs({ "n", "i", "s" }) do

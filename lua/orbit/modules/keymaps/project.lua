@@ -1,7 +1,7 @@
--- Resolve the current file root without a legacy utility or shell dependency.
+-- Resolve the current file root without a shell dependency.
 local M = {}
 
--- Preserve the legacy marker precedence, including Git worktree .git files.
+-- Keep the marker precedence, including Git worktree .git files.
 local markers = {
   ".git", ".hg", ".svn", ".bzr",
   "package.json", "pyproject.toml", "setup.py", "requirements.txt",
