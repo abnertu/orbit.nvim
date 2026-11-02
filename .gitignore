@@ -2,3 +2,6 @@
 .DS_Store
 *.swp
 *.swo
+
+# Lazy writes its lockfile into the configuration directory
+lazy-lock.json

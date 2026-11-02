@@ -46,6 +46,19 @@ local ok, err = xpcall(function()
   assert(vim.deep_equal(orbit.get_config(), accepted),
     "repeated initialization replaced accepted config")
   print("PASS installed init.lua setup, disabled plugin bootstrap and settings command")
+
+  -- The bundled init.lua enables plugins; setup alone must not clone Lazy.
+  local data = vim.fs.joinpath(base, "data")
+  local probe = vim.system({ vim.v.progpath, "--headless", "-i", "NONE",
+    "--cmd", "set packpath^=" .. vim.fn.fnameescape(site),
+    "-u", vim.fs.joinpath(installed, "init.lua"),
+    "-c", "lua io.stdout:write(require('orbit.modules.plugins').status())", "-c", "qa!",
+  }, { text = true, env = { XDG_DATA_HOME = data, XDG_STATE_HOME = data, XDG_CACHE_HOME = data } }):wait(60000)
+  assert(probe.code == 0 and probe.stdout == "pending",
+    "bundled init.lua did not enable plugins: " .. vim.inspect(probe))
+  assert(not vim.uv.fs_stat(vim.fs.joinpath(data, "nvim", "lazy", "lazy.nvim")),
+    "bundled init.lua cloned Lazy before first demand")
+  print("PASS bundled init.lua enables plugins without cloning at setup")
 end, debug.traceback)
 
 vim.o.packpath = original_packpath
