@@ -29,7 +29,7 @@ check("provider import is inert and is independent of generic LSP", function()
   assert(package.loaded["typescript-tools"] == nil)
 end)
 
-check("Roslyn condition honors Hangar state and executable gating", function()
+check("Roslyn condition honors Hangar before Mason exposes executables", function()
   local item = owner.spec()[1]
   local original_executable = vim.fn.executable
   local original_hangar = package.loaded.hangar
@@ -40,7 +40,7 @@ check("Roslyn condition honors Hangar state and executable gating", function()
     if name == "dotnet" or name == "roslyn-language-server"
       or name == "roslyn-language-server.cmd"
     then
-      return 1
+      return 0
     end
     return original_executable(name)
   end
@@ -58,7 +58,7 @@ check("Roslyn condition honors Hangar state and executable gating", function()
     }
     assert(not item.cond(), "disabled Roslyn must not activate")
     enabled = true
-    assert(item.cond(), "enabled Roslyn with executables must activate")
+    assert(item.cond(), "enabled Roslyn must survive Lazy resolution before Mason initializes PATH")
     assert(queries == 2)
   end, debug.traceback)
   vim.fn.executable = original_executable
