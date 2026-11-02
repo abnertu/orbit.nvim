@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-02
+
+### Added
+
+- An independent terminal module with validated dimensions, input mode and enablement settings.
+- LuaLS acceptance checks for upstream types, aliases, class members and every module's settings on Linux and Windows.
+
+### Changed
+
+- Terminal actions delegate from keymaps to the terminal owner. Settings changes and rollback preserve saved sessions.
+- Plugin options and callbacks use upstream LuaDoc types. Orbit settings keep their separate JSON validation contracts.
+
+### Fixed
+
+- Horizontal terminals open below, and vertical terminals open right, regardless of editor split preferences.
+- Default Windows terminals select pwsh or Windows PowerShell, load profiles and suppress startup banners.
+- Shell startup preserves quoted executable paths, paths containing spaces and explicit arguments.
+- `<leader>x` shares Snacks buffer deletion with `<leader>bd`. Native buffer deletion also preserves split windows.
+- LazyDev resolves `LazySpec` and annotation-only plugin types. Project configuration no longer overrides its library discovery.
+- Lua settings completion includes all modules. Callback aliases and generic annotations use valid LuaDoc syntax.
+- Roslyn defers executable resolution until Mason exposes its installed server.
+
 ## [1.0.0] - 2026-11-02
 
 The first stable release. It completes the modular Lua rewrite tracked in [#1](https://github.com/abnertu/orbit.nvim/issues/1).
@@ -48,5 +70,6 @@ The first stable release. It completes the modular Lua rewrite tracked in [#1](h
 - The Markdown preview build records the installed release, so a successful install no longer reports a failure.
 - The Orbit-Lua nvim-dap fork converts breakpoint paths to backslashes only on Windows.
 
-[Unreleased]: https://github.com/abnertu/orbit.nvim/compare/1.0.0...HEAD
+[Unreleased]: https://github.com/abnertu/orbit.nvim/compare/1.1.0...HEAD
+[1.1.0]: https://github.com/abnertu/orbit.nvim/compare/1.0.0...1.1.0
 [1.0.0]: https://github.com/abnertu/orbit.nvim/releases/tag/1.0.0
