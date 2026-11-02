@@ -21,7 +21,17 @@ orbit.nvim is a modular Neovim configuration. Each feature is a module with its 
 
 ## Install
 
-orbit.nvim loads with Neovim's native package loader. A plugin manager is not necessary.
+### As your configuration directory
+
+Clone the repository as your Neovim configuration:
+
+```sh
+git clone https://github.com/abnertu/orbit.nvim ~/.config/nvim
+```
+
+On Windows, clone it into `~/AppData/Local/nvim`. The bundled `init.lua` enables all features. On the first start, Orbit clones Lazy and Lazy installs the plugins.
+
+### As a package
 
 1. In Neovim, run `:echo stdpath('data')` to find the data directory.
 2. Clone this repository into `<data-dir>/site/pack/orbit/start/orbit.nvim`.
@@ -30,10 +40,18 @@ orbit.nvim loads with Neovim's native package loader. A plugin manager is not ne
 ```lua
 -- Load the package before you call its Lua API in init.lua.
 vim.cmd.packadd("orbit.nvim")
-require("orbit").setup()
+require("orbit").setup({
+  modules = {
+    plugins = {
+      enabled = true,
+      bootstrap = true,
+      path = vim.fn.stdpath("data") .. "/lazy/lazy.nvim",
+    },
+  },
+})
 ```
 
-4. Restart Neovim and run `:OrbitSettings info`.
+4. Restart Neovim. Then run `:checkhealth lazy` and `:OrbitSettings info`.
 
 `:packadd` loads Orbit's plugin and `after` files before `setup()` runs, not only its Lua modules.
 
@@ -43,22 +61,11 @@ To try orbit.nvim without changing your configuration, run this command in the r
 nvim --clean --cmd "set rtp^=." -c "lua require('orbit').setup()"
 ```
 
-## Enable plugins
+## Plugins
 
-The default setup loads only native features. It does not download Lazy or any plugin. To enable plugins, give Orbit a Lazy checkout:
+Most features load through Lazy. Both install methods above enable it.
 
-```lua
-require("orbit").setup({
-  modules = {
-    plugins = {
-      enabled = true,
-      path = vim.fn.stdpath("data") .. "/lazy/lazy.nvim",
-      bootstrap = true,
-    },
-  },
-})
-```
-
+- `require("orbit").setup()` without `modules.plugins.enabled = true` loads only native features and downloads nothing.
 - Lazy starts on the first demand event, for example the first file read.
 - `bootstrap = true` clones Lazy on first demand when the checkout is missing. It uses the `lazy.nvim` commit from `lazy-lock.json` when that file exists.
 - `import` selects the Lazy spec module. The default is `orbit.plugins`, which collects the specs of all enabled modules.

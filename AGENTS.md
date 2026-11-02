@@ -44,7 +44,7 @@
 - Keep declarations separate from runtime side effects.
 - Keep cross-module dependencies explicit.
 - Use hermetic Lua and local Git fixtures for Lazy startup tests. Do not download plugins during CI.
-- Clone Lazy only on explicit opt-in demand. Respect locked revisions and never replace existing checkouts.
+- Clone Lazy only when the configuration sets `bootstrap = true`, and only on first demand. Respect locked revisions and never replace existing checkouts.
 - Treat activated plugin managers as restart-only; do not claim rollback of external plugin state.
 - Native LSP must not duplicate Roslyn or TypeScript-tools registration.
 - Keep specialist LSP diagnostics and solution selection independent of generic server registration.

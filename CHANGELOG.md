@@ -20,6 +20,7 @@ The first stable release. It completes the modular Lua rewrite tracked in [#1](h
 - Language owners for native LSP, Roslyn, TypeScript tools, Conform, nvim-lint, SQLFluff, Tree-sitter, Markdown preview, Obsidian, Mason and Hangar.
 - Debugging with nvim-dap, debugpy launch and attach, DAP UI and CoreCLR through dotnet-cli.
 - Live suites against real plugins and tools on Linux and Windows, including Roslyn, tsserver, debugpy, netcoredbg, SQLFluff, Mason and a headless browser.
+- The bundled `init.lua` enables plugins and bootstraps Lazy, so a clone into the configuration directory works without extra setup.
 - A `justfile` and `scripts/test.lua` that run every suite with private XDG directories.
 - A release workflow for version tags.
 
