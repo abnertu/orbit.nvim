@@ -42,7 +42,7 @@
 ---@field errors string[]
 ---@field errmsg string
 ---@field manifest string[]
----@field shim string[]
+---@field specs string[]
 ---@field helper string[]
 ---@field helper_loaded boolean
 
@@ -149,7 +149,7 @@ return function(opts)
         tree = package.loaded["nvim-tree"] ~= nil, oil = package.loaded.oil ~= nil,
         errors = errors, errmsg = vim.v.errmsg,
         manifest = vim.api.nvim_get_runtime_file("lua/orbit/modules/manifest.json", true),
-        shim = vim.api.nvim_get_runtime_file("lua/plugins/init.lua", true),
+        specs = vim.api.nvim_get_runtime_file("lua/orbit/plugins/init.lua", true),
         helper = vim.api.nvim_get_runtime_file("lua/orbit/modules/snacks/runtime.lua", true),
         helper_loaded = package.loaded["orbit.modules.snacks.runtime"] ~= nil,
       }
