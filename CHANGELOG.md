@@ -36,6 +36,8 @@ The first stable release. It completes the modular Lua rewrite tracked in [#1](h
 
 ### Fixed
 
+- Color previews stay cleared when the owner or hex previews disable before a queued refresh.
+- Split windows share one color swatch for each visible hex code.
 - DAP UI closes when an attach session ends.
 - The Markdown preview build records the installed release, so a successful install no longer reports a failure.
 - The Orbit-Lua nvim-dap fork converts breakpoint paths to backslashes only on Windows.

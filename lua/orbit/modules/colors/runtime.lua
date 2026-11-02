@@ -13,6 +13,8 @@ local pending = {}
 local defined = {}
 local lsp_styled = false
 local swatch_set = false
+local hex_active = false
+local generation = 0
 
 ---@param hex string six hex digits
 ---@return string
@@ -48,18 +50,23 @@ end
 ---@param buffer integer
 function M.update(buffer)
   pending[buffer] = nil
-  if not vim.api.nvim_buf_is_valid(buffer) or vim.bo[buffer].buftype ~= "" then return end
+  if not hex_active or not vim.api.nvim_buf_is_valid(buffer) or vim.bo[buffer].buftype ~= "" then return end
   vim.api.nvim_buf_clear_namespace(buffer, ns, 0, -1)
+  local seen = {}
   for _, win in ipairs(vim.fn.win_findbuf(buffer)) do
     local info = vim.fn.getwininfo(win)[1]
     local lines = vim.api.nvim_buf_get_lines(buffer, info.topline - 1, info.botline, false)
     for offset, line in ipairs(lines) do
-      for _, match in ipairs(M.matches(line)) do
-        vim.api.nvim_buf_set_extmark(buffer, ns, info.topline + offset - 2, match.col, {
-          virt_text = { { swatch, group(match.hex) } },
-          virt_text_pos = "inline",
-          right_gravity = false,
-        })
+      local row = info.topline + offset - 2
+      if not seen[row] then
+        seen[row] = true
+        for _, match in ipairs(M.matches(line)) do
+          vim.api.nvim_buf_set_extmark(buffer, ns, row, match.col, {
+            virt_text = { { swatch, group(match.hex) } },
+            virt_text_pos = "inline",
+            right_gravity = false,
+          })
+        end
       end
     end
   end
@@ -68,12 +75,18 @@ end
 local function schedule(buffer)
   if pending[buffer] then return end
   pending[buffer] = true
-  vim.schedule(function() M.update(buffer) end)
+  local scheduled_generation = generation
+  vim.schedule(function()
+    if scheduled_generation == generation then M.update(buffer) end
+  end)
 end
 
 ---@param active boolean
 ---@param opts? Orbit.ColorsOptions
 function M.set_hex(active, opts)
+  hex_active = active
+  generation = generation + 1
+  pending = {}
   pcall(vim.api.nvim_del_augroup_by_name, group_name)
   if opts and not swatch_set then swatch, swatch_set = opts.swatch, true end
   for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
