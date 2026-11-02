@@ -76,6 +76,8 @@ Keep plugin loading with Lazy and tool state with hangar.nvim.
 - Buffer cleanup checks every candidate first and refuses modified buffers. It never runs `%bd|e#`.
 - Terminals start with argv vectors, reuse live jobs and replace exited jobs. Windows uses PowerShell with `-NoLogo`.
 - `statusline` and `tabline` set only the global options through `%!` expressions and restore the previous values.
+- Trouble loads on `LspAttach` and supplies the statusline symbol path. The render loop never imports external plugins.
+- The theme owns bar and plugin highlights. [Appearance](appearance.md) records their sources and rendering contracts.
 - `colors` draws swatches for hex codes in visible rows and uses the built-in LSP document color provider.
 
 ## Language tools

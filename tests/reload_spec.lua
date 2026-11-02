@@ -27,15 +27,18 @@ check("first load applies editor values", function()
   assert(ok, tostring(err))
   assert(vim.o.shiftwidth == 4)
   assert(vim.wo.number == true)
+  assert(vim.wo.cursorline and vim.wo.cursorlineopt == "number")
 end)
 
 check("unchanged settings keep user local overrides", function()
   vim.bo.shiftwidth = 7
   vim.wo.number = false
+  vim.wo.cursorline = false
   local ok, err = orbit.reload_from_file(path)
   assert(ok, tostring(err))
   assert(vim.bo.shiftwidth == 7)
   assert(vim.wo.number == false)
+  assert(not vim.wo.cursorline)
   assert(orbit.get_config().modules.editor.shiftwidth == 4)
 end)
 
@@ -45,6 +48,7 @@ check("changed editor field does not reset an unchanged field", function()
   assert(ok, tostring(err))
   assert(vim.bo.shiftwidth == 5)
   assert(vim.wo.number == false)
+  assert(not vim.wo.cursorline, "unchanged cursorline must keep the window override")
   assert(vim.api.nvim_get_option_value("shiftwidth", { scope = "global" }) == 5)
 end)
 

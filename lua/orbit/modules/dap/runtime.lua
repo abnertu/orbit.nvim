@@ -68,6 +68,16 @@ end
 
 function M.setup(dap, definitions)
   if initialized then return end
+  -- The DAP owner registers signs; the theme owner supplies their colors.
+  for name, spec in pairs({
+    DapStopped = { text = "󰁕 ", texthl = "DiagnosticWarn", linehl = "DiagnosticVirtualTextWarn" },
+    DapBreakpoint = { text = "●", texthl = "DapBreakpointColor" },
+    DapBreakpointCondition = { text = " " },
+    DapBreakpointRejected = { text = " ", texthl = "DiagnosticError" },
+    DapLogPoint = { text = ".>" },
+  }) do
+    vim.fn.sign_define(name, spec)
+  end
   dap.adapters = dap.adapters or {}
   dap.configurations = dap.configurations or {}
   local bridge = require("orbit.hangar_bridge")

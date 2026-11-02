@@ -38,6 +38,8 @@ check("plugin start applies the scheme and Orbit overrides", function()
   assert(hl("FloatBorder").fg == hl("Function").fg, "FloatBorder must use the scheme's blue")
   assert(hl("DiagnosticUnderlineError").sp == hl("DiagnosticError").fg)
   assert(hl("SnacksPickerMatch").bold)
+  assert(hl("CursorLineNr").fg == runtime.palette().white,
+    "current line number must use Orbit's foreground")
 end)
 
 check("overrides survive a later colorscheme change", function()
@@ -45,6 +47,29 @@ check("overrides survive a later colorscheme change", function()
   assert(hl("FloatBorder").fg == runtime.palette().blue)
   assert(hl("SnacksPickerMatch").bold)
   assert(#vim.api.nvim_get_autocmds({ group = "OrbitTheme" }) == 1)
+end)
+
+check("reapplying highlights never derives a new palette from Orbit overrides", function()
+  local before = runtime.palette()
+  for _ = 1, 3 do runtime.apply_highlights() end
+  assert(vim.deep_equal(runtime.palette(), before), "repeated highlights changed the palette")
+  assert(hl("DiagnosticInfo").fg == before.green and hl("DiagnosticHint").fg == before.purple)
+  assert(hl("OrbitStFill").bg == before.statusline_bg)
+  assert(hl("OrbitTbActive").bg ~= hl("OrbitTbInactive").bg)
+end)
+
+check("diagnostic underlines follow terminal undercurl support", function()
+  local term, program = vim.env.TERM, vim.env.TERM_PROGRAM
+  vim.env.TERM, vim.env.TERM_PROGRAM = "xterm", ""
+  runtime.apply_highlights()
+  local plain = hl("DiagnosticUnderlineError")
+  assert(plain.underline and not plain.undercurl)
+  vim.env.TERM = "xterm-kitty"
+  runtime.apply_highlights()
+  local curved = hl("DiagnosticUnderlineError")
+  assert(curved.undercurl and not curved.underline)
+  vim.env.TERM, vim.env.TERM_PROGRAM = term, program
+  runtime.apply_highlights()
 end)
 
 check("changing the configured scheme applies it once", function()
@@ -115,6 +140,29 @@ check("invalid saves leave the settings file unchanged", function()
   assert(not ok and tostring(err):find("colorscheme", 1, true))
   assert(table.concat(vim.fn.readfile(settings, "b"), "\n") == before)
   assert(#vim.fn.glob(directory .. "/*.tmp", false, true) == 0, "temporary file leaked")
+end)
+
+check("default Tokyo Night restores editor, syntax, bar and plugin color roles", function()
+  local colors = directory .. "/colors"
+  vim.fn.mkdir(colors, "p")
+  vim.fn.writefile({ "highlight clear", "set background=dark", "let g:colors_name = 'tokyonight-night'" },
+    colors .. "/tokyonight-night.vim")
+  vim.opt.rtp:prepend(directory)
+  orbit.setup({ modules = { theme = { colorscheme = "tokyonight-night" }, commands = { path = settings } } })
+  assert(hl("Normal").fg == 0xa9b1d6 and hl("Normal").bg == 0x1a1b26)
+  assert(hl("CursorLineNr").fg == 0xc0caf5 and hl("CursorLineNr").bg == nil)
+  assert(hl("LineNr").fg == 0x40486a)
+  assert(hl("@punctuation.bracket").fg == 0xbb9af7)
+  assert(hl("@function.method.call").fg == 0xf7768e)
+  assert(hl("OrbitStModeInsert").bg == 0x9d7cd8)
+  assert(hl("OrbitTbActiveModified").fg == 0x9ece6a)
+  assert(hl("OrbitTbInactiveModified").fg == 0xf7768e)
+  assert(hl("BlinkCmpLabelMatch").fg == 0x7aa2f7 and hl("BlinkCmpLabelMatch").bold)
+  assert(hl("NvimTreeNormal").bg == 0x16161e)
+  assert(hl("MasonHeader").bg == 0xf7768e)
+  assert(hl("WhichKeyGroup").fg == 0x9ece6a)
+  assert(hl("TodoBgFix").bg == 0xf7768e)
+  vim.opt.rtp:remove(directory)
 end)
 
 vim.fn.delete(directory, "rf")

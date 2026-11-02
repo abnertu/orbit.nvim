@@ -311,5 +311,25 @@ check("opening and action failures report errors and release temporary ownership
   vim.notify = notify
 end)
 
+check("opening reapplies menu colors after Volt installs fallback highlights", function()
+  orbit.setup({ modules = { theme = { colorscheme = "habamax" } } })
+  local theme = require("orbit.modules.theme.runtime")
+  theme.start()
+  local upstream = package.loaded.menu.open
+  package.loaded.menu.open = function(items)
+    upstream(items)
+    vim.api.nvim_set_hl(0, "ExBlue", { fg = 0x010203 })
+  end
+  open()
+  assert(vim.api.nvim_get_hl(0, { name = "ExBlue" }).fg == theme.palette().blue)
+  runtime.close()
+  orbit.setup({ modules = { theme = { colorscheme = "habamax", highlights = false } } })
+  open()
+  assert(vim.api.nvim_get_hl(0, { name = "ExBlue" }).fg == 0x010203,
+    "disabled theme overrides must leave plugin colors intact")
+  runtime.close()
+  package.loaded.menu.open = upstream
+end)
+
 vim.fn.getmousepos = original_mouse
 print(string.format("%d menu owner tests passed.", passed))

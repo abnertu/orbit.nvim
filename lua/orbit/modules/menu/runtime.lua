@@ -182,6 +182,7 @@ function M.open()
     local items = require("orbit.modules.menu.items")
     local entries = vim.bo[buffer].filetype == "NvimTree" and items.tree(active) or items.general(active)
     require("menu").open(entries, { mouse = true })
+    require("orbit.modules.theme.runtime").refresh()
   end, debug.traceback)
   if not ok then
     pcall(M.close)

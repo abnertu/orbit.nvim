@@ -57,6 +57,7 @@ function M.spec()
     specs[#specs + 1] = {
       "folke/trouble.nvim",
       cmd = "Trouble",
+      event = "LspAttach",
       opts = {
         modes = {
           diagnostic_preview_float = {
