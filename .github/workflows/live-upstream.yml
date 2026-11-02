@@ -215,6 +215,11 @@ jobs:
           nvim --headless -u NONE -l tests/live_coreclr_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Real CoreCLR integration failed' }
 
+      - name: Run real debugpy launch and attach
+        run: |
+          nvim --headless -u NONE -l tests/live_debugpy_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Real debugpy integration failed' }
+
       - name: Run pinned real Harpoon navigation integration
         run: |
           nvim --headless -u NONE -l tests/live_harpoon_spec.lua
