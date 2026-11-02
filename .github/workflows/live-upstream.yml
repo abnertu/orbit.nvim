@@ -5,6 +5,8 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+  schedule:
+    - cron: '41 2 * * *'
 
 permissions:
   contents: read
@@ -14,8 +16,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  live-icons:
-    name: Live mini.icons on ${{ matrix.os }}
+  live:
+    name: Live suites on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -98,46 +100,6 @@ jobs:
           nvim --version
           if ($LASTEXITCODE -ne 0) { throw 'Neovim installation failed' }
 
-      - name: Run pinned real mini.icons integration
-        run: |
-          nvim --headless -u NONE -l tests/live_icons_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real mini.icons integration failed' }
-
-      - name: Run pinned real gitsigns attach and hunk integration
-        run: |
-          nvim --headless -u NONE -l tests/live_gitsigns_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real gitsigns integration failed' }
-
-      - name: Run real todo-comments, matchup and indent guides
-        run: |
-          nvim --headless -u NONE -l tests/live_editor_integrations_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real editor integrations failed' }
-
-      - name: Run pinned real LuaSnip T-SQL expansion integration
-        run: |
-          nvim --headless -u NONE -l tests/live_tsql_snippets_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real LuaSnip T-SQL integration failed' }
-
-      - name: Run pinned real which-key guide integration
-        run: |
-          nvim --headless -u NONE -l tests/live_keyguide_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real which-key integration failed' }
-
-      - name: Run pinned real Obsidian vault integration
-        run: |
-          nvim --headless -u NONE -l tests/live_obsidian_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real Obsidian vault integration failed' }
-
-      - name: Run real Markdown preview in a headless browser
-        run: |
-          nvim --headless -u NONE -l tests/live_markdown_preview_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real Markdown preview integration failed' }
-
-      - name: Run pinned real Noice message activation integration
-        run: |
-          nvim --headless -u NONE -l tests/live_noice_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real Noice integration failed' }
-
       - name: Install verified Tree-sitter CLI for grammar compilation
         run: |
           $ErrorActionPreference = 'Stop'
@@ -168,112 +130,11 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Tree-sitter CLI preflight failed' }
           $binary.DirectoryName | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
 
-      - name: Run pinned C-sharp and SQL Tree-sitter parser integration
+      - name: Install just
+        uses: extractions/setup-just@v2
+        with:
+          just-version: '1.51.0'
+      - name: Run the live suites
         run: |
-          nvim --headless -u NONE -l tests/live_treesitter_sql_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real Tree-sitter SQL injection integration failed' }
-
-      - name: Run pinned real nvim-dap TCP protocol integration
-        run: |
-          nvim --headless -u NONE -l tests/live_dap_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real nvim-dap integration failed' }
-
-      - name: Run pinned real Hangar state and tool ordering integration
-        run: |
-          nvim --headless -u NONE -l tests/live_hangar_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real Hangar persistence integration failed' }
-
-      - name: Run pinned real Hangar and NUI view lifecycle
-        run: |
-          nvim --headless -u NONE -l tests/live_hangar_ui_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real Hangar/NUI UI lifecycle failed' }
-
-      - name: Run real Mason install and uninstall
-        run: |
-          nvim --headless -u NONE -l tests/live_mason_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real Mason install integration failed' }
-
-      - name: Run pinned real nvim-lint diagnostic integration
-        run: |
-          nvim --headless -u NONE -l tests/live_lint_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real nvim-lint integration failed' }
-
-      - name: Run pinned real Conform formatter integration
-        run: |
-          nvim --headless -u NONE -l tests/live_conform_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real Conform integration failed' }
-
-      - name: Run pinned real Trouble diagnostics integration
-        run: |
-          nvim --headless -u NONE -l tests/live_trouble_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real Trouble integration failed' }
-
-      - name: Run pinned real Edgy layout integration
-        run: |
-          nvim --headless -u NONE -l tests/live_layout_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real Edgy layout integration failed' }
-
-      - name: Run pinned real tokyonight theme integration
-        run: |
-          nvim --headless -u NONE -l tests/live_theme_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real theme integration failed' }
-
-      - name: Run pinned real Snacks dashboard and picker integration
-        run: |
-          nvim --headless -u NONE -l tests/live_snacks_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real Snacks integration failed' }
-
-      - name: Run real SQLFluff format and lint integration
-        run: |
-          nvim --headless -u NONE -l tests/live_sqlfluff_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real SQLFluff integration failed' }
-
-      - name: Run real CoreCLR debugging
-        run: |
-          nvim --headless -u NONE -l tests/live_coreclr_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real CoreCLR integration failed' }
-
-      - name: Run real debugpy launch and attach
-        run: |
-          nvim --headless -u NONE -l tests/live_debugpy_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real debugpy integration failed' }
-
-      - name: Run real tsserver through TypeScript tools
-        run: |
-          nvim --headless -u NONE -l tests/live_tsserver_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real tsserver integration failed' }
-
-      - name: Run real Roslyn language server
-        run: |
-          nvim --headless -u NONE -l tests/live_roslyn_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real Roslyn integration failed' }
-
-      - name: Run pinned real Harpoon navigation integration
-        run: |
-          nvim --headless -u NONE -l tests/live_harpoon_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real Harpoon integration failed' }
-
-      - name: Run pinned real native dashboard and explorer startup
-        run: |
-          nvim --headless -u NONE -l tests/live_startup_ui_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real dashboard/explorer startup integration failed' }
-
-      - name: Run pinned real context-menu input and lifecycle
-        run: |
-          nvim --headless -u NONE -l tests/live_menu_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real context-menu input integration failed' }
-
-      - name: Run pinned real completion input and Escape cleanup
-        run: |
-          nvim --headless -u NONE -l tests/live_completion_escape_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real completion/Escape integration failed' }
-
-      - name: Run real Blink matcher and LuaSnip jsregexp builds
-        run: |
-          nvim --headless -u NONE -l tests/live_native_builds_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real native completion builds failed' }
-
-      - name: Run pinned real commandline completion and Noice ownership
-        run: |
-          nvim --headless -u NONE -l tests/live_cmdline_completion_spec.lua
-          if ($LASTEXITCODE -ne 0) { throw 'Real commandline completion integration failed' }
+          just live
+          if ($LASTEXITCODE -ne 0) { throw 'Live suites failed' }
