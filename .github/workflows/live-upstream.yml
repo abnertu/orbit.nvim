@@ -105,6 +105,11 @@ jobs:
           nvim --headless -u NONE -l tests/live_gitsigns_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Real gitsigns integration failed' }
 
+      - name: Run real todo-comments, matchup and indent guides
+        run: |
+          nvim --headless -u NONE -l tests/live_editor_integrations_spec.lua
+          if ($LASTEXITCODE -ne 0) { throw 'Real editor integrations failed' }
+
       - name: Run pinned real LuaSnip T-SQL expansion integration
         run: |
           nvim --headless -u NONE -l tests/live_tsql_snippets_spec.lua
