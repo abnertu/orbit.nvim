@@ -31,7 +31,7 @@ local definitions = {
   { field = "window_right", mode = "n", rhs = "<C-w>l", desc = "Focus right window" },
   { field = "window_up", mode = "n", rhs = "<C-w>k", desc = "Focus upper window" },
   { field = "window_down", mode = "n", rhs = "<C-w>j", desc = "Focus lower window" },
-  -- Plugin-independent legacy editing keys use fixed slots. They share the
+  -- Plugin-independent editing keys use fixed slots. They share the
   -- owner lifecycle with the configurable save and window navigation keys.
   { lhs = "<C-c>", mode = "n", rhs = "<cmd>%y+<cr>", desc = "Copy the whole file" },
   { lhs = ";", mode = "n", rhs = ":", desc = "Enter command mode" },

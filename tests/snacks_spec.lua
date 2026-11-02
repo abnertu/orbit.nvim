@@ -22,7 +22,7 @@ check("spec imports are inert before setup", function()
   assert(package.loaded.snacks == nil)
 end)
 
-check("legacy picker and UI defaults are configured", function()
+check("picker and UI defaults are configured", function()
   orbit.setup()
   local spec = feature.spec()
   assert(#spec == 1 and spec[1][1] == "folke/snacks.nvim")

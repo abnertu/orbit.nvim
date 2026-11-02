@@ -1,4 +1,4 @@
--- Explicit file-conversion actions preserved from the legacy leader keys.
+-- Explicit file-conversion actions behind the leader keys.
 -- No writes or reloads occur during module setup.
 local M = {}
 

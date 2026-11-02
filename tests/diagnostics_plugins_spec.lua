@@ -16,7 +16,7 @@ check("import is inert", function()
   assert(package.loaded.trouble == nil)
 end)
 
-check("legacy commands, keys, preview and TODO glyph are retained", function()
+check("commands, keys, preview and TODO glyph are configured", function()
   orbit.setup()
   local items = diagnostics.spec()
   assert(#items == 2)

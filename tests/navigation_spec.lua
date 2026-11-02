@@ -10,7 +10,7 @@ local function check(name, callback)
   print("PASS " .. name)
 end
 
-check("import is inert and options preserve legacy behavior", function()
+check("import is inert and options keep their defaults", function()
   assert(#feature.spec() == 0)
   orbit.setup()
   local specs = feature.spec()

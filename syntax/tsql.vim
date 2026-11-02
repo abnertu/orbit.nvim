@@ -1,4 +1,4 @@
-" Focused legacy syntax fallback for constructs not exposed as useful nodes by
+" Focused syntax fallback for constructs not exposed as useful nodes by
 " tree-sitter-sql. Generic SQL highlighting remains owned by Tree-sitter.
 if exists("b:current_syntax")
   finish

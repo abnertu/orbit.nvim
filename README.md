@@ -196,9 +196,9 @@ nvim --headless -u NONE -l tests/settings_spec.lua
 
 Do not edit `settings.schema.json` manually.
 
-## Development status
+## Architecture
 
-The migration is staged to protect existing startup behavior, commands, mappings, tool state and Windows support. Read [architecture](doc/architecture.md) and [migration](doc/migration.md) for planned boundaries and acceptance checks.
+Read [architecture](doc/architecture.md) for module boundaries and lifecycle contracts.
 
 The current prototype is not production-ready. The complete plugin, language tooling and settings workflows remain in the existing configuration until ported and verified.
 

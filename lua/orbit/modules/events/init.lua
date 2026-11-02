@@ -32,7 +32,7 @@ local function has_listed_unnamed_buffer()
   return false
 end
 
--- The legacy on-demand startup re-applies EditorConfig after FileType.
+-- On-demand startup re-applies EditorConfig after FileType.
 -- Do not import it on startup when the existing flag is unset.
 local function replay_editorconfig(buffer)
   if not vim.g.editorconfig

@@ -37,7 +37,7 @@ function M.open_lsp_references()
 end
 
 local function todo_picker(keywords)
-  -- Snacks owns this picker and is migrated as a separate feature.
+  -- Snacks owns this picker as a separate feature.
   local picker = require("snacks").picker
   if keywords then
     picker.todo_comments({ keywords = keywords })

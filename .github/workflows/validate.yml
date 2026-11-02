@@ -158,7 +158,7 @@ jobs:
           nvim --headless -u NONE -l tests/keymaps_comments_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Leader comment tests failed' }
 
-      - name: Test legacy file conversion shortcuts
+      - name: Test file conversion shortcuts
         run: |
           nvim --headless -u NONE -l tests/keymaps_conversions_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'File conversion tests failed' }
@@ -183,7 +183,7 @@ jobs:
           nvim --headless -u NONE -l tests/terminal_session_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'Interactive terminal session tests failed' }
 
-      - name: Test migrated T-SQL LuaSnip declarations
+      - name: Test T-SQL LuaSnip declarations
         run: |
           nvim --headless -u NONE -l tests/tsql_snippets_spec.lua
           if ($LASTEXITCODE -ne 0) { throw 'T-SQL snippets tests failed' }
