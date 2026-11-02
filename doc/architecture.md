@@ -38,7 +38,7 @@ The completion runtime guards Blink 1.x commandline preview releases by event-in
 
 Blink registers commandline listeners after asynchronous matcher initialization. The completion owner recovers existing colon input once those listeners are ready. Temporary commandline observers invalidate recovery after changes or session transitions, then clear after the scheduled check. The listener wrapper removes itself. Recovery retains the real character handler and does not replay native events or keys. Fresh input tests cover batched activation, immediate exit, replacement sessions, search-first startup, and disabled controls. Deterministic callback tests cover identical-text session replacement and UTF-8 character delivery.
 
-The `orbit.plugins` spec import scans the module manifest. Modules that implement `spec()` contribute Lazy declarations without a second feature inventory. `lua/plugins/init.lua` is only a compatibility import shim. The navigation module owns Oil and nvim-tree specs, Windows watcher settings and one FileCreated-to-CreateFile observer. Harpoon integration is a separate owner.
+The `orbit.plugins` spec import scans the module manifest. Modules that implement `spec()` contribute Lazy declarations without a second feature inventory. The navigation module owns Oil and nvim-tree specs, Windows watcher settings and one FileCreated-to-CreateFile observer. Harpoon integration is a separate owner.
 
 The menu module contributes restart-only mouse mappings for menu and Volt. Root setup and spec collection import neither plugin. General actions use current shortcuts; tree actions capture the clicked node. Deferred actions validate the source buffer and window before selecting that source. Delegated actions retain their resulting focus.
 
