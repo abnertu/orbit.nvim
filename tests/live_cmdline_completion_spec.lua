@@ -291,7 +291,8 @@ end)
           and #s.accepts == 0 and #s.executed == 0
       end, "initialization opened or changed a search commandline")
       input("<C-space>")
-      cancel(await(function(s) return s.visible and window_with(s, "blink-cmp-menu", candidate) ~= nil end,
+      -- Check provider items: on Windows the menu can still show its loading row.
+      cancel(await(function(s) return s.visible and vim.tbl_contains(s.items, candidate) end,
         "search-first manual positive control"))
       commandline(direction .. query)
       await(function(s) return s.command_type == direction and s.command == query end, "native search after readiness")
@@ -322,7 +323,7 @@ end)
         commandline(direction .. query)
         await(function(s) return s.command_type == direction and s.command == query end, "search positive-control input")
         input("<C-space>")
-        cancel(await(function(s) return s.visible and window_with(s, "blink-cmp-menu", candidate) ~= nil end,
+        cancel(await(function(s) return s.visible and vim.tbl_contains(s.items, candidate) end,
           "manual search completion positive control"))
         commandline(direction .. query)
         await(function(s) return s.command_type == direction and s.command == query end, "search suppression input")
