@@ -35,13 +35,9 @@ function M.spec()
       event = { "BufReadPre *.cs", "BufNewFile *.cs" },
       ft = { "cs" },
       cond = function()
-        if not require("orbit.hangar_bridge").is_enabled("lsp", "roslyn") then
-          return false
-        end
-        local exe = vim.fn.has("win32") == 1
-          and "roslyn-language-server.cmd" or "roslyn-language-server"
-        return vim.fn.executable("dotnet") == 1
-          and vim.fn.executable(exe) == 1
+        -- Lazy caches this before Mason's init adds its executables to PATH.
+        -- Let roslyn.nvim resolve the server when the provider loads.
+        return require("orbit.hangar_bridge").is_enabled("lsp", "roslyn")
       end,
       opts = {
         filewatching = c.roslyn_filewatching,
