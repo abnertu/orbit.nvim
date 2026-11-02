@@ -121,7 +121,7 @@ return function(opts)
   package.loaded["orbit.tests.live_cmdline_completion"] = {
     ---@return LazySpec
     import = function()
-      local specs = require("plugins")
+      local specs = require("orbit.plugins")
       for index, spec in ipairs(specs) do
         specs[index] = localize(spec)
         -- Native binary distribution is a separate acceptance gate.
