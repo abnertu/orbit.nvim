@@ -47,9 +47,12 @@ if windows then
     end
   end
   copy_shell(installed, private)
+  -- The CurrentUser profile still loads after this one and may replace `prompt`,
+  -- for example with starship. Signal readiness when pwsh first waits for input.
   vim.fn.writefile({
     "$env:ORBIT_TERMINAL_PROFILE = 'orbit-profile-' + (6 * 7)",
-    "function prompt { 'orbit-ready> ' }",
+    "Register-EngineEvent PowerShell.OnIdle -MaxTriggerCount 1 -Action {"
+      .. " [Console]::WriteLine('orbit-' + 'ready') } | Out-Null",
   }, private .. "/profile.ps1")
   env.PATH = private .. ";" .. vim.env.PATH
   env.ORBIT_TERMINAL_PROFILE = ""
@@ -109,7 +112,7 @@ local ok, err = pcall(function()
     -- Wait for the shell to start before typing.
     wait(function()
       if windows then
-        return contains(session.buffer, "orbit-ready>")
+        return contains(session.buffer, "orbit-ready")
       end
       return lua(
         "return #table.concat(vim.api.nvim_buf_get_lines(..., 0, -1, false)) > 0",
