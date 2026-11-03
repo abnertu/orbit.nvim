@@ -40,6 +40,11 @@ function M.spec()
       "folke/noice.nvim",
       event = "VeryLazy",
       dependencies = { "MunifTanjim/nui.nvim" },
+      -- Noice's ext_messages makes Neovim set cmdheight to 0 at VeryLazy.
+      -- Apply it before start plugins, so the dashboard does not re-center.
+      init = options.messages and function()
+        vim.o.cmdheight = 0
+      end or nil,
       opts = function()
         return require("orbit.modules.messages.runtime").options(options)
       end,
