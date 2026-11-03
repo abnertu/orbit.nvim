@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- Lazy skips unused built-in runtime plugins: gzip, rplugin, spellfile, tar, tutor and zip.
+
+### Fixed
+
+- The startup dashboard shows the real startup time on its first render instead of `0ms`.
+- The startup dashboard no longer moves down one row when Noice loads.
+
 ## [1.1.0] - 2026-11-02
 
 ### Added

@@ -86,7 +86,22 @@ function M.activate(event)
     require("lazy").setup({ { import = options.import } }, {
       defaults = { lazy = true },
       rocks = { enabled = false, herorocks = false },
-      performance = { rtp = { paths = { runtime, vim.fs.joinpath(runtime, "after") } } },
+      performance = {
+        rtp = {
+          paths = { runtime, vim.fs.joinpath(runtime, "after") },
+          -- Skip $VIMRUNTIME/plugin files that Orbit replaces or never uses.
+          -- Keep netrw: nvim-tree clears its FileExplorer group on directory startup.
+          -- Keep matchit for setups without matchup.
+          disabled_plugins = {
+            "gzip",
+            "rplugin",
+            "spellfile",
+            "tarPlugin",
+            "tutor",
+            "zipPlugin",
+          },
+        },
+      },
     })
   end, debug.traceback)
   if not ok then
@@ -214,6 +229,13 @@ function M.setup(opts)
   initial_loadplugins = vim.go.loadplugins
   state = "pending"
   install()
+  -- A terminal UI attaches before init, so UIEnter demand is certain. Start Lazy
+  -- now: it then times UIEnter after start plugins, before the dashboard opens.
+  -- A missing checkout still waits for demand, so bootstrap never blocks init.
+  local installed = opts.path == "" or vim.uv.fs_stat(opts.path) ~= nil
+  if #vim.api.nvim_list_uis() > 0 and installed then
+    M.activate()
+  end
 end
 
 return M

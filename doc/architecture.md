@@ -57,6 +57,7 @@ The `plugins` module owns Lazy. It is disabled by default.
 
 - It registers one package searcher and one demand-event group.
 - Lazy starts on the first demand event or on a lookup of a missing module.
+- An attached UI starts an installed Lazy during setup, so Lazy times `UIEnter` after start plugins.
 - New file observer groups receive missed demand events. Existing observers are not replayed.
 - Late one-shot UI callbacks receive the first `UIEnter`, including Lazy's startup timer.
 - `bootstrap = true` clones Lazy on first demand. A lockfile pins the commit. An existing checkout is never replaced.

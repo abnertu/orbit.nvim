@@ -84,6 +84,25 @@ check("external Noice is required only when its config callback runs", function(
   package.loaded.noice = nil
 end)
 
+check("Noice message ownership reserves the final command-line height at Lazy init", function()
+  local height = vim.o.cmdheight
+  local snapshot = messages.capture()
+  for _, owned in ipairs({ true, false }) do
+    vim.o.cmdheight = 1
+    messages.setup({ messages = owned })
+    local spec = messages.spec()[1]
+    if spec.init then
+      spec.init(spec)
+    end
+    assert(
+      vim.o.cmdheight == (owned and 0 or 1),
+      "unexpected cmdheight for messages=" .. tostring(owned)
+    )
+  end
+  messages.restore(snapshot)
+  vim.o.cmdheight = height
+end)
+
 check("disabled owner removes its Lazy spec and restores accepted config", function()
   local snapshot = messages.capture()
   messages.setup({ enabled = false })
