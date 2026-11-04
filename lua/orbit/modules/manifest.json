@@ -33,6 +33,7 @@
     "dap",
     "completion",
     "lsp_providers",
+    "dev",
     "plugins"
   ]
 }

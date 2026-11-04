@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- A `dev` module that installs telemetry.nvim through Lazy for the test runner.
+
 ### Changed
 
 - **Breaking:** Hangar settings moved from `modules.hangar` to `modules.mason.hangar`. A saved `modules.hangar` key fails validation with the new key name.

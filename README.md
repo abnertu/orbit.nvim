@@ -151,6 +151,8 @@ Run the checks with [just](https://github.com/casey/just) on Linux or Windows:
 | `just live` | Real plugins and tools. These suites need network and the tools that CI installs. |
 | `just schema` | Generated schema, schema contracts and saved settings. |
 
+The `dev` module installs [telemetry.nvim](https://github.com/Orbit-Lua/telemetry.nvim) through Lazy. When its checkout exists, the recipes report through it.
+
 `just test terminal` runs only the suites whose path contains `terminal`. Each suite runs in its own Neovim process with private XDG directories. A missing tool fails its suite.
 
 `just live luadoc` checks Lua type resolution and completion with pinned plugins.

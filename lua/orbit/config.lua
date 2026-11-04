@@ -34,6 +34,7 @@ local M = {}
 ---@field dap? Orbit.DapOptions
 ---@field completion? Orbit.CompletionOptions
 ---@field lsp_providers? Orbit.LspProvidersOptions
+---@field dev? Orbit.DevOptions
 ---@field plugins? Orbit.PluginsOptions
 
 ---@class Orbit.Config
