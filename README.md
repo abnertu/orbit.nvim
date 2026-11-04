@@ -128,7 +128,7 @@ Add `"$schema": "<orbit.nvim>/settings.schema.json"` to the file for editor comp
 | `:TSInstallAll` | treesitter_plugins | Install every parser in the Hangar registry. |
 | `:ClearShada` | system | On Windows, remove stale ShaDa `*.tmp` files. |
 | `:PyrightReCreateStub` | python_tools | Regenerate a stub directory under `typings/`. |
-| `:Hangar` | hangar | Enable, disable and order managed tools. |
+| `:Hangar` | mason | Enable, disable and order managed tools. |
 
 Orbit never replaces a user-defined command. Each module defines its keys in its LuaDoc settings. Disabling a module restores the mappings that it replaced. `<leader>wK` lists all keys when the keyguide module is enabled.
 

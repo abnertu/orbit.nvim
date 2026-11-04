@@ -51,8 +51,8 @@
 - Keep specialist LSP diagnostics and solution selection independent of generic server registration.
 - Make one owner responsible for each shared task.
 - Collect Lazy specs from existing module entries. Do not maintain a second feature inventory.
-- Use the Hangar registry as the canonical inventory for managed language tools and parsers.
-- Use orbit.hangar_bridge for tool activation; do not read or rewrite Hangar state files from consumers.
+- Use the Hangar registry in `orbit.modules.mason.registry` as the canonical inventory for managed tools and parsers.
+- Let hangar.nvim gate tool activation. Consumers do not call Hangar or read its state files.
 - Keep Python debug adapter paths platform-aware and delegate CoreCLR registration to its dotnet-cli owner.
 - Keep each plugin spec independent of external plugin imports until Lazy activates that feature.
 - Treat completion and snippet callback setup as restart-only; preserve SQL and JSX snippets without eager imports.

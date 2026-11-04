@@ -38,7 +38,6 @@ The project LuaLS configuration leaves library discovery to Neovim and LazyDev.
 | `lua/orbit/modules/*/init.lua` | Settings contract and module owner |
 | `lua/orbit/plugins/init.lua` | Lazy spec import built from the manifest |
 | `lua/orbit/buffers.lua` | Tab-local order of loaded, listed buffers |
-| `lua/orbit/hangar_bridge.lua` | Managed-tool enablement for all consumers |
 | `lua/orbit/sqlfluff.lua` | Shared SQLFluff configuration for Conform and nvim-lint |
 | `lua/orbit/tooling/schema.lua`, `scripts/generate_schema.lua` | Deterministic schema generation |
 | `settings.schema.json` | Generated schema; do not edit |
@@ -93,11 +92,11 @@ Keep plugin loading with Lazy and tool state with hangar.nvim.
 
 ## Language tools
 
-- The Hangar registry is the canonical inventory of Mason packages, parsers and tool metadata.
-- `orbit.hangar_bridge` is the only enablement boundary. It does not import Hangar before its Lazy owner starts.
+- `mason` owns Mason, hangar.nvim and the Hangar registry. The registry is the canonical inventory of Mason packages, parsers and tool metadata.
+- hangar.nvim gates LSP, DAP, Conform, nvim-lint and Tree-sitter from saved state. No consumer calls Hangar.
 - `lsp` registers generic servers once at `VeryLazy`. It does not register Roslyn or TypeScript tools.
 - `lsp_providers` owns Roslyn and TypeScript tools. Roslyn selects a unique root solution. TypeScript tools removes semantic tokens and filters duplicate tsserver diagnostics.
-- `formatter` (Conform) and `linter` (nvim-lint) filter tools through Hangar. Each async operation belongs to one buffer and stops when the buffer is wiped.
+- `formatter` (Conform) and `linter` (nvim-lint) declare their tools; Hangar filters them. Each async operation belongs to one buffer and stops when the buffer is wiped.
 - `treesitter_plugins` owns parsers, context and autotag. `:TSInstallAll` installs the registry parsers.
 - `dap` registers debugpy launch and attach, closes DAP UI when a session ends, and delegates CoreCLR to the `dotnet` owner.
 - `mason` declares the command-lazy package manager. It does not enable servers.
