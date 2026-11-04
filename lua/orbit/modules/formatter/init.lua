@@ -101,8 +101,6 @@ function M.spec()
       ---@param _ LazyPlugin
       ---@param opts conform.setupOpts
       config = function(_, opts)
-        opts.formatters_by_ft =
-          require("orbit.hangar_bridge").filter("formatter", opts.formatters_by_ft)
         require("conform").setup(opts)
       end,
     },

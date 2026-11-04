@@ -41,28 +41,13 @@ function M.spec()
       "seblyng/roslyn.nvim",
       event = { "BufReadPre *.cs", "BufNewFile *.cs" },
       ft = { "cs" },
-      cond = function()
-        -- Lazy caches this before Mason's init adds its executables to PATH.
-        -- Let roslyn.nvim resolve the server when the provider loads.
-        return require("orbit.hangar_bridge").is_enabled("lsp", "roslyn")
-      end,
       ---@type RoslynNvimConfig
       opts = {
         filewatching = c.roslyn_filewatching,
         silent = true,
         choose_target = require("orbit.modules.lsp_providers.runtime").choose_target,
       },
-      ---@param _ LazyPlugin
-      ---@param opts RoslynNvimConfig
-      config = function(_, opts)
-        -- roslyn.nvim enables the LSP in plugin/roslyn.lua before config runs.
-        -- Lazy evaluates cond before Hangar's startup config, so check again.
-        if not require("orbit.hangar_bridge").is_enabled("lsp", "roslyn") then
-          vim.lsp.enable("roslyn", false)
-          return
-        end
-        require("roslyn").setup(opts)
-      end,
+
     }
   end
 

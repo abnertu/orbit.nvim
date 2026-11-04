@@ -49,13 +49,12 @@ function M.setup(opts)
   end
   local capabilities = M.client_capabilities()
   local configs = require("orbit.modules.lsp.servers")
-  local tool_state = require("orbit.hangar_bridge")
   local activated, failures = {}, {}
   set_diagnostics(opts.diagnostics)
   local names = vim.tbl_keys(opts.servers)
   table.sort(names)
   for _, name in ipairs(names) do
-    if opts.servers[name] and tool_state.is_enabled("lsp", name) then
+    if opts.servers[name] then
       local config = vim.tbl_deep_extend("force", {
         capabilities = vim.deepcopy(capabilities),
         on_init = function(client)

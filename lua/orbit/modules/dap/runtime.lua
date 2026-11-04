@@ -96,11 +96,11 @@ function M.setup(dap, definitions)
   end
   dap.adapters = dap.adapters or {}
   dap.configurations = dap.configurations or {}
-  local bridge = require("orbit.hangar_bridge")
-  if definitions.enabled.python and bridge.is_enabled("dap", "python") then
+  -- Hangar gates each session of an adapter that saved state disables.
+  if definitions.enabled.python then
     M.apply_adapter(dap, "python", true, definitions)
   end
-  if definitions.enabled.coreclr and bridge.is_enabled("dap", "coreclr") then
+  if definitions.enabled.coreclr then
     local ok, message = M.apply_adapter(dap, "coreclr", true, definitions)
     if not ok then
       vim.notify(tostring(message), vim.log.levels.WARN, { title = "Dotnet" })

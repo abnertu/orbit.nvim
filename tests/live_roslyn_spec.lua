@@ -98,15 +98,12 @@ local ok, err = xpcall(function()
   local state = require("hangar.state")
   local provider = require("orbit.modules.lsp_providers").spec()[1]
   assert(provider[1] == "seblyng/roslyn.nvim", "Orbit did not declare roslyn.nvim")
-  assert(state.set_enabled("lsp", "roslyn", false))
-  assert(provider.cond() == false, "Roslyn activated while Hangar disabled it")
-  assert(state.set_enabled("lsp", "roslyn", true))
-  assert(provider.cond() == true, "Roslyn did not activate with a real server on PATH")
-  print("PASS Hangar enablement gates the Roslyn provider")
+  assert(provider.cond == nil, "Hangar gates Roslyn; the provider needs no condition")
+  assert(state.is_enabled("lsp", "roslyn"))
 
   vim.cmd("filetype on")
   vim.cmd.runtime("plugin/roslyn.lua")
-  provider.config(provider, provider.opts)
+  require("roslyn").setup(provider.opts)
   vim.cmd.edit(vim.fn.fnameescape(source))
   local buffer = vim.api.nvim_get_current_buf()
   local client

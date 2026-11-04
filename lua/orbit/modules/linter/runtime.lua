@@ -77,7 +77,8 @@ function M.setup(opts)
   for name, definition in pairs(opts.linters or {}) do
     lint.linters[name] = definition
   end
-  lint.linters_by_ft = require("orbit.hangar_bridge").filter("linter", opts.linters_by_ft)
+  -- Hangar filters this table in place before each lint run.
+  lint.linters_by_ft = vim.deepcopy(opts.linters_by_ft)
   vim.env.ESLINT_D_PPID = tostring(vim.fn.getpid())
 
   group = vim.api.nvim_create_augroup("OrbitLint", { clear = true })
