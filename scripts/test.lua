@@ -67,8 +67,10 @@ end
 assert(#list > 0, "no suites match " .. tostring(pattern))
 
 local sandbox = vim.fn.tempname() .. "-orbit-tests"
-local failed = {}
-for index, item in ipairs(list) do
+
+---@param index integer
+---@return table<string, string>
+local function private_env(index)
   local home = vim.fs.joinpath(sandbox, tostring(index))
   local env = {}
   for _, name in ipairs({ "state", "data", "cache", "config" }) do
@@ -76,6 +78,34 @@ for index, item in ipairs(list) do
     assert(vim.fn.mkdir(directory, "p") == 1, "cannot create " .. directory)
     env["XDG_" .. name:upper() .. "_HOME"] = directory
   end
+  return env
+end
+
+-- The dev module installs telemetry.nvim through Lazy. Without that
+-- checkout, as in CI, the loop below keeps the plain report.
+local telemetry_root = vim.fs.joinpath(vim.fn.stdpath("data"), "lazy", "telemetry.nvim")
+if vim.uv.fs_stat(vim.fs.joinpath(telemetry_root, "lua", "telemetry", "init.lua")) then
+  vim.opt.rtp:prepend(telemetry_root)
+  local telemetry = require("telemetry")
+  ---@type Telemetry.Suite[]
+  local suites = {}
+  for index, item in ipairs(list) do
+    suites[index] = {
+      name = item.name,
+      argv = item.argv,
+      cwd = root,
+      env = private_env(index),
+      timeout = (group == "live" and 1800 or 300) * 1000,
+    }
+  end
+  local result = telemetry.run({ title = group, suites = suites })
+  vim.fn.delete(sandbox, "rf")
+  telemetry.exit(result)
+end
+
+local failed = {}
+for index, item in ipairs(list) do
+  local env = private_env(index)
   io.stdout:write((ci and "::group::" or "== ") .. item.name .. "\n")
   io.stdout:flush()
   local started = vim.uv.hrtime()
