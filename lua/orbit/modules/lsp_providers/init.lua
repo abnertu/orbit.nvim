@@ -47,7 +47,6 @@ function M.spec()
         silent = true,
         choose_target = require("orbit.modules.lsp_providers.runtime").choose_target,
       },
-
     }
   end
 
