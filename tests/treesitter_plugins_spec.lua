@@ -141,7 +141,7 @@ check("TSInstallAll installs every registry parser through the spec config", fun
   vim.cmd.TSInstallAll()
   package.loaded["nvim-treesitter"] = previous
   assert(setup_opts.install_dir == spec.opts.install_dir)
-  local expected = vim.tbl_keys(require("orbit.modules.hangar.registry").parser)
+  local expected = vim.tbl_keys(require("orbit.modules.mason.registry").parser)
   table.sort(expected)
   assert(vim.deep_equal(received, expected), vim.inspect(received))
   vim.api.nvim_del_user_command("TSInstallAll")

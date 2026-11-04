@@ -32,7 +32,6 @@ local M = {}
 ---@field navigation? Orbit.NavigationOptions
 ---@field lsp? Orbit.LspOptions
 ---@field dap? Orbit.DapOptions
----@field hangar? Orbit.HangarOptions
 ---@field completion? Orbit.CompletionOptions
 ---@field lsp_providers? Orbit.LspProvidersOptions
 ---@field plugins? Orbit.PluginsOptions
@@ -70,6 +69,11 @@ local function default_for(node)
     return {}
   end
 end
+
+-- Settings that moved keep a specific error, so a saved file names its new key.
+local moved = {
+  ["orbit.modules.hangar"] = "modules.mason.hangar",
+}
 
 local function resolve(value, node, path)
   if value == nil then
@@ -111,6 +115,10 @@ local function resolve(value, node, path)
     for name, child_value in pairs(value) do
       local child = (node.properties or {})[name]
       if child == nil then
+        local target = moved[path .. "." .. name]
+        if target then
+          error(path .. "." .. name .. ": moved to " .. target, 0)
+        end
         error(path .. "." .. name .. ": unknown setting", 0)
       end
       overrides[name] = resolve(child_value, child, path .. "." .. name)

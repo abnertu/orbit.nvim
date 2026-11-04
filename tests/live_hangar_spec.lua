@@ -4,8 +4,8 @@ local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
 
 local source = "https://github.com/Orbit-Lua/hangar.nvim.git"
--- v0.3.1 is an annotated tag: pin its dereferenced commit, not the tag object.
-local revision = "fb79cc024aba1a20661064245541a821d0516ead"
+-- v0.4.0 is an annotated tag: pin its dereferenced commit, not the tag object.
+local revision = "778b2e55df6f0a524e77489800178894612e4291"
 local plugin = vim.fn.tempname() .. " upstream Hangar checkout with spaces"
 local storage = vim.fn.tempname() .. " orbit Hangar state with spaces"
 local state_path = vim.fs.joinpath(storage, "managed", "hangar.json")
@@ -43,12 +43,12 @@ local ok, err = xpcall(function()
 
   vim.g.hangar_state_path = decoy
   local orbit = require("orbit")
-  local owner = require("orbit.modules.hangar")
-  orbit.setup({ modules = { hangar = { state_file = state_path } } })
+  local owner = require("orbit.modules.mason")
+  orbit.setup({ modules = { mason = { hangar = { state_file = state_path } } } })
   assert(package.loaded.hangar == nil, "root setup must not load upstream Hangar")
-  local declaration = owner.spec()[2]
+  local declaration = owner.spec()[3]
   assert(declaration[1] == "Orbit-Lua/hangar.nvim")
-  assert(declaration.version == "^0.3")
+  assert(declaration.version == "^0.4")
   assert(
     vim.fn.filereadable(state_path) == 0,
     "Hangar state must not be created by initial root setup"

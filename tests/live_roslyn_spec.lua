@@ -6,8 +6,8 @@ vim.opt.rtp:prepend(root)
 local windows = vim.fn.has("win32") == 1
 local pins = {
   { "https://github.com/seblyng/roslyn.nvim.git", "bf1bd4e70bc7068d1b4aebf4ce03cc19a86615be" },
-  -- Hangar v0.3.1 is an annotated tag: pin its dereferenced commit.
-  { "https://github.com/Orbit-Lua/hangar.nvim.git", "fb79cc024aba1a20661064245541a821d0516ead" },
+  -- Hangar v0.4.0 is an annotated tag: pin its dereferenced commit.
+  { "https://github.com/Orbit-Lua/hangar.nvim.git", "778b2e55df6f0a524e77489800178894612e4291" },
 }
 local server_version = "5.12.0-1.26475.2"
 local workspace = vim.fn.tempname() .. " live roslyn with spaces"
@@ -93,8 +93,8 @@ local ok, err = xpcall(function()
   }, source) == 0)
 
   local state_file = vim.fs.joinpath(base, "state", "hangar.json")
-  require("orbit").setup({ modules = { hangar = { state_file = state_file } } })
-  require("orbit.modules.hangar").spec()[2].config()
+  require("orbit").setup({ modules = { mason = { hangar = { state_file = state_file } } } })
+  require("orbit.modules.mason").spec()[3].config()
   local state = require("hangar.state")
   local provider = require("orbit.modules.lsp_providers").spec()[1]
   assert(provider[1] == "seblyng/roslyn.nvim", "Orbit did not declare roslyn.nvim")

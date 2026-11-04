@@ -1,4 +1,5 @@
--- Verify Mason command laziness and old tool-manager defaults.
+-- Verify Mason command laziness, the Hangar spec and the tool registry,
+-- with no plugin installation.
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
 local orbit = require("orbit")
@@ -20,7 +21,7 @@ end)
 check("initial setup preserves original commands and PATH policy", function()
   orbit.setup()
   local spec = mason.spec()
-  assert(#spec == 1)
+  assert(#spec == 3, "expected Mason, NUI and Hangar specs")
   local item = spec[1]
   assert(item[1] == "williamboman/mason.nvim")
   assert(vim.deep_equal(item.cmd, { "Mason", "MasonInstall", "MasonUpdate" }))
@@ -45,13 +46,91 @@ check("module contributes a compatible Lazy spec to one shared manifest", functi
   assert(found == 1)
 end)
 
-check("direct module disable removes owned spec but allows restore", function()
+check("Mason and Hangar enablement are independent and restorable", function()
   local before = mason.capture()
   mason.setup({ enabled = false })
+  local specs = mason.spec()
+  assert(#specs == 2 and specs[2][1] == "Orbit-Lua/hangar.nvim", "Hangar needs no Mason")
+  mason.setup({ hangar = { enabled = false } })
+  specs = mason.spec()
+  assert(#specs == 1 and specs[1][1] == "williamboman/mason.nvim")
+  mason.setup({ enabled = false, hangar = { enabled = false } })
   assert(#mason.spec() == 0)
   mason.restore(before)
-  assert(#mason.spec() == 1)
+  assert(#mason.spec() == 3)
 end)
+
+check("registry is typed Hangar input and import does not load Hangar", function()
+  local tools = require("orbit.modules.mason.registry")
+  assert(tools.lsp.lua_ls.mason == "lua-language-server")
+  assert(tools.lsp.roslyn.mason == "roslyn-language-server")
+  assert(tools.lsp["typescript-tools"].ft[1] == "typescript")
+  assert(tools.dap.coreclr.mason == "netcoredbg")
+  assert(tools.formatter.ruff_format.mason == "ruff")
+  assert(tools.formatter_defaults.python[1] == "ruff_fix")
+  assert(tools.parser.c_sharp.source == "treesitter")
+  assert(package.loaded.hangar == nil)
+end)
+
+check("Hangar loads at startup on the 0.4 release line", function()
+  local specs = mason.spec()
+  assert(specs[2][1] == "MunifTanjim/nui.nvim" and specs[2].lazy)
+  local hangar = specs[3]
+  assert(hangar[1] == "Orbit-Lua/hangar.nvim")
+  assert(hangar.version == "^0.4" and hangar.priority == 900 and hangar.lazy == false)
+  assert(hangar.dependencies[1] == "MunifTanjim/nui.nvim")
+end)
+
+local called, opened, config = 0, 0, nil
+package.preload.hangar = function()
+  return {
+    setup = function(opts)
+      called = called + 1
+      config = opts
+    end,
+    open = function()
+      opened = opened + 1
+    end,
+  }
+end
+
+check("unowned command collision blocks Hangar setup", function()
+  vim.api.nvim_create_user_command("Hangar", function() end, {})
+  local ok, err = pcall(mason.spec()[3].config)
+  assert(not ok and tostring(err):find("refusing to replace", 1, true))
+  assert(called == 0)
+  vim.api.nvim_del_user_command("Hangar")
+end)
+
+check("Hangar setup passes the registry, state path and border only", function()
+  mason.spec()[3].config()
+  assert(called == 1)
+  assert(config.registry == require("orbit.modules.mason.registry"))
+  assert(config.adapters == nil and config.defaults == nil)
+  assert(config.state_path():find("hangar.json", 1, true))
+  assert(config.border == "rounded")
+  vim.cmd("Hangar")
+  assert(opened == 1)
+  assert(vim.fn.maparg("<leader>us", "n"):lower():find("hangar", 1, true))
+end)
+
+check("repeated Hangar setup never duplicates state or commands", function()
+  mason.spec()[3].config()
+  assert(called == 1)
+  assert(vim.api.nvim_get_commands({}).Hangar ~= nil)
+end)
+
+check("invalid Hangar settings and restart requests keep accepted settings", function()
+  local previous = orbit.get_config()
+  local ok, err = pcall(orbit.setup, { modules = { mason = { hangar = { command = "" } } } })
+  assert(not ok and tostring(err):find("command", 1, true))
+  assert(vim.deep_equal(orbit.get_config(), previous))
+  orbit.setup({ modules = { mason = { hangar = { enabled = false } } } })
+  assert(orbit.get_config().modules.mason.hangar.enabled == true)
+  assert(orbit.get_pending_restart()["orbit.modules.mason.hangar"].enabled == false)
+end)
+
+package.loaded.hangar, package.preload.hangar = nil, nil
 
 check("invalid installer count is rejected before settings activation", function()
   local accepted = orbit.get_config()

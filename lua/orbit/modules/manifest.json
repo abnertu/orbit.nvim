@@ -31,7 +31,6 @@
     "lsp",
     "dotnet",
     "dap",
-    "hangar",
     "completion",
     "lsp_providers",
     "plugins"

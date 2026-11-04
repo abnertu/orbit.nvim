@@ -660,53 +660,6 @@
           },
           "type": "object"
         },
-        "hangar": {
-          "additionalProperties": false,
-          "description": "Managed development tools and persistent state.",
-          "properties": {
-            "border": {
-              "default": "rounded",
-              "description": "Hangar window border.",
-              "enum": [
-                "rounded",
-                "single",
-                "double",
-                "solid",
-                "shadow",
-                "none"
-              ],
-              "type": "string",
-              "x-orbit-restart": true
-            },
-            "command": {
-              "default": "Hangar",
-              "description": "Command for the Hangar UI.",
-              "minLength": 1,
-              "type": "string",
-              "x-orbit-restart": true
-            },
-            "enabled": {
-              "default": true,
-              "description": "Include Hangar during Lazy startup.",
-              "type": "boolean",
-              "x-orbit-restart": true
-            },
-            "key": {
-              "default": "<leader>us",
-              "description": "Mapping for the Hangar UI.",
-              "minLength": 1,
-              "type": "string",
-              "x-orbit-restart": true
-            },
-            "state_file": {
-              "default": "",
-              "description": "Optional state JSON path override.",
-              "type": "string",
-              "x-orbit-restart": true
-            }
-          },
-          "type": "object"
-        },
         "icons": {
           "additionalProperties": false,
           "description": "Optional mini.icons integration.",
@@ -1109,12 +1062,61 @@
         },
         "mason": {
           "additionalProperties": false,
-          "description": "Lazy Mason package manager integration.",
+          "description": "Lazy Mason package manager and the Hangar tool manager.",
           "properties": {
             "enabled": {
               "default": true,
               "description": "Enable Mason commands.",
               "type": "boolean",
+              "x-orbit-restart": true
+            },
+            "hangar": {
+              "additionalProperties": false,
+              "default": {},
+              "description": "Hangar tool manager, independent of Mason enablement.",
+              "properties": {
+                "border": {
+                  "default": "rounded",
+                  "description": "Hangar window border.",
+                  "enum": [
+                    "rounded",
+                    "single",
+                    "double",
+                    "solid",
+                    "shadow",
+                    "none"
+                  ],
+                  "type": "string",
+                  "x-orbit-restart": true
+                },
+                "command": {
+                  "default": "Hangar",
+                  "description": "Command for the Hangar UI.",
+                  "minLength": 1,
+                  "type": "string",
+                  "x-orbit-restart": true
+                },
+                "enabled": {
+                  "default": true,
+                  "description": "Include Hangar during Lazy startup.",
+                  "type": "boolean",
+                  "x-orbit-restart": true
+                },
+                "key": {
+                  "default": "<leader>us",
+                  "description": "Mapping for the Hangar UI.",
+                  "minLength": 1,
+                  "type": "string",
+                  "x-orbit-restart": true
+                },
+                "state_file": {
+                  "default": "",
+                  "description": "Optional state JSON path override.",
+                  "type": "string",
+                  "x-orbit-restart": true
+                }
+              },
+              "type": "object",
               "x-orbit-restart": true
             },
             "installed_icon": {

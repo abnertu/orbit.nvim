@@ -5,7 +5,7 @@ local registered = false
 
 ---@return string[]
 function M.parsers()
-  local names = vim.tbl_keys(require("orbit.modules.hangar.registry").parser)
+  local names = vim.tbl_keys(require("orbit.modules.mason.registry").parser)
   table.sort(names)
   return names
 end

@@ -1,21 +1,11 @@
----@alias Orbit.ToolCategory 'lsp'|'dap'|'linter'|'formatter'|'parser'|'package'
-
----@class Orbit.ToolDefinition
----@field ft? string[]
----@field mason? string
----@field runtime_name? string
----@field note? string
----@field source? 'mason'|'external'|'treesitter'
----@field role? 'dependency'
+-- The Hangar registry: install mapping and metadata for managed development
+-- tools, installer dependencies and Tree-sitter parsers. Consumers declare
+-- their tools; Hangar gates them from saved state.
+---@type Hangar.Registry
 local M = {}
 
--- This is the canonical tool inventory. Consumers must derive their own lists.
-
--- This registry is the canonical source for managed development tools,
--- installer dependencies, and Treesitter parsers.
-
 -- LSP: lsp_config_name -> { mason, ft }
----@type table<string, Orbit.ToolDefinition>
+---@type table<string, Hangar.Definition>
 M.lsp = {
   pyright = { mason = "pyright", ft = { "python" } },
   ruff = { mason = "ruff", ft = { "python" } },
@@ -45,10 +35,14 @@ M.lsp = {
   powershell_es = { mason = "powershell-editor-services", ft = { "ps1" } },
   lemminx = { mason = "lemminx", ft = { "xml" } },
   yamlls = { mason = "yaml-language-server", ft = { "yaml" } },
+  ["typescript-tools"] = {
+    ft = { "typescript", "typescriptreact", "javascript", "javascriptreact", "jsx" },
+    note = "uses tsserver from the typescript-language-server package",
+  },
 }
 
 -- DAP: adapter type name (as used in dap.adapters) -> { mason?, ft, note? }
----@type table<string, Orbit.ToolDefinition>
+---@type table<string, Hangar.Definition>
 M.dap = {
   python = {
     mason = nil,
@@ -59,7 +53,7 @@ M.dap = {
 }
 
 -- LINTER: individual linter ID (as used in nvim-lint) -> { mason, ft }
----@type table<string, Orbit.ToolDefinition>
+---@type table<string, Hangar.Definition>
 M.linter = {
   eslint_d = {
     mason = "eslint_d",
@@ -83,7 +77,7 @@ M.linter = {
 
 -- FORMATTER: individual formatter ID (as used in conform.nvim) -> { mason, ft, note? }
 -- ruff_* variants all map to the same "ruff" mason package
----@type table<string, Orbit.ToolDefinition>
+---@type table<string, Hangar.Definition>
 M.formatter = {
   stylua = { mason = "stylua", ft = { "lua" } },
   ruff_fix = { mason = "ruff", ft = { "python" } },
@@ -137,7 +131,7 @@ M.formatter = {
 
 -- PARSER: Treesitter parser name -> { ft }
 -- Parser names and Neovim filetypes are intentionally mapped explicitly.
----@type table<string, Orbit.ToolDefinition>
+---@type table<string, Hangar.Definition>
 M.parser = {
   lua = { ft = { "lua" } },
   luadoc = { ft = { "lua" } },
@@ -169,11 +163,10 @@ end
 
 -- Mason packages needed by configuration code but not represented by a
 -- directly toggleable runtime tool.
----@type table<string, Orbit.ToolDefinition>
+---@type table<string, Hangar.Definition>
 M.package = {
   ["typescript-language-server"] = {
     source = "mason",
-    role = "dependency",
     note = "provides the tsserver runtime used by the TypeScript LSP config",
   },
 }

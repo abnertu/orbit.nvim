@@ -7,7 +7,7 @@ local dependencies = {
   {
     name = "hangar.nvim",
     url = "https://github.com/Orbit-Lua/hangar.nvim.git",
-    sha = "fb79cc024aba1a20661064245541a821d0516ead",
+    sha = "778b2e55df6f0a524e77489800178894612e4291",
   },
   {
     name = "nui.nvim",
@@ -76,12 +76,12 @@ local ok, err = xpcall(function()
 
   local state_path = vim.fs.joinpath(base, "state", "tools.json")
   local orbit = require("orbit")
-  orbit.setup({ modules = { hangar = { state_file = state_path } } })
+  orbit.setup({ modules = { mason = { hangar = { state_file = state_path } } } })
   assert(
     package.loaded.hangar == nil and package.loaded["nui.popup"] == nil,
     "root setup must not eagerly import upstream UI"
   )
-  require("orbit.modules.hangar").spec()[2].config()
+  require("orbit.modules.mason").spec()[3].config()
   assert(package.loaded.hangar ~= nil)
   assert(
     package.loaded["nui.popup"] == nil,

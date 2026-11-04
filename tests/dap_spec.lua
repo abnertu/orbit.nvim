@@ -179,16 +179,6 @@ check("DAP UI listeners and shortcuts initialize exactly once", function()
   assert(ui_calls.closed == 2)
 end)
 
-check("Hangar adapter options point to the same DAP definitions", function()
-  local h = require("orbit.modules.hangar.runtime")
-  local settings = require("orbit").get_config().modules.hangar
-  local hangar = h.options(settings)
-  assert(hangar.adapters.dap.runtime() == runtime)
-  local captured = hangar.adapters.dap.options()
-  assert(captured.enabled.python and captured.enabled.coreclr)
-  assert(captured.configurations.python[2].request == "attach")
-end)
-
 check("invalid port and restart-only disable preserve accepted config", function()
   local before = orbit.get_config()
   local ok, err = pcall(orbit.setup, {
