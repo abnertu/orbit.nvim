@@ -5,8 +5,8 @@ local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
 
 local source = "https://github.com/Orbit-Lua/hangar.nvim.git"
--- v0.4.0 is an annotated tag: pin its dereferenced commit, not the tag object.
-local revision = "778b2e55df6f0a524e77489800178894612e4291"
+-- v0.4.1 is an annotated tag: pin its dereferenced commit, not the tag object.
+local revision = "2941093d6e4b7952228076348c46aab2b9907bdc"
 -- The backends use the commits that Orbit locks and Hangar 0.4 tests.
 local backends = {
   { "https://github.com/stevearc/conform.nvim.git", "016802de402556da54c36bd7359b441266b01cdd" },

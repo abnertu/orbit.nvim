@@ -7,7 +7,7 @@ local dependencies = {
   {
     name = "hangar.nvim",
     url = "https://github.com/Orbit-Lua/hangar.nvim.git",
-    sha = "778b2e55df6f0a524e77489800178894612e4291",
+    sha = "2941093d6e4b7952228076348c46aab2b9907bdc",
   },
   {
     name = "nui.nvim",

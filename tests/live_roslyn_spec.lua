@@ -6,8 +6,8 @@ vim.opt.rtp:prepend(root)
 local windows = vim.fn.has("win32") == 1
 local pins = {
   { "https://github.com/seblyng/roslyn.nvim.git", "bf1bd4e70bc7068d1b4aebf4ce03cc19a86615be" },
-  -- Hangar v0.4.0 is an annotated tag: pin its dereferenced commit.
-  { "https://github.com/Orbit-Lua/hangar.nvim.git", "778b2e55df6f0a524e77489800178894612e4291" },
+  -- Hangar v0.4.1 is an annotated tag: pin its dereferenced commit.
+  { "https://github.com/Orbit-Lua/hangar.nvim.git", "2941093d6e4b7952228076348c46aab2b9907bdc" },
 }
 local server_version = "5.12.0-1.26475.2"
 local workspace = vim.fn.tempname() .. " live roslyn with spaces"
