@@ -4,6 +4,8 @@ local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
 local lock = dofile(root .. "/tests/support/live_lock.lua")
 local directory = vim.fn.tempname() .. " live Trouble with spaces"
+-- Narrow status lines hide symbols, so draw a wide one.
+vim.o.columns = 160
 
 local ok, err = xpcall(function()
   lock.checkout("trouble.nvim", "folke/trouble.nvim", directory)
@@ -11,7 +13,9 @@ local ok, err = xpcall(function()
 
   local orbit = require("orbit")
   local diagnostics = require("orbit.modules.diagnostics_plugins")
-  orbit.setup()
+  -- Drawing both bars in this headless fixture can crash Windows Neovim 0.12.5,
+  -- as in the statusline suite. This suite checks only the statusline.
+  orbit.setup({ modules = { tabline = { enabled = false } } })
   assert(package.loaded.trouble == nil, "root setup imported Trouble before Lazy activation")
   local spec = diagnostics.spec()[1]
   require("trouble").setup(spec.opts)

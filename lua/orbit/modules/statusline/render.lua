@@ -201,6 +201,9 @@ function M.compose(layout, win)
   return table.concat(output)
 end
 
+-- Narrow status lines drop detail in this order. Mode, file name and position stay.
+local minimum = { symbols = 120, lsp = 100, git_counts = 90, detail = 80, git = 60 }
+
 ---@return string
 local function mode()
   local current = vim.api.nvim_get_mode().mode
@@ -219,12 +222,17 @@ end
 local function git(ctx)
   local buffer = ctx.buffer
   local head = vim.b[buffer].gitsigns_head
-  if type(head) ~= "string" or head == "" or vim.b[buffer].gitsigns_git_status then
+  if
+    ctx.width < minimum.git
+    or type(head) ~= "string"
+    or head == ""
+    or vim.b[buffer].gitsigns_git_status
+  then
     return ""
   end
   local text = part("OrbitStGit", escape(head))
   local status = vim.b[buffer].gitsigns_status_dict
-  if type(status) == "table" then
+  if type(status) == "table" and ctx.width >= minimum.git_counts then
     for _, item in ipairs({
       { "added", "+", "OrbitStGitAdd" },
       { "changed", "~", "OrbitStGitChange" },
@@ -253,7 +261,10 @@ local function file(ctx)
     segments = { segments[1], "…", segments[#segments - 1], segments[#segments] }
   end
   local tail = table.remove(segments) or relative
-  local directory = #segments > 0 and table.concat(segments, "/") .. "/" or ""
+  local directory = #segments > 0
+      and ctx.width >= minimum.detail
+      and table.concat(segments, "/") .. "/"
+    or ""
   local glyph, highlight = require("orbit.modules.icons.render").file(name, "OrbitStFile")
   local modified = vim.bo[buffer].modified and part("OrbitStModified", " ●") or ""
   return part(highlight, glyph .. " ")
@@ -262,8 +273,12 @@ local function file(ctx)
     .. modified
 end
 
+---@param ctx Orbit.StatuslineContext
 ---@return string
-local function symbols()
+local function symbols(ctx)
+  if ctx.width < minimum.symbols then
+    return ""
+  end
   return require("orbit.modules.statusline.symbols").render()
 end
 
@@ -289,6 +304,9 @@ end
 ---@param ctx Orbit.StatuslineContext
 ---@return string
 local function lsp(ctx)
+  if ctx.width < minimum.lsp then
+    return ""
+  end
   local names = {}
   for _, client in ipairs(vim.lsp.get_clients({ bufnr = ctx.buffer })) do
     if client.name ~= "copilot" then
@@ -299,9 +317,11 @@ local function lsp(ctx)
   return #names > 0 and part("OrbitStLsp", escape(table.concat(names, " "))) or ""
 end
 
+---@param ctx Orbit.StatuslineContext
 ---@return string
-local function position()
-  return part("OrbitStPos", "%l:%v") .. part("OrbitStDim", " %P")
+local function position(ctx)
+  return part("OrbitStPos", "%l:%v")
+    .. (ctx.width >= minimum.detail and part("OrbitStDim", " %P") or "")
 end
 
 -- Flat sections with dim dividers. Only the mode bar carries an accent color.
