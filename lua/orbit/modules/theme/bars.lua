@@ -9,6 +9,7 @@ return function(c)
     StatusLine = { bg = status, fg = c.white },
     StatusLineNC = { bg = status, fg = c.light_grey },
     OrbitStFill = { bg = status },
+    OrbitStDivider = { fg = c.light_grey, bg = status },
     OrbitStGit = { fg = palette.lighten(c.light_grey, 8), bg = status, bold = true },
     OrbitStLsp = { fg = c.nord_blue, bg = status },
     OrbitStAi = { fg = c.cyan, bg = status },
