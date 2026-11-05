@@ -25,15 +25,15 @@ end
 vim.go.statusline = "user statusline"
 vim.o.columns = 160
 
-check("setup owns the status line and renders mode, file, cursor and cwd", function()
+check("setup owns the status line and renders mode, file and cursor", function()
   setup()
   assert(vim.go.statusline:find("orbit.modules.statusline.render", 1, true))
   vim.cmd.edit(vim.fn.fnameescape(vim.fn.tempname() .. "-orbit 100% name.lua"))
   local text = rendered()
   assert(text:find("NORMAL", 1, true), text)
   assert(text:find("orbit 100% name.lua", 1, true), "file names must be escaped: " .. text)
-  assert(text:find(" %d+/%d+ "), text)
-  assert(text:find(vim.fn.fnamemodify(vim.fn.getcwd(), ":t"), 1, true), text)
+  assert(text:find("^▌ NORMAL"), "the mode bar starts the line: " .. text)
+  assert(text:find("%d+:%d+ %a+$"), "line, column and %P end the line: " .. text)
 end)
 
 check("diagnostics and Git status appear when present", function()
@@ -48,7 +48,7 @@ check("diagnostics and Git status appear when present", function()
   vim.b[buffer].gitsigns_status_dict = { added = 2, changed = 0, removed = 1 }
   local text = rendered()
   assert(text:find(" 1", 1, true) and text:find(" 2", 1, true), text)
-  assert(text:find(" main  2  1", 1, true), text)
+  assert(text:find("main +2 -1", 1, true), "Git counts are text: " .. text)
   vim.diagnostic.reset(ns, buffer)
   vim.b[buffer].gitsigns_head = nil
 end)
@@ -84,13 +84,23 @@ check("one gap separates visible sections and empty sections leave none", functi
   vim.b[buffer].gitsigns_head = "main"
   vim.b[buffer].gitsigns_status_dict = nil
   local text = rendered()
-  assert(text:find("NORMAL%S* %S+ main %S+ "), "one gap between mode, Git and file: " .. text)
+  assert(text:find("NORMAL · main · ", 1, true), "one divider between sections: " .. text)
   vim.b[buffer].gitsigns_head = nil
   text = rendered()
-  assert(text:find("NORMAL%S* %S+ "), "an empty Git section leaves one gap: " .. text)
-  assert(not text:find("NORMAL%S*  "), text)
-  assert(text:find("^%S"), "no gap before the mode pill: " .. text)
-  assert(text:find(" %d+/%d+ $"), "the position pill ends the line: " .. text)
+  assert(text:find("NORMAL · %S"), "an empty Git section leaves one divider: " .. text)
+  assert(not text:find("·%s+·"), "dividers never double: " .. text)
+  assert(not text:find("^%s"), "no gap before the mode bar: " .. text)
+  assert(not text:find("%s$"), "no gap after the position: " .. text)
+end)
+
+check("a long line truncates the path and keeps the mode and branch", function()
+  local buffer = vim.api.nvim_get_current_buf()
+  vim.b[buffer].gitsigns_head = "main"
+  vim.b[buffer].gitsigns_status_dict = nil
+  local text =
+    vim.api.nvim_eval_statusline(vim.go.statusline, { highlights = false, maxwidth = 40 }).str
+  vim.b[buffer].gitsigns_head = nil
+  assert(text:find("^▌ NORMAL · main · <"), "the cut starts after the branch: " .. text)
 end)
 
 check("the gap option widens every gap and rolls back with its module", function()
@@ -99,7 +109,7 @@ check("the gap option widens every gap and rolls back with its module", function
   vim.b[buffer].gitsigns_head = "main"
   vim.b[buffer].gitsigns_status_dict = nil
   local text = rendered()
-  assert(text:find("NORMAL%S*   %S+ main   %S"), text)
+  assert(text:find("NORMAL   ·   main   ·   ", 1, true), text)
   vim.b[buffer].gitsigns_head = nil
   local prior = commands.setup
   commands.setup = function()
@@ -198,18 +208,10 @@ check("invalid gap or spacer widths fail at declaration", function()
   assert(not pcall(render.container, { render.spacer(1) }))
 end)
 
-check("narrow status lines hide the cwd block", function()
-  local columns = vim.o.columns
-  vim.o.columns = 70
-  local text = rendered()
-  assert(not text:find("󰉋", 1, true), text)
-  vim.o.columns = columns
-end)
-
 check("highlight links survive a colorscheme change", function()
   vim.cmd.colorscheme("habamax")
   local link = vim.api.nvim_get_hl(0, { name = "OrbitStModeNormal" }).link
-  assert(link == "PmenuSel", tostring(link))
+  assert(link == "Function", tostring(link))
   assert(#vim.api.nvim_get_autocmds({ group = "OrbitStatusline", event = "ColorScheme" }) == 1)
 end)
 

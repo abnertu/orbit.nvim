@@ -1,5 +1,4 @@
--- Status and buffer bar roles match orbitvim's default round style.
-local palette = require("orbit.modules.theme.palette")
+-- The status line is flat with a mode bar; the buffer bar keeps orbitvim's round style.
 
 ---@param c Orbit.ThemePalette
 ---@return table<string, vim.api.keyset.highlight>
@@ -10,20 +9,18 @@ return function(c)
     StatusLineNC = { bg = status, fg = c.light_grey },
     OrbitStFill = { bg = status },
     OrbitStDivider = { fg = c.light_grey, bg = status },
-    OrbitStGit = { fg = palette.lighten(c.light_grey, 8), bg = status, bold = true },
-    OrbitStLsp = { fg = c.nord_blue, bg = status },
-    OrbitStAi = { fg = c.cyan, bg = status },
-    OrbitStFile = { fg = c.white, bg = status },
+    OrbitStDim = { fg = c.light_grey, bg = status },
+    OrbitStGit = { fg = c.light_grey, bg = status },
+    OrbitStGitAdd = { fg = c.green, bg = status },
+    OrbitStGitChange = { fg = c.yellow, bg = status },
+    OrbitStGitDelete = { fg = c.red, bg = status },
+    OrbitStLsp = { fg = c.light_grey, bg = status },
+    OrbitStFile = { fg = c.white, bg = status, bold = true },
+    OrbitStModified = { fg = c.yellow, bg = status },
     OrbitStPath = { fg = c.light_grey, bg = status },
     OrbitStSymbols = { fg = c.white, bg = status },
-    OrbitStSymbolSep = { fg = c.white, bg = status },
-    OrbitStCwdIcon = { fg = c.one_bg, bg = c.red },
-    OrbitStCwd = { fg = c.white, bg = c.lightbg },
-    OrbitStCwdSep = { fg = c.red, bg = status },
-    OrbitStPosSep = { fg = c.green, bg = status },
-    OrbitStPosSepMid = { fg = c.green, bg = c.lightbg },
-    OrbitStPosIcon = { fg = c.black, bg = c.green },
-    OrbitStPos = { fg = c.green, bg = c.lightbg },
+    OrbitStSymbolSep = { fg = c.light_grey, bg = status },
+    OrbitStPos = { fg = c.white, bg = status },
     TabLine = { bg = c.black2 },
     OrbitTbActive = { fg = c.white, bg = c.black },
     OrbitTbInactive = { fg = c.light_grey, bg = c.black2 },
@@ -49,8 +46,7 @@ return function(c)
     Command = c.green,
     Select = c.blue,
   }) do
-    groups["OrbitStMode" .. mode] = { fg = c.black, bg = color, bold = true }
-    groups["OrbitStMode" .. mode .. "Sep"] = { fg = color, bg = status }
+    groups["OrbitStMode" .. mode] = { fg = color, bg = status, bold = true }
   end
   return groups
 end

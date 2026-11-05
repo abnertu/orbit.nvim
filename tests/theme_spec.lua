@@ -181,7 +181,7 @@ check("default Tokyo Night restores editor, syntax, bar and plugin color roles",
   assert(hl("LineNr").fg == 0x40486a)
   assert(hl("@punctuation.bracket").fg == 0xbb9af7)
   assert(hl("@function.method.call").fg == 0xf7768e)
-  assert(hl("OrbitStModeInsert").bg == 0x9d7cd8)
+  assert(hl("OrbitStModeInsert").fg == 0x9d7cd8)
   assert(hl("OrbitTbActiveModified").fg == 0x9ece6a)
   assert(hl("OrbitTbInactiveModified").fg == 0xf7768e)
   assert(hl("BlinkCmpLabelMatch").fg == 0x7aa2f7 and hl("BlinkCmpLabelMatch").bold)
