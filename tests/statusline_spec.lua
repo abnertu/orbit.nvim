@@ -115,6 +115,62 @@ check("the gap option widens every gap and rolls back with its module", function
   assert(require("orbit.modules.statusline").gap() == 1)
 end)
 
+local render = require("orbit.modules.statusline.render")
+---@param layout Orbit.StatuslineItem[]
+---@return string
+local function composed(layout)
+  return vim.api.nvim_eval_statusline(
+    render.compose(layout, vim.api.nvim_get_current_buf()),
+    { highlights = false, maxwidth = 400 }
+  ).str
+end
+local function component(value)
+  return function()
+    return value
+  end
+end
+local empty = component("")
+
+check("containers join only visible children with their gap", function()
+  setup({ modules = { statusline = { gap = 2 } } })
+  assert(composed({ render.container({ component("a"), empty, component("b") }) }) == "a  b")
+  assert(composed({ render.container({ component("a"), component("b") }, { gap = 0 }) }) == "ab")
+  local nested =
+    render.container({ component("a"), render.container({ empty, empty }), component("b") })
+  assert(composed({ nested }) == "a  b", "an empty inner container leaves no gap")
+  setup()
+end)
+
+check("spacers collapse at edges and next to empty items", function()
+  assert(composed({ render.spacer(3), component("a"), render.spacer(3) }) == "a")
+  assert(
+    composed({ component("a"), render.spacer(1), empty, render.spacer(3), component("b") })
+      == "a   b"
+  )
+  local marked =
+    composed({ component("a"), render.truncate(), render.spacer(2), empty, render.spacer() })
+  assert(marked == "a", "a trailing spacer stays empty: " .. marked)
+  local raw = render.compose({
+    component("a"),
+    render.spacer(2),
+    render.container({ empty }),
+    render.spacer(1),
+    render.fill(),
+    component("b"),
+  }, vim.api.nvim_get_current_buf())
+  assert(
+    raw:find("a%%#OrbitStFill#  %%#OrbitStFill#%%=b"),
+    "the merged spacer keeps the first position: " .. raw
+  )
+end)
+
+check("invalid gap or spacer widths fail at declaration", function()
+  assert(not pcall(render.spacer, -1))
+  assert(not pcall(render.spacer, 1.5))
+  assert(not pcall(render.container, {}, { gap = 1.5 }))
+  assert(not pcall(render.container, { render.spacer(1) }))
+end)
+
 check("narrow status lines hide the cwd block", function()
   local columns = vim.o.columns
   vim.o.columns = 70
