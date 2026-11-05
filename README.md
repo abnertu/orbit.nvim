@@ -71,6 +71,8 @@ Most features load through Lazy. Both install methods above enable it.
 - `require("orbit").setup()` without `modules.plugins.enabled = true` loads only native features and downloads nothing.
 - Lazy starts on the first demand event, for example the first file read.
 - `bootstrap = true` clones Lazy on first demand when the checkout is missing. It uses the `lazy.nvim` commit from `lazy-lock.json` when that file exists.
+- The repository tracks `lazy-lock.json`. Run `:Lazy restore` to install the locked plugin commits.
+- After `:Lazy update` or `:Lazy sync`, commit `lazy-lock.json` to keep the new versions.
 - `import` selects the Lazy spec module. The default is `orbit.plugins`, which collects the specs of all enabled modules.
 - Plugin options apply only after a restart.
 
