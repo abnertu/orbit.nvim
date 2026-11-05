@@ -9,8 +9,5 @@ return {
     ["tests/live_snacks_spec.lua"] = {
       read_globals = { "Snacks" },
     },
-    ["tests/live_obsidian_spec.lua"] = {
-      globals = { "Obsidian" },
-    },
   },
 }
