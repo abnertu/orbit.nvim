@@ -316,6 +316,33 @@ local function symbols(ctx)
   return require("orbit.modules.statusline.symbols").render()
 end
 
+---@return string
+local function search()
+  if vim.v.hlsearch == 0 then
+    return ""
+  end
+  local ok, count = pcall(vim.fn.searchcount, { maxcount = 999, timeout = 20 })
+  if not ok or type(count) ~= "table" or (count.total or 0) == 0 then
+    return ""
+  end
+  -- incomplete = 2 means the count stopped at maxcount.
+  local total = count.incomplete == 2 and ">" .. count.maxcount or tostring(count.total)
+  return part("OrbitStDim", "\u{F002} " .. count.current .. "/" .. total)
+end
+
+---@return string
+local function selection()
+  local current = vim.api.nvim_get_mode().mode
+  if not current:find("^[vV\22]") then
+    return ""
+  end
+  local lines = math.abs(vim.fn.line("v") - vim.fn.line(".")) + 1
+  local size = (current == "v" and lines == 1)
+      and tostring(math.abs(vim.fn.charcol("v") - vim.fn.charcol(".")) + 1)
+    or lines .. "L"
+  return part("OrbitStDim", "\u{F0489} " .. size)
+end
+
 ---@param ctx Orbit.StatuslineContext
 ---@return string
 local function diagnostics(ctx)
@@ -374,6 +401,10 @@ local layout = {
   -- A blank spacer, so no divider is drawn across the fill.
   M.spacer(),
   M.fill(),
+  search,
+  M.separator(),
+  selection,
+  M.separator(),
   diagnostics,
   M.separator(),
   lsp,

@@ -281,6 +281,32 @@ check("terminal, help, list and plugin buffers show a label", function()
   vim.api.nvim_set_current_win(start)
 end)
 
+check("search count and selection size appear only in their states", function()
+  vim.cmd("enew")
+  vim.api.nvim_buf_set_lines(0, 0, -1, false, { "foo bar", "foo baz", "foo" })
+  local text = rendered()
+  assert(not text:find("%d+/%d+") and not text:find("%d+L"), text)
+  vim.o.hlsearch = true
+  vim.fn.setreg("/", "foo")
+  vim.v.hlsearch = 1
+  vim.api.nvim_win_set_cursor(0, { 2, 0 })
+  text = rendered()
+  assert(text:find(" 2/3", 1, true), "search shows current/total: " .. text)
+  vim.v.hlsearch = 0
+  assert(not rendered():find(" 2/3", 1, true), "no count without hlsearch")
+  vim.api.nvim_feedkeys(vim.keycode("Vj"), "nx", false)
+  text = rendered()
+  vim.api.nvim_feedkeys(vim.keycode("<Esc>"), "nx", false)
+  assert(text:find(" 2L", 1, true), "line-wise selection counts lines: " .. text)
+  vim.api.nvim_win_set_cursor(0, { 1, 0 })
+  vim.api.nvim_feedkeys("vll", "nx", false)
+  text = rendered()
+  vim.api.nvim_feedkeys(vim.keycode("<Esc>"), "nx", false)
+  assert(text:find(" 3 ", 1, true), "character selection counts characters: " .. text)
+  vim.o.hlsearch = false
+  vim.cmd("bwipeout!")
+end)
+
 check("highlight links survive a colorscheme change", function()
   vim.cmd.colorscheme("habamax")
   local link = vim.api.nvim_get_hl(0, { name = "OrbitStModeNormal" }).link
