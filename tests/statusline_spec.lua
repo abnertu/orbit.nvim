@@ -79,6 +79,42 @@ check("symbols use Trouble lazily and preserve escaped names and truncation", fu
   package.loaded.trouble = previous
 end)
 
+check("one gap separates visible sections and empty sections leave none", function()
+  local buffer = vim.api.nvim_get_current_buf()
+  vim.b[buffer].gitsigns_head = "main"
+  vim.b[buffer].gitsigns_status_dict = nil
+  local text = rendered()
+  assert(text:find("NORMAL%S* %S+ main %S+ "), "one gap between mode, Git and file: " .. text)
+  vim.b[buffer].gitsigns_head = nil
+  text = rendered()
+  assert(text:find("NORMAL%S* %S+ "), "an empty Git section leaves one gap: " .. text)
+  assert(not text:find("NORMAL%S*  "), text)
+  assert(text:find("^%S"), "no gap before the mode pill: " .. text)
+  assert(text:find(" %d+/%d+ $"), "the position pill ends the line: " .. text)
+end)
+
+check("the gap option widens every gap and rolls back with its module", function()
+  setup({ modules = { statusline = { gap = 3 } } })
+  local buffer = vim.api.nvim_get_current_buf()
+  vim.b[buffer].gitsigns_head = "main"
+  vim.b[buffer].gitsigns_status_dict = nil
+  local text = rendered()
+  assert(text:find("NORMAL%S*   %S+ main   %S"), text)
+  vim.b[buffer].gitsigns_head = nil
+  local prior = commands.setup
+  commands.setup = function()
+    error("injected gap rollback")
+  end
+  local ok = pcall(
+    setup,
+    { modules = { statusline = { gap = 1 }, commands = { name = "OrbitStatuslineGapFail" } } }
+  )
+  commands.setup = prior
+  assert(not ok and require("orbit.modules.statusline").gap() == 3)
+  setup()
+  assert(require("orbit.modules.statusline").gap() == 1)
+end)
+
 check("narrow status lines hide the cwd block", function()
   local columns = vim.o.columns
   vim.o.columns = 70
