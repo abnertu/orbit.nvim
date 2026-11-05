@@ -17,6 +17,8 @@ return function(c)
     OrbitStLsp = { fg = c.light_grey, bg = status },
     OrbitStFile = { fg = c.white, bg = status, bold = true },
     OrbitStModified = { fg = c.yellow, bg = status },
+    OrbitStReadonly = { fg = c.red, bg = status },
+    OrbitStFormat = { fg = c.yellow, bg = status },
     OrbitStPath = { fg = c.light_grey, bg = status },
     OrbitStSymbols = { fg = c.white, bg = status },
     OrbitStSymbolSep = { fg = c.light_grey, bg = status },
