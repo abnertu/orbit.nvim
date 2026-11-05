@@ -34,7 +34,7 @@ return function(c)
     OrbitTbOffset = { link = "NvimTreeNormal" },
     OrbitTbOffsetSep = { link = "NvimTreeWinSeparator" },
   }
-  for suffix, color in pairs({ Error = c.red, Warn = c.yellow, Info = c.green, Hint = c.purple }) do
+  for suffix, color in pairs({ Error = c.red, Warn = c.yellow }) do
     groups["OrbitSt" .. suffix] = { fg = color, bg = status }
   end
   for mode, color in pairs({

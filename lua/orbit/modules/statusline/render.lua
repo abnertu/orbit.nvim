@@ -351,17 +351,21 @@ end
 ---@return string
 local function diagnostics(ctx)
   local counts = vim.diagnostic.count(ctx.buffer)
+  local severity = vim.diagnostic.severity
   local result = {}
   for _, item in ipairs({
-    { vim.diagnostic.severity.ERROR, "\u{F057} ", "OrbitStError" },
-    { vim.diagnostic.severity.WARN, "\u{F071} ", "OrbitStWarn" },
-    { vim.diagnostic.severity.HINT, "\u{F06E9} ", "OrbitStHint" },
-    { vim.diagnostic.severity.INFO, "\u{F02FC} ", "OrbitStInfo" },
+    { severity.ERROR, "\u{F057} ", "OrbitStError" },
+    { severity.WARN, "\u{F071} ", "OrbitStWarn" },
   }) do
-    local count = counts[item[1]]
-    if count and count > 0 then
+    local count = counts[item[1]] or 0
+    if count > 0 then
       result[#result + 1] = part(item[3], item[2] .. count)
     end
+  end
+  -- Info and hint carry less signal, so they share one dim count.
+  local minor = (counts[severity.INFO] or 0) + (counts[severity.HINT] or 0)
+  if minor > 0 then
+    result[#result + 1] = part("OrbitStDim", "\u{F02FC} " .. minor)
   end
   return table.concat(result, " ")
 end
@@ -475,8 +479,6 @@ local defaults = {
   OrbitStSymbolSep = "Comment",
   OrbitStError = "DiagnosticError",
   OrbitStWarn = "DiagnosticWarn",
-  OrbitStInfo = "DiagnosticInfo",
-  OrbitStHint = "DiagnosticHint",
   OrbitStLsp = "Comment",
   OrbitStPos = "StatusLine",
 }

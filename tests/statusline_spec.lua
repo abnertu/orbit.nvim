@@ -43,11 +43,17 @@ check("diagnostics and Git status appear when present", function()
     { lnum = 0, col = 0, message = "e", severity = vim.diagnostic.severity.ERROR },
     { lnum = 0, col = 0, message = "w", severity = vim.diagnostic.severity.WARN },
     { lnum = 0, col = 0, message = "w2", severity = vim.diagnostic.severity.WARN },
+    { lnum = 0, col = 0, message = "i", severity = vim.diagnostic.severity.INFO },
+    { lnum = 0, col = 0, message = "h", severity = vim.diagnostic.severity.HINT },
+    { lnum = 0, col = 0, message = "h2", severity = vim.diagnostic.severity.HINT },
   })
   vim.b[buffer].gitsigns_head = "main"
   vim.b[buffer].gitsigns_status_dict = { added = 2, changed = 0, removed = 1 }
   local text = rendered()
-  assert(text:find(" 1", 1, true) and text:find(" 2", 1, true), text)
+  assert(
+    text:find("\u{F057} 1 \u{F071} 2 \u{F02FC} 3", 1, true),
+    "info and hint share one count: " .. text
+  )
   assert(text:find("main +2 -1", 1, true), "Git counts are text: " .. text)
   vim.diagnostic.reset(ns, buffer)
   vim.b[buffer].gitsigns_head = nil
