@@ -1,8 +1,9 @@
 local M = {}
 
----@alias Orbit.StatuslineSnapshot {owned: boolean, original?: string, current: string}
+---@alias Orbit.StatuslineSnapshot {owned: boolean, original?: string, current: string, gap: integer}
 ---@alias Orbit.StatuslineSymbolProvider {get: fun(): string?}
 local owned = false
+local gap = 1
 ---@type string?
 local original
 local group_name = "OrbitStatusline"
@@ -10,6 +11,7 @@ local expression = "%!v:lua.require'orbit.modules.statusline.render'.render()"
 
 ---@class Orbit.StatuslineOptions # Orbit global status line.
 ---@field enabled? boolean @default(true) # Draw the Orbit status line.
+---@field gap? integer @default(1) @minimum(0) @maximum(8) # Blank cells between status line sections.
 
 local function sync_group(active)
   pcall(vim.api.nvim_del_augroup_by_name, group_name)
@@ -44,12 +46,12 @@ end
 
 ---@return Orbit.StatuslineSnapshot
 function M.capture()
-  return { owned = owned, original = original, current = vim.go.statusline }
+  return { owned = owned, original = original, current = vim.go.statusline, gap = gap }
 end
 
 ---@param snapshot Orbit.StatuslineSnapshot
 function M.restore(snapshot)
-  owned, original = snapshot.owned, snapshot.original
+  owned, original, gap = snapshot.owned, snapshot.original, snapshot.gap
   vim.go.statusline = snapshot.current
   sync_group(owned)
 end
@@ -57,6 +59,8 @@ end
 ---@param opts? Orbit.StatuslineOptions
 function M.setup(opts)
   opts = require("orbit.config").resolve_module("statusline", opts)
+  local changed = gap ~= opts.gap
+  gap = opts.gap
   if opts.enabled then
     if not owned then
       original, owned = vim.go.statusline, true
@@ -70,6 +74,15 @@ function M.setup(opts)
     owned, original = false, nil
   end
   sync_group(owned)
+  if changed and owned then
+    vim.cmd.redrawstatus()
+  end
+end
+
+---Return the configured blank cells between sections. The renderer reads it on each redraw.
+---@return integer
+function M.gap()
+  return gap
 end
 
 return M

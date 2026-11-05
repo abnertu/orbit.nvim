@@ -1472,6 +1472,13 @@
               "default": true,
               "description": "Draw the Orbit status line.",
               "type": "boolean"
+            },
+            "gap": {
+              "default": 1,
+              "description": "Blank cells between status line sections.",
+              "maximum": 8,
+              "minimum": 0,
+              "type": "integer"
             }
           },
           "type": "object"
