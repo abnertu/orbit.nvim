@@ -6,31 +6,13 @@ vim.opt.rtp:prepend(root)
 -- Real package startup adds this tail so extension queries can load.
 vim.opt.rtp:append(vim.fs.joinpath(root, "after"))
 
-local pinned = "a9c4e1457e2e59f1b82c8f78dcdb3b2517555200"
-local source = "https://github.com/nvim-treesitter/nvim-treesitter.git"
-local plugin = vim.fn.tempname() .. " pinned nvim treesitter plugin"
-local site = vim.fn.tempname() .. " pinned parsers site with spaces"
-
-local function run(argv)
-  local result = vim.system(argv, { text = true, timeout = 120000 }):wait()
-  assert(
-    result.code == 0,
-    vim.inspect(argv) .. " failed: " .. tostring(result.stderr or result.stdout or result.code)
-  )
-  return result.stdout or ""
-end
+local lock = dofile(root .. "/tests/support/live_lock.lua")
+local plugin = vim.fn.tempname() .. " locked nvim treesitter plugin"
+local site = vim.fn.tempname() .. " locked parsers site with spaces"
 
 local ok, err = xpcall(function()
-  assert(vim.fn.executable("git") == 1, "Git is required")
-  assert(vim.fn.mkdir(plugin, "p") == 1)
   assert(vim.fn.mkdir(site, "p") == 1)
-  run({ "git", "init", plugin })
-  run({ "git", "-C", plugin, "fetch", "--depth", "1", source, pinned })
-  run({ "git", "-C", plugin, "checkout", "--detach", "FETCH_HEAD" })
-  assert(
-    vim.trim(run({ "git", "-C", plugin, "rev-parse", "HEAD" })) == pinned,
-    "Tree-sitter manager source checkout mismatch"
-  )
+  lock.checkout("nvim-treesitter", "nvim-treesitter/nvim-treesitter", plugin)
   vim.opt.rtp:prepend(plugin)
 
   local orbit = require("orbit")
@@ -42,8 +24,7 @@ local ok, err = xpcall(function()
   assert(spec.branch == "main")
   require("orbit.modules.treesitter_plugins.runtime").setup()
 
-  -- The real parser manager uses fixed grammar revisions from its registry:
-  -- C# v0.23.5 and SQL gh-pages 174cebb880f10bc7c5a24aa289431949d26d3c09.
+  -- The real parser manager installs the grammar revisions that its locked registry pins.
   local ts = require("nvim-treesitter")
   ts.setup({ install_dir = site })
   assert(

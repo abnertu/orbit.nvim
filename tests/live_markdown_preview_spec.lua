@@ -5,24 +5,9 @@ local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
 local bit = require("bit")
 local windows = vim.fn.has("win32") == 1
-local pin = {
-  "https://github.com/iamcco/markdown-preview.nvim.git",
-  "a923f5fc5ba36a3b17e289dc35dc17f66d0548ee",
-}
+local lock = dofile(root .. "/tests/support/live_lock.lua")
 local workspace = vim.fn.tempname() .. " live markdown preview with spaces"
 local browser, socket
-
-local function run(argv, cwd)
-  local result = vim.system(argv, { text = true, timeout = 300000, cwd = cwd }):wait()
-  assert(
-    result.code == 0,
-    vim.inspect(argv)
-      .. " failed: "
-      .. tostring(result.stderr or "")
-      .. tostring(result.stdout or "")
-  )
-  return result.stdout or ""
-end
 
 local function wait(timeout, predicate, message)
   assert(vim.wait(timeout, predicate, 50), message)
@@ -163,15 +148,10 @@ local function connect(port, path)
 end
 
 local ok, err = xpcall(function()
-  assert(vim.fn.executable("git") == 1, "Git is required")
   local browser_path = find_browser()
   -- The prebuilt server finds its app directory by this Lazy checkout name.
   local plugin = vim.fs.joinpath(workspace, "markdown-preview.nvim")
-  assert(vim.fn.mkdir(plugin, "p") == 1)
-  run({ "git", "init", plugin })
-  run({ "git", "-C", plugin, "fetch", "--depth", "1", pin[1], pin[2] })
-  run({ "git", "-C", plugin, "checkout", "--detach", "FETCH_HEAD" })
-  assert(vim.trim(run({ "git", "-C", plugin, "rev-parse", "HEAD" })) == pin[2])
+  lock.checkout("markdown-preview.nvim", "iamcco/markdown-preview.nvim", plugin)
   vim.opt.rtp:prepend(plugin)
 
   require("orbit").setup()

@@ -4,14 +4,11 @@
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
 
-local source = "https://github.com/Orbit-Lua/hangar.nvim.git"
--- v0.4.1 is an annotated tag: pin its dereferenced commit, not the tag object.
-local revision = "2941093d6e4b7952228076348c46aab2b9907bdc"
--- The backends use the commits that Orbit locks and Hangar 0.4 tests.
+local lock = dofile(root .. "/tests/support/live_lock.lua")
 local backends = {
-  { "https://github.com/stevearc/conform.nvim.git", "016802de402556da54c36bd7359b441266b01cdd" },
-  { "https://github.com/mfussenegger/nvim-lint.git", "f6230a5c06ba59e6059c14637f1dbe29a7978b9b" },
-  { "https://github.com/Orbit-Lua/nvim-dap.git", "8aba1e3805438ee6f74207e0b7385ef951bb9945" },
+  { "conform.nvim", "stevearc/conform.nvim" },
+  { "nvim-lint", "mfussenegger/nvim-lint" },
+  { "nvim-dap", "Orbit-Lua/nvim-dap" },
 }
 local plugin = vim.fn.tempname() .. " upstream Hangar checkout with spaces"
 local backend_root = vim.fn.tempname() .. " Hangar backends with spaces"
@@ -20,51 +17,17 @@ local state_path = vim.fs.joinpath(storage, "managed", "hangar.json")
 local decoy = vim.fs.joinpath(storage, "wrong.json")
 local old_global = vim.g.hangar_state_path
 
-local function run(argv)
-  local result = vim.system(argv, { text = true, timeout = 120000 }):wait()
-  assert(
-    result.code == 0,
-    "Git checkout failed: "
-      .. vim.inspect(argv)
-      .. ": "
-      .. tostring(result.stderr or result.stdout or result.code)
-  )
-  return result.stdout or ""
-end
-
----@param directory string
----@param url string
----@param commit string
-local function checkout(directory, url, commit)
-  assert(vim.fn.mkdir(directory, "p") == 1)
-  run({ "git", "init", directory })
-  run({ "git", "-C", directory, "fetch", "--depth", "1", url, commit })
-  run({ "git", "-C", directory, "checkout", "--detach", "FETCH_HEAD" })
-  assert(
-    vim.trim(run({ "git", "-C", directory, "rev-parse", "HEAD" })) == commit,
-    url .. " checkout did not match the pinned revision"
-  )
-end
-
 local function saved()
   return vim.json.decode(table.concat(vim.fn.readfile(state_path), "\n"))
 end
 
 local ok, err = xpcall(function()
-  assert(vim.fn.executable("git") == 1, "Git is required")
-  assert(vim.fn.mkdir(plugin, "p") == 1)
   assert(vim.fn.mkdir(storage, "p") == 1)
-  run({ "git", "init", plugin })
-  run({ "git", "-C", plugin, "fetch", "--depth", "1", source, revision })
-  run({ "git", "-C", plugin, "checkout", "--detach", "FETCH_HEAD" })
-  assert(
-    vim.trim(run({ "git", "-C", plugin, "rev-parse", "HEAD" })) == revision,
-    "real Hangar checkout did not match the pinned revision"
-  )
+  lock.checkout("hangar.nvim", "Orbit-Lua/hangar.nvim", plugin)
   vim.opt.rtp:prepend(plugin)
   for index, backend in ipairs(backends) do
     local directory = vim.fs.joinpath(backend_root, tostring(index))
-    checkout(directory, backend[1], backend[2])
+    lock.checkout(backend[1], backend[2], directory)
     vim.opt.rtp:prepend(directory)
   end
 

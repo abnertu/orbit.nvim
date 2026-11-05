@@ -3,9 +3,10 @@
 -- This suite requires Git, network and SQLFluff; missing tools fail it.
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
+local lock = dofile(root .. "/tests/support/live_lock.lua")
 local pins = {
-  { "https://github.com/stevearc/conform.nvim.git", "3543d000dafbc41cc7761d860cfdb24e82154f75" },
-  { "https://github.com/mfussenegger/nvim-lint.git", "52107ce2076a27a285af781248e2c59bad817cd0" },
+  { "conform.nvim", "stevearc/conform.nvim" },
+  { "nvim-lint", "mfussenegger/nvim-lint" },
 }
 local workspace = vim.fn.tempname() .. " live sqlfluff with spaces"
 
@@ -29,16 +30,11 @@ local function write(project, files)
 end
 
 local ok, err = xpcall(function()
-  assert(vim.fn.executable("git") == 1, "Git is required")
   assert(vim.fn.executable("sqlfluff") == 1, "SQLFluff is required on PATH")
   print("SQLFluff: " .. vim.trim(run({ "sqlfluff", "--version" })))
   for index, pin in ipairs(pins) do
     local directory = vim.fs.joinpath(workspace, "plugin" .. index)
-    assert(vim.fn.mkdir(directory, "p") == 1)
-    run({ "git", "init", directory })
-    run({ "git", "-C", directory, "fetch", "--depth", "1", pin[1], pin[2] })
-    run({ "git", "-C", directory, "checkout", "--detach", "FETCH_HEAD" })
-    assert(vim.trim(run({ "git", "-C", directory, "rev-parse", "HEAD" })) == pin[2])
+    lock.checkout(pin[1], pin[2], directory)
     vim.opt.rtp:prepend(directory)
   end
 

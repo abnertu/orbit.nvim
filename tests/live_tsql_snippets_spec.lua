@@ -1,28 +1,13 @@
 -- Verify the original T-SQL corpus against the real pinned LuaSnip parser.
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
-local pinned = "458560534a73f7f8d7a11a146c801db00b081df0"
-local source = "https://github.com/L3MON4D3/LuaSnip.git"
+local lock = dofile(root .. "/tests/support/live_lock.lua")
 local directory = vim.fn.tempname() .. " live LuaSnip"
 local original_buffer = vim.api.nvim_get_current_buf()
 local luasnip
 
-local function run(args)
-  local result = vim.system(args, { text = true, timeout = 120000 }):wait()
-  assert(
-    result.code == 0,
-    vim.inspect(args) .. " failed: " .. tostring(result.stderr or result.stdout)
-  )
-  return result.stdout or ""
-end
-
 local ok, err = xpcall(function()
-  assert(vim.fn.executable("git") == 1, "Git is required")
-  assert(vim.fn.mkdir(directory, "p") == 1)
-  run({ "git", "init", directory })
-  run({ "git", "-C", directory, "fetch", "--depth", "1", source, pinned })
-  run({ "git", "-C", directory, "checkout", "--detach", "FETCH_HEAD" })
-  assert(run({ "git", "-C", directory, "rev-parse", "HEAD" }):gsub("%s+$", "") == pinned)
+  lock.checkout("LuaSnip", "L3MON4D3/LuaSnip", directory)
   vim.opt.rtp:prepend(directory)
 
   local orbit = require("orbit")

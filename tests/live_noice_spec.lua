@@ -3,50 +3,18 @@
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
 
+local lock = dofile(root .. "/tests/support/live_lock.lua")
 local dependencies = {
-  {
-    name = "nui",
-    source = "https://github.com/MunifTanjim/nui.nvim.git",
-    revision = "10fc361835c856ba4233ef5ea135b919bf3dce97",
-  },
-  {
-    name = "noice",
-    source = "https://github.com/folke/noice.nvim.git",
-    revision = "7bfd942445fb63089b59f97ca487d605e715f155",
-  },
+  { name = "nui.nvim", repository = "MunifTanjim/nui.nvim" },
+  { name = "noice.nvim", repository = "folke/noice.nvim" },
 }
 local workspace = vim.fn.tempname() .. " live noice with spaces"
 
-local function run(argv)
-  local result = vim.system(argv, { text = true, timeout = 120000 }):wait()
-  assert(
-    result.code == 0,
-    vim.inspect(argv) .. " failed: " .. tostring(result.stderr or result.stdout or result.code)
-  )
-  return result.stdout or ""
-end
-
 local ok, err = xpcall(function()
-  assert(vim.fn.executable("git") == 1, "Git is required")
   assert(vim.fn.mkdir(workspace, "p") == 1)
   for _, dependency in ipairs(dependencies) do
     local directory = vim.fs.joinpath(workspace, dependency.name)
-    run({ "git", "init", directory })
-    run({
-      "git",
-      "-C",
-      directory,
-      "fetch",
-      "--depth",
-      "1",
-      dependency.source,
-      dependency.revision,
-    })
-    run({ "git", "-C", directory, "checkout", "--detach", "FETCH_HEAD" })
-    assert(
-      run({ "git", "-C", directory, "rev-parse", "HEAD" }):gsub("%s+$", "") == dependency.revision,
-      "upstream " .. dependency.name .. " revision mismatch"
-    )
+    lock.checkout(dependency.name, dependency.repository, directory)
     vim.opt.rtp:prepend(directory)
   end
 

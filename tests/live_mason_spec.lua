@@ -3,36 +3,18 @@
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
 local windows = vim.fn.has("win32") == 1
-local pin =
-  { "https://github.com/mason-org/mason.nvim.git", "2a6940af80375532e5e9e7c1f2fc6319a1b7a69d" }
+local lock = dofile(root .. "/tests/support/live_lock.lua")
 local registry = "github:mason-org/mason-registry@2026-10-27-top-perch"
 local package_name, package_version = "stylua", "v2.6.0"
 local workspace = vim.fn.tempname() .. " live mason with spaces"
-
-local function run(argv)
-  local result = vim.system(argv, { text = true, timeout = 300000 }):wait()
-  assert(
-    result.code == 0,
-    vim.inspect(argv)
-      .. " failed: "
-      .. tostring(result.stderr or "")
-      .. tostring(result.stdout or "")
-  )
-  return result.stdout or ""
-end
 
 local function wait(predicate, message)
   assert(vim.wait(300000, predicate, 100), message)
 end
 
 local ok, err = xpcall(function()
-  assert(vim.fn.executable("git") == 1, "Git is required")
   local plugin = vim.fs.joinpath(workspace, "mason.nvim")
-  assert(vim.fn.mkdir(plugin, "p") == 1)
-  run({ "git", "init", plugin })
-  run({ "git", "-C", plugin, "fetch", "--depth", "1", pin[1], pin[2] })
-  run({ "git", "-C", plugin, "checkout", "--detach", "FETCH_HEAD" })
-  assert(vim.trim(run({ "git", "-C", plugin, "rev-parse", "HEAD" })) == pin[2])
+  lock.checkout("mason.nvim", "mason-org/mason.nvim", plugin)
   vim.opt.rtp:prepend(plugin)
 
   require("orbit").setup({ modules = { mason = { registry = registry } } })

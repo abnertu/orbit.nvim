@@ -3,29 +3,11 @@
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
 
-local pinned = "52107ce2076a27a285af781248e2c59bad817cd0"
-local source = "https://github.com/mfussenegger/nvim-lint.git"
+local lock = dofile(root .. "/tests/support/live_lock.lua")
 local directory = vim.fn.tempname() .. " live nvim lint with spaces"
 
-local function run(argv)
-  local result = vim.system(argv, { text = true, timeout = 120000 }):wait()
-  assert(
-    result.code == 0,
-    vim.inspect(argv) .. " failed: " .. tostring(result.stderr or result.stdout or result.code)
-  )
-  return result.stdout or ""
-end
-
 local ok, err = xpcall(function()
-  assert(vim.fn.executable("git") == 1, "Git is required")
-  assert(vim.fn.mkdir(directory, "p") == 1)
-  run({ "git", "init", directory })
-  run({ "git", "-C", directory, "fetch", "--depth", "1", source, pinned })
-  run({ "git", "-C", directory, "checkout", "--detach", "FETCH_HEAD" })
-  assert(
-    vim.trim(run({ "git", "-C", directory, "rev-parse", "HEAD" })) == pinned,
-    "nvim-lint checkout revision mismatch"
-  )
+  lock.checkout("nvim-lint", "mfussenegger/nvim-lint", directory)
   vim.opt.rtp:prepend(directory)
 
   local orbit = require("orbit")

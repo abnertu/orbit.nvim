@@ -3,13 +3,11 @@
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
 local windows = vim.fn.has("win32") == 1
+local lock = dofile(root .. "/tests/support/live_lock.lua")
 local pins = {
-  {
-    "https://github.com/pmizio/typescript-tools.nvim.git",
-    "c2f5910074103705661e9651aa841e0d7eea9932",
-  },
-  { "https://github.com/nvim-lua/plenary.nvim.git", "74b06c6c75e4eeb3108ec01852001636d85a932b" },
-  { "https://github.com/neovim/nvim-lspconfig.git", "d8d2fda7aae57030452ce8cd6e770b1eb704514e" },
+  { "typescript-tools.nvim", "pmizio/typescript-tools.nvim" },
+  { "plenary.nvim", "nvim-lua/plenary.nvim" },
+  { "nvim-lspconfig", "neovim/nvim-lspconfig" },
 }
 -- TypeScript 7.x ships no lib/tsserver.js, which typescript-tools requires.
 local typescript_version = "5.9.3"
@@ -38,11 +36,7 @@ local ok, err = xpcall(function()
   end
   for index, pin in ipairs(pins) do
     local directory = vim.fs.joinpath(workspace, "plugin" .. index)
-    assert(vim.fn.mkdir(directory, "p") == 1)
-    run({ "git", "init", directory })
-    run({ "git", "-C", directory, "fetch", "--depth", "1", pin[1], pin[2] })
-    run({ "git", "-C", directory, "checkout", "--detach", "FETCH_HEAD" })
-    assert(vim.trim(run({ "git", "-C", directory, "rev-parse", "HEAD" })) == pin[2])
+    lock.checkout(pin[1], pin[2], directory)
     vim.opt.rtp:prepend(directory)
   end
 

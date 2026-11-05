@@ -2,31 +2,16 @@
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
 local workspace = vim.fn.tempname() .. " dotnet manager colors"
+local lock = dofile(root .. "/tests/support/live_lock.lua")
 local pins = {
-  { "dotnet-cli.nvim", "Orbit-Lua/dotnet-cli.nvim", "a74464a59be996b5db3e7f9480b937c9ff992471" },
-  { "comet.nvim", "Orbit-Lua/comet.nvim", "b30afe9e5fcd5445804e584eb1cadf68c64873fe" },
+  { "dotnet-cli.nvim", "Orbit-Lua/dotnet-cli.nvim" },
+  { "comet.nvim", "Orbit-Lua/comet.nvim" },
 }
 local cwd = vim.fn.getcwd()
-local function run(argv)
-  local result = vim.system(argv, { text = true, timeout = 60000 }):wait()
-  assert(result.code == 0, tostring(result.stderr))
-end
 local ok, err = xpcall(function()
   for _, pin in ipairs(pins) do
     local path = vim.fs.joinpath(workspace, pin[1])
-    vim.fn.mkdir(path, "p")
-    run({ "git", "init", "--quiet", path })
-    run({
-      "git",
-      "-C",
-      path,
-      "fetch",
-      "--depth",
-      "1",
-      "https://github.com/" .. pin[2] .. ".git",
-      pin[3],
-    })
-    run({ "git", "-C", path, "checkout", "--quiet", "--detach", "FETCH_HEAD" })
+    lock.checkout(pin[1], pin[2], path)
     vim.opt.rtp:prepend(path)
   end
   vim.api.nvim_set_current_dir(workspace)

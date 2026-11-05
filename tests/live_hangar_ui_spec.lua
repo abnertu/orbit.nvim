@@ -3,28 +3,13 @@
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
 
+local lock = dofile(root .. "/tests/support/live_lock.lua")
 local dependencies = {
-  {
-    name = "hangar.nvim",
-    url = "https://github.com/Orbit-Lua/hangar.nvim.git",
-    sha = "2941093d6e4b7952228076348c46aab2b9907bdc",
-  },
-  {
-    name = "nui.nvim",
-    url = "https://github.com/MunifTanjim/nui.nvim.git",
-    sha = "10fc361835c856ba4233ef5ea135b919bf3dce97",
-  },
+  { name = "hangar.nvim", repository = "Orbit-Lua/hangar.nvim" },
+  { name = "nui.nvim", repository = "MunifTanjim/nui.nvim" },
 }
 local base = vim.fn.tempname() .. " orbit live Hangar UI with spaces"
 local original_columns, original_lines = vim.o.columns, vim.o.lines
-local function run(argv)
-  local result = vim.system(argv, { text = true, timeout = 120000 }):wait()
-  assert(
-    result.code == 0,
-    vim.inspect(argv) .. ": " .. tostring(result.stderr or result.stdout or result.code)
-  )
-  return result.stdout or ""
-end
 
 local function hangar_body()
   for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
@@ -51,18 +36,10 @@ local function key(buffer, value)
 end
 
 local ok, err = xpcall(function()
-  assert(vim.fn.executable("git") == 1)
   assert(vim.fn.mkdir(base, "p") == 1)
   for _, dependency in ipairs(dependencies) do
     local dir = vim.fs.joinpath(base, dependency.name)
-    assert(vim.fn.mkdir(dir, "p") == 1)
-    run({ "git", "init", dir })
-    run({ "git", "-C", dir, "fetch", "--depth", "1", dependency.url, dependency.sha })
-    run({ "git", "-C", dir, "checkout", "--detach", "FETCH_HEAD" })
-    assert(
-      vim.trim(run({ "git", "-C", dir, "rev-parse", "HEAD" })) == dependency.sha,
-      "upstream UI dependency revision mismatch"
-    )
+    lock.checkout(dependency.name, dependency.repository, dir)
     vim.opt.rtp:prepend(dir)
   end
 

@@ -4,10 +4,10 @@
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
 local windows = vim.fn.has("win32") == 1
+local lock = dofile(root .. "/tests/support/live_lock.lua")
 local pins = {
-  { "https://github.com/seblyng/roslyn.nvim.git", "bf1bd4e70bc7068d1b4aebf4ce03cc19a86615be" },
-  -- Hangar v0.4.1 is an annotated tag: pin its dereferenced commit.
-  { "https://github.com/Orbit-Lua/hangar.nvim.git", "2941093d6e4b7952228076348c46aab2b9907bdc" },
+  { "roslyn.nvim", "seblyng/roslyn.nvim" },
+  { "hangar.nvim", "Orbit-Lua/hangar.nvim" },
 }
 local server_version = "5.12.0-1.26475.2"
 local workspace = vim.fn.tempname() .. " live roslyn with spaces"
@@ -34,11 +34,7 @@ local ok, err = xpcall(function()
   end
   for index, pin in ipairs(pins) do
     local directory = vim.fs.joinpath(workspace, "plugin" .. index)
-    assert(vim.fn.mkdir(directory, "p") == 1)
-    run({ "git", "init", directory })
-    run({ "git", "-C", directory, "fetch", "--depth", "1", pin[1], pin[2] })
-    run({ "git", "-C", directory, "checkout", "--detach", "FETCH_HEAD" })
-    assert(vim.trim(run({ "git", "-C", directory, "rev-parse", "HEAD" })) == pin[2])
+    lock.checkout(pin[1], pin[2], directory)
     vim.opt.rtp:prepend(directory)
   end
 

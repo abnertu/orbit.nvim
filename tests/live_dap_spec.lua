@@ -3,8 +3,7 @@
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
 
-local pinned = "e03a0f2b786ccbf3398ed445d9700df8ed1e7627"
-local source = "https://github.com/Orbit-Lua/nvim-dap.git"
+local lock = dofile(root .. "/tests/support/live_lock.lua")
 local directory = vim.fn.tempname() .. " live dap with spaces"
 local listener, client
 local protocol_error
@@ -25,15 +24,7 @@ local function close(handle)
 end
 
 local ok, err = xpcall(function()
-  assert(vim.fn.executable("git") == 1, "Git is required")
-  assert(vim.fn.mkdir(directory, "p") == 1)
-  run({ "git", "init", directory })
-  run({ "git", "-C", directory, "fetch", "--depth", "1", source, pinned })
-  run({ "git", "-C", directory, "checkout", "--detach", "FETCH_HEAD" })
-  assert(
-    vim.trim(run({ "git", "-C", directory, "rev-parse", "HEAD" })) == pinned,
-    "nvim-dap checkout revision mismatch"
-  )
+  lock.checkout("nvim-dap", "Orbit-Lua/nvim-dap", directory)
   vim.opt.rtp:prepend(directory)
 
   local orbit = require("orbit")

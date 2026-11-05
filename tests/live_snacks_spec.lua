@@ -2,8 +2,7 @@
 -- This test intentionally uses network and runs outside hermetic suites.
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
-local pinned = "882c996cf28183f4d63640de0b4c02ec886d01f2"
-local upstream = "https://github.com/folke/snacks.nvim.git"
+local lock = dofile(root .. "/tests/support/live_lock.lua")
 local directory = vim.fn.tempname() .. " live Snacks with spaces"
 -- Messages printed while floats are open can abort headless Neovim.
 -- Collect results and print them after every float has closed.
@@ -25,15 +24,7 @@ local function floats()
 end
 
 local ok, err = xpcall(function()
-  assert(vim.fn.executable("git") == 1, "Git is required")
-  assert(vim.fn.mkdir(directory, "p") == 1)
-  run({ "git", "init", directory })
-  run({ "git", "-C", directory, "fetch", "--depth", "1", upstream, pinned })
-  run({ "git", "-C", directory, "checkout", "--detach", "FETCH_HEAD" })
-  assert(
-    vim.trim(run({ "git", "-C", directory, "rev-parse", "HEAD" })) == pinned,
-    "upstream Snacks revision mismatch"
-  )
+  lock.checkout("snacks.nvim", "folke/snacks.nvim", directory)
   vim.opt.rtp:prepend(directory)
   vim.o.columns, vim.o.lines = 200, 50
 

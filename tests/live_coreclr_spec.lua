@@ -3,13 +3,11 @@
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
 local windows = vim.fn.has("win32") == 1
+local lock = dofile(root .. "/tests/support/live_lock.lua")
 -- Upstream nvim-dap does not stop at forward-slash Windows paths (PR #125).
 local pins = {
-  { "https://github.com/Orbit-Lua/nvim-dap.git", "e03a0f2b786ccbf3398ed445d9700df8ed1e7627" },
-  {
-    "https://github.com/Orbit-Lua/dotnet-cli.nvim.git",
-    "a74464a59be996b5db3e7f9480b937c9ff992471",
-  },
+  { "nvim-dap", "Orbit-Lua/nvim-dap" },
+  { "dotnet-cli.nvim", "Orbit-Lua/dotnet-cli.nvim" },
 }
 local workspace = vim.fn.tempname() .. " live coreclr with spaces"
 
@@ -35,11 +33,7 @@ local ok, err = xpcall(function()
   end
   for index, pin in ipairs(pins) do
     local directory = vim.fs.joinpath(workspace, "plugin" .. index)
-    assert(vim.fn.mkdir(directory, "p") == 1)
-    run({ "git", "init", directory })
-    run({ "git", "-C", directory, "fetch", "--depth", "1", pin[1], pin[2] })
-    run({ "git", "-C", directory, "checkout", "--detach", "FETCH_HEAD" })
-    assert(vim.trim(run({ "git", "-C", directory, "rev-parse", "HEAD" })) == pin[2])
+    lock.checkout(pin[1], pin[2], directory)
     vim.opt.rtp:prepend(directory)
   end
 

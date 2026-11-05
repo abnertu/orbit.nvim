@@ -2,20 +2,12 @@
 -- This test intentionally uses network and runs outside hermetic suites.
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
+local lock = dofile(root .. "/tests/support/live_lock.lua")
 local pins = {
-  { "https://github.com/folke/edgy.nvim.git", "8bfd2808994a988c975694122f68624b8a219f5f" },
-  { "https://github.com/folke/trouble.nvim.git", "748ca2789044607f19786b1d837044544c55e80a" },
+  { "edgy.nvim", "folke/edgy.nvim" },
+  { "trouble.nvim", "folke/trouble.nvim" },
 }
 local base = vim.fn.tempname() .. " live layout with spaces"
-
-local function run(argv)
-  local result = vim.system(argv, { text = true, timeout = 120000 }):wait()
-  assert(
-    result.code == 0,
-    vim.inspect(argv) .. " failed: " .. tostring(result.stderr or result.stdout)
-  )
-  return result.stdout or ""
-end
 
 local function managed(win)
   local item = require("edgy.editor").get_win(win)
@@ -23,17 +15,9 @@ local function managed(win)
 end
 
 local ok, err = xpcall(function()
-  assert(vim.fn.executable("git") == 1, "Git is required")
   for index, pin in ipairs(pins) do
     local directory = base .. "/" .. index
-    assert(vim.fn.mkdir(directory, "p") == 1)
-    run({ "git", "init", directory })
-    run({ "git", "-C", directory, "fetch", "--depth", "1", pin[1], pin[2] })
-    run({ "git", "-C", directory, "checkout", "--detach", "FETCH_HEAD" })
-    assert(
-      vim.trim(run({ "git", "-C", directory, "rev-parse", "HEAD" })) == pin[2],
-      "upstream revision mismatch: " .. pin[1]
-    )
+    lock.checkout(pin[1], pin[2], directory)
     vim.opt.rtp:prepend(directory)
   end
   vim.o.laststatus = 3

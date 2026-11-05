@@ -4,14 +4,9 @@ local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
 -- LuaSnip's jsregexp Makefile does not quote include paths, so avoid spaces here.
 local workspace = vim.fn.tempname() .. "-live-native-builds"
--- Blink downloads its prebuilt matcher only from a release tag checkout.
-local blink = {
-  "https://github.com/saghen/blink.cmp.git",
-  "v1.10.2",
-  "78336bc89ee5365633bcf754d93df01678b5c08f",
-}
-local luasnip =
-  { "https://github.com/L3MON4D3/LuaSnip.git", "0abc8f390b278c3b4aabc4c004ac8a088b65cf24" }
+local lock = dofile(root .. "/tests/support/live_lock.lua")
+local blink_url = "https://github.com/saghen/blink.cmp.git"
+local luasnip_url = "https://github.com/L3MON4D3/LuaSnip.git"
 
 local function run(argv, cwd)
   local result = vim.system(argv, { text = true, timeout = 300000, cwd = cwd }):wait()
@@ -23,6 +18,18 @@ local function run(argv, cwd)
       .. tostring(result.stdout or "")
   )
   return result.stdout or ""
+end
+
+-- Blink downloads its prebuilt matcher only from a release tag checkout.
+local function release_tag(commit)
+  local refs = run({ "git", "ls-remote", "--tags", blink_url })
+  for line in vim.gsplit(refs, "\n", { trimempty = true }) do
+    local sha, tag = line:match("^(%x+)%s+refs/tags/([^%^]+)")
+    if sha == commit then
+      return tag
+    end
+  end
+  error("blink.cmp lock commit " .. commit .. " has no release tag", 0)
 end
 
 local function checkout(name, url, ref, commit)
@@ -42,9 +49,12 @@ local ok, err = xpcall(function()
   for _, tool in ipairs({ "git", "make" }) do
     assert(vim.fn.executable(tool) == 1, tool .. " is required on PATH")
   end
+  local blink_commit = lock.commit("blink.cmp")
+  local tag = release_tag(blink_commit)
   local blink_dir =
-    checkout("blink.cmp", blink[1], "refs/tags/" .. blink[2] .. ":refs/tags/" .. blink[2], blink[3])
-  local luasnip_dir = checkout("LuaSnip", luasnip[1], luasnip[2], luasnip[2])
+    checkout("blink.cmp", blink_url, "refs/tags/" .. tag .. ":refs/tags/" .. tag, blink_commit)
+  local luasnip_commit = lock.commit("LuaSnip")
+  local luasnip_dir = checkout("LuaSnip", luasnip_url, luasnip_commit, luasnip_commit)
 
   require("orbit").setup()
   local spec = require("orbit.modules.completion").spec()[1]

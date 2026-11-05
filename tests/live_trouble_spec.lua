@@ -2,29 +2,11 @@
 -- This test intentionally uses network and runs outside hermetic suites.
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
-local pinned = "748ca2789044607f19786b1d837044544c55e80a"
-local upstream = "https://github.com/folke/trouble.nvim.git"
+local lock = dofile(root .. "/tests/support/live_lock.lua")
 local directory = vim.fn.tempname() .. " live Trouble with spaces"
 
-local function run(argv)
-  local result = vim.system(argv, { text = true, timeout = 120000 }):wait()
-  assert(
-    result.code == 0,
-    vim.inspect(argv) .. " failed: " .. tostring(result.stderr or result.stdout)
-  )
-  return result.stdout or ""
-end
-
 local ok, err = xpcall(function()
-  assert(vim.fn.executable("git") == 1, "Git is required")
-  assert(vim.fn.mkdir(directory, "p") == 1)
-  run({ "git", "init", directory })
-  run({ "git", "-C", directory, "fetch", "--depth", "1", upstream, pinned })
-  run({ "git", "-C", directory, "checkout", "--detach", "FETCH_HEAD" })
-  assert(
-    vim.trim(run({ "git", "-C", directory, "rev-parse", "HEAD" })) == pinned,
-    "upstream Trouble revision mismatch"
-  )
+  lock.checkout("trouble.nvim", "folke/trouble.nvim", directory)
   vim.opt.rtp:prepend(directory)
 
   local orbit = require("orbit")

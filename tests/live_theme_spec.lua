@@ -2,33 +2,15 @@
 -- This test intentionally uses network and runs outside hermetic suites.
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
-local pinned = "cdc07ac78467a233fd62c493de29a17e0cf2b2b6"
-local upstream = "https://github.com/folke/tokyonight.nvim.git"
+local lock = dofile(root .. "/tests/support/live_lock.lua")
 local directory = vim.fn.tempname() .. " live theme with spaces"
-
-local function run(argv)
-  local result = vim.system(argv, { text = true, timeout = 120000 }):wait()
-  assert(
-    result.code == 0,
-    vim.inspect(argv) .. " failed: " .. tostring(result.stderr or result.stdout)
-  )
-  return result.stdout or ""
-end
 
 local function hl(name)
   return vim.api.nvim_get_hl(0, { name = name, link = false })
 end
 
 local ok, err = xpcall(function()
-  assert(vim.fn.executable("git") == 1, "Git is required")
-  assert(vim.fn.mkdir(directory, "p") == 1)
-  run({ "git", "init", directory })
-  run({ "git", "-C", directory, "fetch", "--depth", "1", upstream, pinned })
-  run({ "git", "-C", directory, "checkout", "--detach", "FETCH_HEAD" })
-  assert(
-    vim.trim(run({ "git", "-C", directory, "rev-parse", "HEAD" })) == pinned,
-    "upstream tokyonight revision mismatch"
-  )
+  lock.checkout("tokyonight.nvim", "folke/tokyonight.nvim", directory)
   vim.opt.rtp:prepend(directory)
   vim.o.termguicolors = true
 

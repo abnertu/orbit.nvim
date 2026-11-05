@@ -3,28 +3,11 @@
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
 
-local pinned = "3543d000dafbc41cc7761d860cfdb24e82154f75"
-local source = "https://github.com/stevearc/conform.nvim.git"
+local lock = dofile(root .. "/tests/support/live_lock.lua")
 local directory = vim.fn.tempname() .. " live conform with spaces"
-local function run(argv)
-  local result = vim.system(argv, { text = true, timeout = 120000 }):wait()
-  assert(
-    result.code == 0,
-    vim.inspect(argv) .. " failed: " .. tostring(result.stderr or result.stdout or result.code)
-  )
-  return result.stdout or ""
-end
 
 local ok, err = xpcall(function()
-  assert(vim.fn.executable("git") == 1, "Git is required")
-  assert(vim.fn.mkdir(directory, "p") == 1)
-  run({ "git", "init", directory })
-  run({ "git", "-C", directory, "fetch", "--depth", "1", source, pinned })
-  run({ "git", "-C", directory, "checkout", "--detach", "FETCH_HEAD" })
-  assert(
-    vim.trim(run({ "git", "-C", directory, "rev-parse", "HEAD" })) == pinned,
-    "Conform checkout did not match pinned upstream revision"
-  )
+  lock.checkout("conform.nvim", "stevearc/conform.nvim", directory)
   vim.opt.rtp:prepend(directory)
 
   local orbit = require("orbit")

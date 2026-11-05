@@ -3,10 +3,11 @@
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
 local windows = vim.fn.has("win32") == 1
+local lock = dofile(root .. "/tests/support/live_lock.lua")
 local pins = {
-  { "https://github.com/Orbit-Lua/nvim-dap.git", "e03a0f2b786ccbf3398ed445d9700df8ed1e7627" },
-  { "https://github.com/rcarriga/nvim-dap-ui.git", "cc9dd33aade7f20bae414d0cba163bc60d4d4b43" },
-  { "https://github.com/nvim-neotest/nvim-nio.git", "edcc181a875301dd21840189aa2f2f9ad69fc172" },
+  { "nvim-dap", "Orbit-Lua/nvim-dap" },
+  { "nvim-dap-ui", "rcarriga/nvim-dap-ui" },
+  { "nvim-nio", "nvim-neotest/nvim-nio" },
 }
 local debugpy_version = "1.8.22"
 local workspace = vim.fn.tempname() .. " live debugpy with spaces"
@@ -27,15 +28,10 @@ end
 
 local ok, err = xpcall(function()
   local python = windows and "python" or "python3"
-  assert(vim.fn.executable("git") == 1, "Git is required")
   assert(vim.fn.executable(python) == 1, "Python is required")
   for index, pin in ipairs(pins) do
     local directory = vim.fs.joinpath(workspace, "plugin" .. index)
-    assert(vim.fn.mkdir(directory, "p") == 1)
-    run({ "git", "init", directory })
-    run({ "git", "-C", directory, "fetch", "--depth", "1", pin[1], pin[2] })
-    run({ "git", "-C", directory, "checkout", "--detach", "FETCH_HEAD" })
-    assert(vim.trim(run({ "git", "-C", directory, "rev-parse", "HEAD" })) == pin[2])
+    lock.checkout(pin[1], pin[2], directory)
     vim.opt.rtp:prepend(directory)
   end
 
