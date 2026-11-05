@@ -26,7 +26,7 @@ Runtime rendering does not import nv-base46 or nv-ui.
 | Diagnostics | Severity colors, virtual backgrounds, inlay hints and terminal-aware underlines | `theme/runtime.lua` |
 | Plugin UI | Blink, Git, nvim-tree, Mason, which-key, TODO and icon compatibility groups | `theme/plugins.lua` |
 | Custom UI | Hangar, Noice, Snacks, Harpoon and Volt menu colors | `theme/runtime.lua` |
-| Statusline | Rounded mode, workspace and position blocks; file and symbol paths; diagnostic and Git icons | `statusline/` |
+| Statusline | Flat text with a mode color bar and dim dividers; file and symbol paths; Git counts, diagnostics and unusual file formats | `statusline/` |
 | Tabline | Explorer offset, 21-cell buffer entries, colored icons and separate modified and close colors | `tabline/` |
 | Debugger | Breakpoint, condition, rejected, logpoint and stopped signs | `dap/runtime.lua` |
 
@@ -38,6 +38,9 @@ The statusline reuses one symbol provider and never loads plugins from its rende
 The statusline layout in `statusline/render.lua` uses containers and spacers.
 A container joins its visible children with its `gap`. A `spacer(n)` adds space between items and collapses beside empty items.
 `modules.statusline.gap` is the default width for both.
+A `separator()` draws a dim divider and follows the spacer rules.
+Narrow status lines drop symbols, LSP names, Git counts, the directory and the branch, in that order.
+Terminal, help, list and plugin buffers show a label instead of the file.
 File icons retain their source foreground and use the surrounding bar's background.
 Menu opening reapplies owned colors after Volt installs fallback highlights.
 Dotnet Manager uses `NormalFloat` and `FloatBorder` for its panels, independent of Volt highlight availability.
