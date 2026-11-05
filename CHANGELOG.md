@@ -21,6 +21,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - The startup dashboard shows the real startup time on its first render instead of `0ms`.
 - The startup dashboard no longer moves down one row when Noice loads.
+- Hangar 0.4.2 opens the parser tab without an error and never runs a disabled linter.
+- Hangar 0.4.2 installs Mason packages before Mason has a registry and repairs a broken package. An installed server attaches to open buffers.
 
 ## [1.1.0] - 2026-11-02
 
