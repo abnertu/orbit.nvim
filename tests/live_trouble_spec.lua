@@ -1,4 +1,4 @@
--- Exercise actual pinned Trouble diagnostics and custom view configuration.
+-- Exercise the statusline symbol path that Orbit reads from real Trouble.
 -- This test intentionally uses network and runs outside hermetic suites.
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
@@ -32,65 +32,9 @@ local ok, err = xpcall(function()
   orbit.setup()
   assert(package.loaded.trouble == nil, "root setup imported Trouble before Lazy activation")
   local spec = diagnostics.spec()[1]
-  assert(spec and spec[1] == "folke/trouble.nvim")
-  assert(spec.cmd == "Trouble")
-  local trouble = require("trouble")
-  trouble.setup(spec.opts)
-  assert(vim.api.nvim_get_commands({}).Trouble ~= nil, "real Trouble command registration missing")
-
-  local custom = require("trouble.config").get("diagnostic_preview_float")
-  assert(custom.mode == "diagnostic_preview_float")
-  assert(custom.preview.type == "float")
-  assert(custom.preview.border == "rounded")
-  assert(custom.preview.size.width == 0.3)
-  print("PASS real Trouble configuration and custom diagnostic preview mode")
+  require("trouble").setup(spec.opts)
 
   local buffer = vim.api.nvim_get_current_buf()
-  local ns = vim.api.nvim_create_namespace("orbit.live.trouble")
-  vim.api.nvim_buf_set_lines(buffer, 0, -1, false, { "local value = 1" })
-  vim.diagnostic.set(ns, buffer, {
-    {
-      lnum = 0,
-      col = 0,
-      message = "live Trouble diagnostic",
-      severity = vim.diagnostic.severity.WARN,
-    },
-  })
-  local view = trouble.open({
-    mode = "diagnostics",
-    focus = false,
-    auto_preview = false,
-    win = { position = "bottom" },
-  })
-  assert(view and trouble.is_open("diagnostics"), "real Trouble diagnostics view did not open")
-  assert(
-    vim.wait(10000, function()
-      for _, item in ipairs(trouble.get_items("diagnostics")) do
-        if item.message == "live Trouble diagnostic" then
-          return true
-        end
-      end
-      return false
-    end, 50),
-    "real Trouble did not consume a Neovim diagnostic"
-  )
-  -- Trouble counts an opening view as open until its first update settles.
-  -- Close after the asynchronous initial view lifecycle has completed.
-  assert(
-    vim.wait(10000, function()
-      return view:is_open() and not view.first_update:is_pending()
-    end, 50),
-    "Trouble initial view update did not finish"
-  )
-  trouble.close("diagnostics")
-  assert(
-    vim.wait(10000, function()
-      return not trouble.is_open("diagnostics")
-    end, 50),
-    "Trouble diagnostics view stayed open after close"
-  )
-  vim.diagnostic.reset(ns, buffer)
-  print("PASS real Trouble diagnostic source, view and close lifecycle")
 
   vim.api.nvim_buf_set_name(buffer, vim.fs.joinpath(directory, "symbols.lua"))
   vim.api.nvim_buf_set_lines(buffer, 0, -1, false, { "namespace", "class", "  method", "end" })

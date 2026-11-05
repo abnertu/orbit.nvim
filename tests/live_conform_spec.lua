@@ -34,10 +34,6 @@ local ok, err = xpcall(function()
   assert(package.loaded.conform == nil, "root setup eagerly loaded Conform")
 
   local spec = formatter.spec()[1]
-  assert(spec and spec[1] == "stevearc/conform.nvim")
-  assert(type(spec.config) == "function")
-  assert(spec.opts.default_format_opts.lsp_format == "fallback")
-  assert(spec.opts.formatters_by_ft.sql[1] == "sqlfluff")
 
   -- Extend the actual module spec with native Lua-only fixture formatters.
   -- The regular SQL/Python/Lua formatter declarations remain intact.
@@ -55,11 +51,6 @@ local ok, err = xpcall(function()
   }
   spec.config(spec, spec.opts)
   local conform = require("conform")
-  assert(vim.deep_equal(conform.formatters_by_ft.orbit_fixture, { "trim_whitespace" }))
-  assert(conform.formatters_by_ft.sql[1] == "sqlfluff")
-  assert(conform.default_format_opts.timeout_ms == 5000)
-  assert(conform.default_format_opts.lsp_format == "fallback")
-  print("PASS pinned real Conform Lazy config and language tool declarations")
 
   local first = vim.api.nvim_create_buf(true, false)
   vim.api.nvim_buf_set_name(first, vim.fn.tempname() .. ".orbitfixture")

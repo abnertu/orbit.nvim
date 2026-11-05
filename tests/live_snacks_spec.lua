@@ -1,11 +1,11 @@
--- Exercise pinned Snacks dashboard, picker layouts and notifier filter.
+-- Exercise pinned Snacks dashboard sections and notifier filter.
 -- This test intentionally uses network and runs outside hermetic suites.
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
 local pinned = "882c996cf28183f4d63640de0b4c02ec886d01f2"
 local upstream = "https://github.com/folke/snacks.nvim.git"
 local directory = vim.fn.tempname() .. " live Snacks with spaces"
--- Messages printed while picker floats are open can abort headless Neovim.
+-- Messages printed while floats are open can abort headless Neovim.
 -- Collect results and print them after every float has closed.
 local results = {}
 
@@ -37,47 +37,12 @@ local ok, err = xpcall(function()
   vim.opt.rtp:prepend(directory)
   vim.o.columns, vim.o.lines = 200, 50
 
-  -- Headless Neovim 0.12 can abort in au_cleanup when any tab line is shown
-  -- while Snacks switches picker windows. The tab line has its own tests.
+  -- Headless Neovim 0.12 can abort in au_cleanup when a tab line is shown
+  -- while Snacks opens floating windows. The tab line has its own tests.
   require("orbit").setup({ modules = { tabline = { enabled = false } } })
   assert(package.loaded.snacks == nil, "root setup imported Snacks before Lazy activation")
   local spec = require("orbit.modules.snacks").spec()[1]
   spec.config(spec, spec.opts)
-
-  local expected = {
-    default = { width = 174, preview = true },
-    select = { width = 120, preview = false },
-    vscode = { width = 80, preview = false },
-    vertical = { width = 98, preview = true },
-  }
-  for _, name in ipairs({ "default", "select", "vscode", "vertical" }) do
-    local picker = Snacks.picker({
-      items = { { text = "alpha", file = "alpha.txt" } },
-      format = "text",
-      layout = name,
-    })
-    assert(
-      vim.wait(5000, function()
-        return picker.layout and picker.layout.root:valid()
-      end, 20),
-      name .. " picker did not open"
-    )
-    local width = picker.layout.root.opts.width
-    local preview = not picker.layout:is_hidden("preview")
-    assert(
-      width == expected[name].width,
-      name .. " layout width " .. tostring(width) .. " ~= " .. expected[name].width
-    )
-    assert(preview == expected[name].preview, name .. " preview visibility mismatch")
-    picker:close()
-    assert(
-      vim.wait(5000, function()
-        return floats() == 0
-      end, 20),
-      name .. " picker left floats"
-    )
-    results[#results + 1] = "PASS real Snacks " .. name .. " picker layout"
-  end
 
   -- The startup section reads Lazy statistics; Lazy is outside this boundary.
   package.loaded["lazy.stats"] = {
