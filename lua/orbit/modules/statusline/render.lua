@@ -43,7 +43,7 @@ local function mode()
   local group = "OrbitStMode" .. item[2]
   return part(group .. "Sep", "")
     .. part(group, " " .. item[1])
-    .. part(group .. "Sep", " ")
+    .. part(group .. "Sep", "")
 end
 
 ---@param buffer integer
@@ -64,7 +64,7 @@ local function file(buffer)
   local modified = vim.bo[buffer].modified and " ●" or ""
   return part(highlight, glyph .. " ")
     .. part("OrbitStPath", escape(directory))
-    .. part("OrbitStFile", escape(tail) .. modified .. " ")
+    .. part("OrbitStFile", escape(tail) .. modified)
 end
 
 local function git(buffer)
@@ -82,7 +82,7 @@ local function git(buffer)
       end
     end
   end
-  return part("OrbitStGit", text .. " ")
+  return part("OrbitStGit", text)
 end
 
 local function diagnostics(buffer)
@@ -97,68 +97,99 @@ local function diagnostics(buffer)
   for _, item in ipairs(severities) do
     local count = counts[item[1]]
     if count and count > 0 then
-      result[#result + 1] = part(item[3], " " .. item[2] .. count)
+      result[#result + 1] = part(item[3], item[2] .. count)
     end
   end
-  return table.concat(result)
+  return table.concat(result, " ")
 end
 
+---Return the blank cells between sections, in the fill color.
+---@return string
+local function gap()
+  local width = require("orbit.modules.statusline").gap()
+  return width > 0 and part("OrbitStFill", string.rep(" ", width)) or ""
+end
+
+---Join non-empty sections, so an empty section leaves no extra gap.
+---@param sections string[]
+---@param spacer string
+---@return string
+local function join(sections, spacer)
+  local visible = {}
+  for _, section in ipairs(sections) do
+    if section ~= "" then
+      visible[#visible + 1] = section
+    end
+  end
+  return table.concat(visible, spacer)
+end
+
+---@param buffer integer
+---@return string
+local function ai(buffer)
+  local clients = vim.lsp.get_clients({ bufnr = buffer, name = "copilot" })
+  return #clients > 0 and part("OrbitStAi", "") or ""
+end
+
+---@param buffer integer
+---@return string
 local function lsp(buffer)
-  local names, ai = {}, ""
+  local names = {}
   for _, client in ipairs(vim.lsp.get_clients({ bufnr = buffer })) do
-    if client.name == "copilot" then
-      ai = part("OrbitStAi", "  ")
-    else
+    if client.name ~= "copilot" then
       names[#names + 1] = client.name
     end
   end
   if #names == 0 then
-    return ai
+    return ""
   end
   table.sort(names)
-  return ai
-    .. part(
-      "OrbitStLsp",
-      "    LSP"
-        .. (vim.o.columns > 100 and " ~ " .. escape(table.concat(names, ", ")) or "")
-        .. " "
-    )
+  return part(
+    "OrbitStLsp",
+    "  LSP" .. (vim.o.columns > 100 and " ~ " .. escape(table.concat(names, ", ")) or "")
+  )
 end
 
-local function cwd()
+---@param separator string
+---@return string
+local function position(separator)
+  return part(separator, "") .. part("OrbitStPosIcon", " ") .. part("OrbitStPos", " %l/%v ")
+end
+
+-- The cwd and position blocks form one pill; their seam takes no gap.
+---@return string
+local function workspace()
   if vim.o.columns <= 85 then
-    return ""
+    return position("OrbitStPosSep")
   end
   return part("OrbitStCwdSep", "")
     .. part("OrbitStCwdIcon", "󰉋 ")
     .. part("OrbitStCwd", " " .. escape(vim.fn.fnamemodify(vim.fn.getcwd(), ":t")) .. " ")
+    .. position("OrbitStPosSepMid")
 end
 
 ---@return string
 local function recording()
   local register = vim.fn.reg_recording()
-  return register == "" and "" or part("OrbitStWarn", "󰑊 " .. escape(register) .. " ")
+  return register == "" and "" or part("OrbitStWarn", "󰑊 " .. escape(register))
 end
 
 ---@return string
 function M.render()
   local win = tonumber(vim.g.statusline_winid) or vim.api.nvim_get_current_win()
   local buffer = vim.api.nvim_win_get_buf(win)
-  return table.concat({
-    mode(),
-    recording(),
-    "%<",
+  local spacer = gap()
+  local tail = join({
     git(buffer),
     file(buffer),
     require("orbit.modules.statusline.symbols").render(),
-    part("OrbitStFill", "%="),
-    diagnostics(buffer),
-    lsp(buffer),
-    cwd(),
-    part(vim.o.columns > 85 and "OrbitStPosSepMid" or "OrbitStPosSep", ""),
-    part("OrbitStPosIcon", " "),
-    part("OrbitStPos", " %l/%v "),
-  })
+  }, spacer)
+  return join({ mode(), recording() }, spacer)
+    .. "%<"
+    .. (tail ~= "" and spacer .. tail or "")
+    .. spacer
+    .. part("OrbitStFill", "%=")
+    .. join({ diagnostics(buffer), ai(buffer), lsp(buffer), workspace() }, spacer)
 end
 
 -- Default groups link to standard ones, so colorschemes can override them.

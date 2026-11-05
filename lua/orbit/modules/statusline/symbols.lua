@@ -6,6 +6,8 @@ local source
 local provider
 local separator = "%#OrbitStSymbolSep#  "
 local boundary = "\31"
+-- The section starts at its separator glyph; the renderer owns outer gaps.
+local leading = "%#OrbitStSymbolSep# "
 
 ---Trouble owns symbol requests and refreshes. Rendering never imports a plugin.
 ---@return string
@@ -50,7 +52,7 @@ function M.render()
   if #parts > 3 then
     parts = { parts[1], "…", parts[#parts - 1], parts[#parts] }
   end
-  return separator .. table.concat(parts, separator) .. " "
+  return leading .. table.concat(parts, separator)
 end
 
 return M
