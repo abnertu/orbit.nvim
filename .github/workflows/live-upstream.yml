@@ -1,6 +1,18 @@
 name: Validate real upstream plugins
 
 on:
+  push:
+    paths:
+      - lazy-lock.json
+      - tests/live_*_spec.lua
+      - tests/support/live_*.lua
+      - .github/workflows/live-upstream.yml
+  pull_request:
+    paths:
+      - lazy-lock.json
+      - tests/live_*_spec.lua
+      - tests/support/live_*.lua
+      - .github/workflows/live-upstream.yml
   workflow_dispatch:
 
 permissions:
