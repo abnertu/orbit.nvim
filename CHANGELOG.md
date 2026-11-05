@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
-- **Breaking:** Hangar settings moved from `modules.hangar` to `modules.mason.hangar`. A saved `modules.hangar` key fails validation with the new key name.
+- **Breaking:** Hangar settings moved from `modules.hangar` to `modules.mason.hangar`.
 - The `mason` module owns hangar.nvim `^0.4` and its tool registry. Hangar loads even when Mason is disabled.
 - The Hangar registry lists the `typescript-tools` language server.
 - Lazy skips unused built-in runtime plugins: gzip, rplugin, spellfile, tar, tutor and zip.

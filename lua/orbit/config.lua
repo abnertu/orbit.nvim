@@ -71,11 +71,6 @@ local function default_for(node)
   end
 end
 
--- Settings that moved keep a specific error, so a saved file names its new key.
-local moved = {
-  ["orbit.modules.hangar"] = "modules.mason.hangar",
-}
-
 local function resolve(value, node, path)
   if value == nil then
     return default_for(node)
@@ -116,10 +111,6 @@ local function resolve(value, node, path)
     for name, child_value in pairs(value) do
       local child = (node.properties or {})[name]
       if child == nil then
-        local target = moved[path .. "." .. name]
-        if target then
-          error(path .. "." .. name .. ": moved to " .. target, 0)
-        end
         error(path .. "." .. name .. ": unknown setting", 0)
       end
       overrides[name] = resolve(child_value, child, path .. "." .. name)
