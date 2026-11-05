@@ -250,6 +250,37 @@ check("narrow status lines drop detail in priority order", function()
   assert(ok, err)
 end)
 
+check("terminal, help, list and plugin buffers show a label", function()
+  local start = vim.api.nvim_get_current_win()
+  local function line()
+    return vim.api.nvim_eval_statusline(
+      vim.go.statusline,
+      { highlights = false, maxwidth = 400, winid = vim.api.nvim_get_current_win() }
+    ).str
+  end
+  vim.cmd("vsplit")
+  vim.cmd.terminal({ args = { vim.fn.shellescape(vim.v.progpath) .. " --version" } })
+  local text = line()
+  assert(text:find("nvim", 1, true), "terminal shows its program: " .. text)
+  assert(not text:find("%d+:%d+"), "terminal hides the position: " .. text)
+  vim.cmd("bwipeout!")
+  vim.cmd.help("options")
+  text = line()
+  assert(text:find("help options", 1, true) and text:find("%d+:%d+"), text)
+  vim.cmd.close()
+  vim.fn.setqflist({}, " ", { title = "Orbit list", items = { { filename = "a", lnum = 1 } } })
+  vim.cmd.copen()
+  text = line()
+  assert(text:find("quickfix Orbit list", 1, true), text)
+  vim.cmd.cclose()
+  vim.cmd("vnew")
+  vim.bo.buftype, vim.bo.filetype = "nofile", "OrbitPanel"
+  text = line()
+  assert(text:find("OrbitPanel", 1, true), "plugin buffers show their filetype: " .. text)
+  vim.cmd("bwipeout!")
+  vim.api.nvim_set_current_win(start)
+end)
+
 check("highlight links survive a colorscheme change", function()
   vim.cmd.colorscheme("habamax")
   local link = vim.api.nvim_get_hl(0, { name = "OrbitStModeNormal" }).link
