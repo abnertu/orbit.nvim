@@ -208,6 +208,48 @@ check("invalid gap or spacer widths fail at declaration", function()
   assert(not pcall(render.container, { render.spacer(1) }))
 end)
 
+check("narrow status lines drop detail in priority order", function()
+  local buffer = vim.api.nvim_get_current_buf()
+  local columns, clients, trouble = vim.o.columns, vim.lsp.get_clients, package.loaded.trouble
+  vim.b[buffer].gitsigns_head = "main"
+  vim.b[buffer].gitsigns_status_dict = { added = 2 }
+  vim.lsp.get_clients = function()
+    return { { name = "lua_ls" } }
+  end
+  package.loaded.trouble = {
+    statusline = function()
+      return {
+        get = function()
+          return "Sym\31"
+        end,
+      }
+    end,
+  }
+  local function at(width)
+    vim.o.columns = width
+    return rendered()
+  end
+  local ok, err = pcall(function()
+    local text = at(160)
+    for _, part in ipairs({ "Sym", "lua_ls", "+2", "/", "main" }) do
+      assert(text:find(part, 1, true), part .. ": " .. text)
+    end
+    assert(not at(119):find("Sym", 1, true) and at(120):find("Sym", 1, true))
+    assert(not at(99):find("lua_ls", 1, true) and at(100):find("lua_ls", 1, true))
+    assert(not at(89):find("+2", 1, true) and at(90):find("+2", 1, true))
+    text = at(79)
+    assert(not text:find("/", 1, true) and not text:find("%a+$"), text)
+    assert(at(80):find("/", 1, true))
+    text = at(59)
+    assert(
+      not text:find("main", 1, true) and text:find("NORMAL", 1, true) and text:find("%d+:%d+$")
+    )
+  end)
+  vim.o.columns, vim.lsp.get_clients, package.loaded.trouble = columns, clients, trouble
+  vim.b[buffer].gitsigns_head, vim.b[buffer].gitsigns_status_dict = nil, nil
+  assert(ok, err)
+end)
+
 check("highlight links survive a colorscheme change", function()
   vim.cmd.colorscheme("habamax")
   local link = vim.api.nvim_get_hl(0, { name = "OrbitStModeNormal" }).link
