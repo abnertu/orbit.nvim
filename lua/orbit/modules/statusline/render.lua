@@ -267,10 +267,14 @@ local function file(ctx)
     or ""
   local glyph, highlight = require("orbit.modules.icons.render").file(name, "OrbitStFile")
   local modified = vim.bo[buffer].modified and part("OrbitStModified", " ●") or ""
+  local locked = (vim.bo[buffer].readonly or not vim.bo[buffer].modifiable)
+      and part("OrbitStReadonly", " \u{F023}")
+    or ""
   return part(highlight, glyph .. " ")
     .. part("OrbitStPath", escape(directory))
     .. part("OrbitStFile", escape(tail))
     .. modified
+    .. locked
 end
 
 ---Name a terminal, help, list or plugin buffer. File buffers return "".
@@ -362,6 +366,30 @@ local function diagnostics(ctx)
   return table.concat(result, " ")
 end
 
+local line_endings = { dos = "CRLF", unix = "LF", mac = "CR" }
+
+---Flag a line ending other than the first 'fileformats' entry, a non-UTF-8
+---encoding and a byte order mark. Usual files show nothing.
+---@param ctx Orbit.StatuslineContext
+---@return string
+local function format(ctx)
+  local bo = vim.bo[ctx.buffer]
+  if bo.buftype ~= "" then
+    return ""
+  end
+  local flags = {}
+  if bo.fileformat ~= vim.split(vim.o.fileformats, ",", { plain = true })[1] then
+    flags[#flags + 1] = line_endings[bo.fileformat] or bo.fileformat
+  end
+  if bo.fileencoding ~= "" and bo.fileencoding ~= "utf-8" then
+    flags[#flags + 1] = bo.fileencoding
+  end
+  if bo.bomb then
+    flags[#flags + 1] = "BOM"
+  end
+  return #flags > 0 and part("OrbitStFormat", escape(table.concat(flags, " "))) or ""
+end
+
 ---@param ctx Orbit.StatuslineContext
 ---@return string
 local function lsp(ctx)
@@ -407,6 +435,8 @@ local layout = {
   M.separator(),
   diagnostics,
   M.separator(),
+  format,
+  M.separator(),
   lsp,
   M.separator(),
   position,
@@ -435,6 +465,8 @@ local defaults = {
   OrbitStFile = "StatusLine",
   OrbitStPath = "Comment",
   OrbitStModified = "DiagnosticWarn",
+  OrbitStReadonly = "DiagnosticError",
+  OrbitStFormat = "DiagnosticWarn",
   OrbitStGit = "Comment",
   OrbitStGitAdd = "Added",
   OrbitStGitChange = "Changed",

@@ -307,6 +307,25 @@ check("search count and selection size appear only in their states", function()
   vim.cmd("bwipeout!")
 end)
 
+check("unusual file formats and read-only files are flagged", function()
+  vim.cmd("enew")
+  local fileformats = vim.o.fileformats
+  vim.o.fileformats = "unix,dos"
+  local text = rendered()
+  assert(not text:find("CRLF", 1, true) and not text:find("\u{F023}", 1, true), text)
+  vim.bo.fileformat, vim.bo.fileencoding, vim.bo.bomb = "dos", "latin1", true
+  text = rendered()
+  assert(text:find("CRLF latin1 BOM", 1, true), "unusual values are flagged: " .. text)
+  vim.o.fileformats = "dos,unix"
+  assert(not rendered():find("CRLF", 1, true), "the first fileformats entry is usual")
+  vim.bo.readonly = true
+  assert(rendered():find("\u{F023}", 1, true), "read-only files show the lock")
+  vim.bo.readonly, vim.bo.modifiable = false, false
+  assert(rendered():find("\u{F023}", 1, true), "nomodifiable files show the lock")
+  vim.o.fileformats = fileformats
+  vim.cmd("bwipeout!")
+end)
+
 check("highlight links survive a colorscheme change", function()
   vim.cmd.colorscheme("habamax")
   local link = vim.api.nvim_get_hl(0, { name = "OrbitStModeNormal" }).link
