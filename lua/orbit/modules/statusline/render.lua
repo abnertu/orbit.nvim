@@ -273,10 +273,44 @@ local function file(ctx)
     .. modified
 end
 
+---Name a terminal, help, list or plugin buffer. File buffers return "".
+---@param ctx Orbit.StatuslineContext
+---@return string
+local function label(ctx)
+  local buftype = vim.bo[ctx.buffer].buftype
+  if buftype == "" then
+    return ""
+  end
+  local name = vim.api.nvim_buf_get_name(ctx.buffer)
+  if buftype == "terminal" then
+    -- term://{cwd}//{pid}:{command}
+    local command = name:match("^term://.-//%d+:(.*)$") or name
+    -- A program path with spaces arrives quoted.
+    local program = command:match('^"([^"]+)"')
+      or command:match("^'([^']+)'")
+      or command:match("^%S+")
+      or command
+    program = vim.fn.fnamemodify(program, ":t"):gsub("%.exe$", "")
+    return part("OrbitStFile", "\u{F120} " .. escape(program))
+  elseif buftype == "help" then
+    return part("OrbitStDim", "help ")
+      .. part("OrbitStFile", escape(vim.fn.fnamemodify(name, ":t:r")))
+  elseif buftype == "quickfix" then
+    local info = vim.fn.getwininfo(ctx.win)[1] or {}
+    local title = vim.w[ctx.win].quickfix_title
+    return part("OrbitStFile", info.loclist == 1 and "location list" or "quickfix")
+      .. (
+        type(title) == "string" and title ~= "" and part("OrbitStDim", " " .. escape(title)) or ""
+      )
+  end
+  local filetype = vim.bo[ctx.buffer].filetype
+  return part("OrbitStFile", escape(filetype ~= "" and filetype or buftype))
+end
+
 ---@param ctx Orbit.StatuslineContext
 ---@return string
 local function symbols(ctx)
-  if ctx.width < minimum.symbols then
+  if ctx.width < minimum.symbols or vim.bo[ctx.buffer].buftype ~= "" then
     return ""
   end
   return require("orbit.modules.statusline.symbols").render()
@@ -320,6 +354,9 @@ end
 ---@param ctx Orbit.StatuslineContext
 ---@return string
 local function position(ctx)
+  if vim.bo[ctx.buffer].buftype == "terminal" then
+    return ""
+  end
   return part("OrbitStPos", "%l:%v")
     .. (ctx.width >= minimum.detail and part("OrbitStDim", " %P") or "")
 end
@@ -333,7 +370,7 @@ local layout = {
   M.separator(),
   -- A long line cuts the path from its start and keeps the mode and branch.
   M.truncate(),
-  M.container({ file, symbols }),
+  M.container({ file, label, symbols }),
   -- A blank spacer, so no divider is drawn across the fill.
   M.spacer(),
   M.fill(),
