@@ -157,7 +157,7 @@ The `dev` module installs [telemetry.nvim](https://github.com/Orbit-Lua/telemetr
 
 `just test terminal` runs only the suites whose path contains `terminal`. Each suite runs in its own Neovim process with private XDG directories. A missing tool fails its suite.
 
-`just live luadoc` checks Lua type resolution and completion with pinned plugins.
+`just live luadoc` checks Lua type resolution and completion with locked plugins.
 Install `lua-language-server` on `PATH` before running it locally.
 
 Module settings are LuaDoc annotations in each module's `init.lua`. After you change them, regenerate the schema:
@@ -172,7 +172,9 @@ Do not edit `settings.schema.json` by hand. Read [architecture](doc/architecture
 
 - `validate.yml` runs `just schema`, `just test` and `just live luadoc` on Linux and Windows.
 - Validation runs on pushes, pull requests and a daily schedule on `main`.
-- `live-upstream.yml` installs pinned tools and runs `just live` on Linux and Windows only when started manually.
+- Live suites check out each plugin at its `lazy-lock.json` commit.
+- `live-upstream.yml` installs pinned tools and runs `just live` on Linux and Windows.
+- It runs on manual dispatch and on pushes or pull requests that change `lazy-lock.json` or live tests.
 - `release.yml` validates version tags before publishing. Releases do not run live suites.
 
 ## Releases

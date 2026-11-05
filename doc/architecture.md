@@ -116,5 +116,5 @@ Keep plugin loading with Lazy and tool state with hangar.nvim.
 ## Tests
 
 - Offline suites use hermetic Lua fixtures and local Git checkouts. They do not download plugins.
-- Live suites pin real plugins and tools and run on Linux and Windows.
+- Live suites use the `lazy-lock.json` plugin commits and pinned tools. They run on Linux and Windows.
 - `scripts/test.lua` runs each suite in its own process with private XDG directories.

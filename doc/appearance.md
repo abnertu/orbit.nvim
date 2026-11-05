@@ -47,4 +47,4 @@ It corrected two nvim-tree information links from nonexistent `DiagnosticNormal`
 Unused CMP, Telescope, dashboard and cheatsheet integrations remain absent.
 
 Offline tests cover rendered icons, symbol formatting, palette stability, current-line settings, rollback and menu colors.
-Manual live tests exercise pinned Trouble symbol requests and real Tokyo Night colorscheme changes.
+Live tests exercise locked Trouble symbol requests and real Tokyo Night colorscheme changes.
