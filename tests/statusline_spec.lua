@@ -332,6 +332,45 @@ check("unusual file formats and read-only files are flagged", function()
   vim.cmd("bwipeout!")
 end)
 
+check("a search highlight change redraws the status line once", function()
+  local redrawstatus, calls = vim.cmd.redrawstatus, 0
+  vim.cmd.redrawstatus = function()
+    calls = calls + 1
+  end
+  local ok, err = pcall(function()
+    -- Settle the observer on a known value first.
+    vim.o.hlsearch = true
+    vim.v.hlsearch = 0
+    vim.api.nvim_exec_autocmds("SafeState", {})
+    calls = 0
+    vim.v.hlsearch = 1
+    vim.api.nvim_exec_autocmds("SafeState", {})
+    assert(calls == 1, "setting hlsearch redraws: " .. calls)
+    vim.api.nvim_exec_autocmds("SafeState", {})
+    assert(calls == 1, "an unchanged value does not redraw: " .. calls)
+    vim.cmd.nohlsearch()
+    vim.api.nvim_exec_autocmds("SafeState", {})
+    assert(calls == 2, ":nohlsearch redraws: " .. calls)
+    vim.v.hlsearch = 1
+    vim.api.nvim_exec_autocmds("SafeState", {})
+    assert(calls == 3, "a new search redraws: " .. calls)
+    vim.o.hlsearch = false
+    vim.cmd("enew")
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, { "orbit", "orbit" })
+    vim.fn.setreg("/", "orbit")
+    vim.v.hlsearch = 1
+    local text = rendered()
+    vim.cmd("bwipeout!")
+    assert(not text:find("%d/2"), "no count while 'hlsearch' is off: " .. text)
+    vim.api.nvim_exec_autocmds("SafeState", {})
+    vim.api.nvim_exec_autocmds("SafeState", {})
+    assert(calls == 4, "turning the option off redraws once: " .. calls)
+  end)
+  vim.cmd.redrawstatus = redrawstatus
+  vim.o.hlsearch = false
+  assert(ok, err)
+end)
+
 check("highlight links survive a colorscheme change", function()
   vim.cmd.colorscheme("habamax")
   local link = vim.api.nvim_get_hl(0, { name = "OrbitStModeNormal" }).link

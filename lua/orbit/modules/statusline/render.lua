@@ -320,9 +320,16 @@ local function symbols(ctx)
   return require("orbit.modules.statusline.symbols").render()
 end
 
+---Search matches are highlighted only while 'hlsearch' is on and v:hlsearch is
+---set. v:hlsearch alone can change between autocommands when the option is off.
+---@return boolean
+function M.highlighting()
+  return vim.o.hlsearch and vim.v.hlsearch == 1
+end
+
 ---@return string
 local function search()
-  if vim.v.hlsearch == 0 then
+  if not M.highlighting() then
     return ""
   end
   local ok, count = pcall(vim.fn.searchcount, { maxcount = 999, timeout = 20 })

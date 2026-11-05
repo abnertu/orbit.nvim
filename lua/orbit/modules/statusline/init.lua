@@ -42,6 +42,20 @@ local function sync_group(active)
     end,
     desc = "Redraw the Orbit status line after Git sign updates",
   })
+  -- :nohlsearch fires no event and has several callers, such as <Esc> and
+  -- <C-L>. Compare v:hlsearch when Neovim waits for input instead.
+  local render = require("orbit.modules.statusline.render")
+  local highlighting = render.highlighting()
+  vim.api.nvim_create_autocmd("SafeState", {
+    group = group,
+    callback = function()
+      if render.highlighting() ~= highlighting then
+        highlighting = not highlighting
+        vim.cmd.redrawstatus()
+      end
+    end,
+    desc = "Redraw the Orbit status line when the search highlight changes",
+  })
 end
 
 ---@return Orbit.StatuslineSnapshot
