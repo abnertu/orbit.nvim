@@ -69,6 +69,33 @@ check("failed editor activation restores its own partial changes", function()
   assert(vim.wo.number == true)
 end)
 
+check("new buffers default to the first file format and loaded buffers keep theirs", function()
+  vim.cmd("enew")
+  local loaded = vim.api.nvim_get_current_buf()
+  vim.bo[loaded].fileformat = "unix"
+  orbit.setup({ modules = { editor = { fileformats = "dos,unix", shiftwidth = 4 } } })
+  assert(vim.api.nvim_get_option_value("fileformat", { scope = "global" }) == "dos")
+  assert(vim.bo[loaded].fileformat == "unix", "a loaded buffer keeps its line endings")
+  local scratch = vim.api.nvim_create_buf(true, false)
+  assert(vim.bo[scratch].fileformat == "dos", "nvim_create_buf follows fileformats")
+  vim.api.nvim_buf_delete(scratch, { force = true })
+
+  local old_setup = editor.setup
+  editor.setup = function(opts)
+    old_setup(opts)
+    error("injected fileformat failure")
+  end
+  vim.api.nvim_set_option_value("fileformat", "mac", { scope = "global" })
+  local ok =
+    pcall(orbit.setup, { modules = { editor = { fileformats = "unix,dos", shiftwidth = 4 } } })
+  editor.setup = old_setup
+  assert(not ok)
+  assert(vim.api.nvim_get_option_value("fileformat", { scope = "global" }) == "mac", "rollback")
+  orbit.setup({ modules = { editor = { fileformats = "unix,dos", shiftwidth = 4 } } })
+  assert(vim.api.nvim_get_option_value("fileformat", { scope = "global" }) == "unix")
+  vim.cmd("bwipeout!")
+end)
+
 check("failed remapping restores a pre-existing mapping", function()
   vim.keymap.set("n", ",z", "<cmd>echo 'original'<cr>", { silent = true })
   local before = vim.fn.maparg(",z", "n")

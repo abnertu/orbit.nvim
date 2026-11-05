@@ -82,6 +82,17 @@ local function apply_option(name, value)
   end
 end
 
+-- nvim_create_buf buffers take the global 'fileformat', while :enew takes the
+-- first 'fileformats' entry. Keep the two equal. Loaded buffers keep their own
+-- value, because it decides the line endings that a write produces.
+---@param fileformats string
+local function apply_fileformat(fileformats)
+  local first = vim.split(fileformats, ",", { plain = true })[1]
+  if first and first ~= "" then
+    vim.api.nvim_set_option_value("fileformat", first, { scope = "global" })
+  end
+end
+
 ---Capture the actual values, including existing local overrides.
 ---@return Orbit.EditorSnapshot
 function M.capture()
@@ -108,6 +119,12 @@ function M.capture()
     end
     snapshot[name] = previous
   end
+  -- Setup changes only the global 'fileformat'.
+  snapshot.fileformat = {
+    global = vim.api.nvim_get_option_value("fileformat", { scope = "global" }),
+    buffers = {},
+    windows = {},
+  }
   return snapshot
 end
 
@@ -128,6 +145,8 @@ function M.restore(snapshot)
       end
     end
   end
+  local fileformat = assert(snapshot.fileformat, "missing editor option snapshot: fileformat")
+  vim.api.nvim_set_option_value("fileformat", fileformat.global, { scope = "global" })
 end
 
 ---@param opts? Orbit.EditorOptions
@@ -142,6 +161,9 @@ function M.setup(opts, previous)
     -- After the first application, update only fields that changed.
     if not previous or not previous.enabled or previous[name] ~= opts[name] then
       apply_option(name, opts[name])
+      if name == "fileformats" then
+        apply_fileformat(opts[name])
+      end
     end
   end
 end
