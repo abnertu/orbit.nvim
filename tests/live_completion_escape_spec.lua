@@ -1,18 +1,15 @@
 -- Explicit network integration; hermetic callback tests remain offline.
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 local workspace = vim.fn.tempname() .. " live completion with spaces"
+local lock = dofile(root .. "/tests/support/live_lock.lua")
 local dependencies = {
-  { "lazy.nvim", "folke/lazy.nvim", "306a05526ada86a7b30af95c5cc81ffba93fef97" },
-  { "blink.cmp", "saghen/blink.cmp", "78336bc89ee5365633bcf754d93df01678b5c08f" },
-  { "LuaSnip", "L3MON4D3/LuaSnip", "0abc8f390b278c3b4aabc4c004ac8a088b65cf24" },
-  {
-    "friendly-snippets",
-    "rafamadriz/friendly-snippets",
-    "b2ea5c41a150ba72fb656eedb4ed0a86d138d945",
-  },
-  { "nvim-autopairs", "windwp/nvim-autopairs", "3172f40c16563db871a58f20d205c710ad782311" },
-  { "lazydev.nvim", "folke/lazydev.nvim", "ff2cbcba459b637ec3fd165a2be59b7bbaeedf0d" },
-  { "wezterm-types", "justinsgithub/wezterm-types", "39511289aa040a7746a9e2d551b35ef330f15c77" },
+  { "lazy.nvim", "folke/lazy.nvim" },
+  { "blink.cmp", "saghen/blink.cmp" },
+  { "LuaSnip", "L3MON4D3/LuaSnip" },
+  { "friendly-snippets", "rafamadriz/friendly-snippets" },
+  { "nvim-autopairs", "windwp/nvim-autopairs" },
+  { "lazydev.nvim", "folke/lazydev.nvim" },
+  { "wezterm-types", "justinsgithub/wezterm-types" },
 }
 ---@type table<string, string>
 local paths = {}
@@ -359,23 +356,10 @@ end)
 end
 
 local ok, err = xpcall(function()
-  assert(vim.fn.executable("git") == 1, "Git is required for pinned upstream integration")
   vim.fn.mkdir(workspace, "p")
   for _, dependency in ipairs(dependencies) do
     local path = vim.fs.joinpath(workspace, dependency[1])
-    run({ "git", "init", "--quiet", path })
-    run({
-      "git",
-      "-C",
-      path,
-      "fetch",
-      "--depth",
-      "1",
-      "https://github.com/" .. dependency[2] .. ".git",
-      dependency[3],
-    })
-    run({ "git", "-C", path, "checkout", "--quiet", "--detach", "FETCH_HEAD" })
-    assert(vim.trim(run({ "git", "-C", path, "rev-parse", "HEAD" })) == dependency[3])
+    lock.checkout(dependency[1], dependency[2], path)
     paths[dependency[1]] = path
   end
   check(true)

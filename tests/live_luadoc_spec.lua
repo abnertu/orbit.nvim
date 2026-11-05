@@ -6,33 +6,13 @@ assert(server ~= "" and vim.fn.executable(server) == 1, "lua-language-server is 
 local workspace = vim.fn.tempname() .. " LuaDoc"
 assert(vim.fn.mkdir(workspace, "p") == 1)
 local plugins = vim.env.ORBIT_TYPE_PLUGIN_ROOT or (workspace .. "/plugins")
-local sources = {
-  { repository = "folke/lazy.nvim", commit = "306a05526ada86a7b30af95c5cc81ffba93fef97" },
-  { repository = "folke/lazydev.nvim", commit = "ff2cbcba459b637ec3fd165a2be59b7bbaeedf0d" },
-  { repository = "folke/snacks.nvim", commit = "882c996cf28183f4d63640de0b4c02ec886d01f2" },
-}
-for _, source in ipairs(sources) do
-  local repository = source.repository
+local lock = dofile(root .. "/tests/support/live_lock.lua")
+local sources = { "folke/lazy.nvim", "folke/lazydev.nvim", "folke/snacks.nvim" }
+for _, repository in ipairs(sources) do
   local name = repository:match("[^/]+$")
   local directory = plugins .. "/" .. name
   if not vim.env.ORBIT_TYPE_PLUGIN_ROOT then
-    for _, argv in ipairs({
-      { "git", "init", directory },
-      {
-        "git",
-        "-C",
-        directory,
-        "fetch",
-        "--depth",
-        "1",
-        "https://github.com/" .. repository .. ".git",
-        source.commit,
-      },
-      { "git", "-C", directory, "checkout", "--detach", "FETCH_HEAD" },
-    }) do
-      local result = vim.system(argv, { text = true, timeout = 120000 }):wait()
-      assert(result.code == 0, tostring(result.stderr))
-    end
+    lock.checkout(name, repository, directory)
   end
   assert(vim.fn.isdirectory(directory .. "/lua") == 1, "missing type library: " .. directory)
   vim.opt.rtp:append(directory)

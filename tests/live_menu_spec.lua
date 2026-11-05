@@ -1,27 +1,12 @@
 -- Explicit pinned upstream acceptance. Hermetic validation never fetches plugins.
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 local workspace = vim.fn.tempname() .. " live menu with spaces"
+local lock = dofile(root .. "/tests/support/live_lock.lua")
 local dependencies = {
-  {
-    name = "lazy.nvim",
-    source = "folke/lazy.nvim",
-    revision = "306a05526ada86a7b30af95c5cc81ffba93fef97",
-  },
-  {
-    name = "menu",
-    source = "Orbit-Lua/menu",
-    revision = "7a0a4a2896b715c066cfbe320bdc048091874cc6",
-  },
-  {
-    name = "volt",
-    source = "Orbit-Lua/volt",
-    revision = "620de1321f275ec9d80028c68d1b88b409c0c8b1",
-  },
-  {
-    name = "nvim-tree.lua",
-    source = "nvim-tree/nvim-tree.lua",
-    revision = "3be8cad084e79e84833ef98cef88116c26a224ff",
-  },
+  { name = "lazy.nvim", repository = "folke/lazy.nvim" },
+  { name = "menu", repository = "Orbit-Lua/menu" },
+  { name = "volt", repository = "Orbit-Lua/volt" },
+  { name = "nvim-tree.lua", repository = "nvim-tree/nvim-tree.lua" },
 }
 ---@type table<string, string>
 local paths = {}
@@ -468,23 +453,10 @@ end)
 end
 
 local ok, err = xpcall(function()
-  assert(vim.fn.executable("git") == 1, "Git is required for pinned menu acceptance")
   vim.fn.mkdir(workspace, "p")
   for _, dependency in ipairs(dependencies) do
     local path = vim.fs.joinpath(workspace, dependency.name)
-    run({ "git", "init", "--quiet", path })
-    run({
-      "git",
-      "-C",
-      path,
-      "fetch",
-      "--depth",
-      "1",
-      "https://github.com/" .. dependency.source .. ".git",
-      dependency.revision,
-    })
-    run({ "git", "-C", path, "checkout", "--quiet", "--detach", "FETCH_HEAD" })
-    assert(vim.trim(run({ "git", "-C", path, "rev-parse", "HEAD" })) == dependency.revision)
+    lock.checkout(dependency.name, dependency.repository, path)
     paths[dependency.name] = path
   end
   local cases = arg[1] and { arg[1] } or { "normal", "visual", "no-corekeys", "disabled" }
