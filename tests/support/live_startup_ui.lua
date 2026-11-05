@@ -112,6 +112,8 @@ return function(opts)
   for _, name in ipairs(manifest.order) do
     modules[name] = { enabled = false }
   end
+  -- Hangar loads independently of Mason enablement.
+  modules.mason = { enabled = false, hangar = { enabled = false } }
   modules.events = { enabled = true }
   modules.snacks = { enabled = true, dashboard = opts.dashboard }
   modules.navigation = { enabled = true, harpoon = false }

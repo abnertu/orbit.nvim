@@ -99,6 +99,8 @@ return function(opts)
   for _, name in ipairs(manifest.order) do
     modules[name] = { enabled = false }
   end
+  -- Hangar loads independently of Mason enablement.
+  modules.mason = { enabled = false, hangar = { enabled = false } }
   modules.corekeys = { enabled = true }
   modules.completion = { enabled = opts.plugins }
   modules.plugins = {
