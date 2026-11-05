@@ -17,12 +17,6 @@ local function run(argv)
   return result.stdout or ""
 end
 
-local function floats()
-  return #vim.tbl_filter(function(win)
-    return vim.api.nvim_win_get_config(win).relative ~= ""
-  end, vim.api.nvim_list_wins())
-end
-
 local ok, err = xpcall(function()
   lock.checkout("snacks.nvim", "folke/snacks.nvim", directory)
   vim.opt.rtp:prepend(directory)

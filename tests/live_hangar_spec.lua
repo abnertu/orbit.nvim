@@ -157,13 +157,13 @@ local ok, err = xpcall(function()
   -- The current process owns this lock, so Hangar must reject a second
   -- writer without changing its cached state or the persisted JSON.
   local content = table.concat(vim.fn.readfile(state_path), "\n")
-  local lock = state_path .. ".lock"
+  local lock_path = state_path .. ".lock"
   vim.fn.writefile(
     { vim.json.encode({
       pid = vim.uv.os_getpid(),
       token = "live-owner-fixture",
     }) },
-    lock
+    lock_path
   )
   local wrote, reason = state.set_enabled("lsp", "lua_ls", true)
   assert(
@@ -176,10 +176,10 @@ local ok, err = xpcall(function()
   )
   assert(not state.is_enabled("lsp", "lua_ls"), "blocked Hangar update modified the accepted state")
   assert(
-    vim.json.decode(table.concat(vim.fn.readfile(lock), "\n")).token == "live-owner-fixture",
+    vim.json.decode(table.concat(vim.fn.readfile(lock_path), "\n")).token == "live-owner-fixture",
     "Hangar stole a live writer's lock"
   )
-  assert(vim.fn.delete(lock) == 0)
+  assert(vim.fn.delete(lock_path) == 0)
   print("PASS real Hangar rejects concurrent writers without losing state")
 
   declaration.config()

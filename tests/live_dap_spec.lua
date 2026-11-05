@@ -8,15 +8,6 @@ local directory = vim.fn.tempname() .. " live dap with spaces"
 local listener, client
 local protocol_error
 
-local function run(argv)
-  local result = vim.system(argv, { text = true, timeout = 120000 }):wait()
-  assert(
-    result.code == 0,
-    vim.inspect(argv) .. " failed: " .. tostring(result.stderr or result.stdout or result.code)
-  )
-  return result.stdout or ""
-end
-
 local function close(handle)
   if handle and not handle:is_closing() then
     handle:close()
