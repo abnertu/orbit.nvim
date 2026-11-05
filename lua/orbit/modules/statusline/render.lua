@@ -103,25 +103,129 @@ local function diagnostics(buffer)
   return table.concat(result, " ")
 end
 
----Return the blank cells between sections, in the fill color.
----@return string
-local function gap()
-  local width = require("orbit.modules.statusline").gap()
-  return width > 0 and part("OrbitStFill", string.rep(" ", width)) or ""
+---A component returns content without outer blank cells, or "" when empty.
+---@alias Orbit.StatuslineComponent fun(buffer: integer): string
+---@class Orbit.StatuslineContainer
+---@field kind "container"
+---@field children Orbit.StatuslineChild[]
+---@field gap? integer
+---@class Orbit.StatuslineSpacer
+---@field kind "spacer"
+---@field width? integer
+---@class Orbit.StatuslineMarker
+---@field kind "marker"
+---@field text string
+---@alias Orbit.StatuslineChild Orbit.StatuslineComponent|Orbit.StatuslineContainer
+---@alias Orbit.StatuslineItem Orbit.StatuslineChild|Orbit.StatuslineSpacer|Orbit.StatuslineMarker
+
+---@param value? integer
+---@param label string
+---@return integer?
+local function width(value, label)
+  assert(
+    value == nil or (type(value) == "number" and value >= 0 and value % 1 == 0),
+    label .. " must be a non-negative integer"
+  )
+  return value
 end
 
----Join non-empty sections, so an empty section leaves no extra gap.
----@param sections string[]
----@param spacer string
+---Group children and join the non-empty ones with `gap` blank cells.
+---A missing `gap` uses `modules.statusline.gap` at each redraw.
+---@param children Orbit.StatuslineChild[]
+---@param opts? {gap?: integer}
+---@return Orbit.StatuslineContainer
+function M.container(children, opts)
+  opts = opts or {}
+  for index, child in ipairs(children) do
+    assert(
+      type(child) == "function" or (type(child) == "table" and child.kind == "container"),
+      "container child " .. index .. " must be a component or a container"
+    )
+  end
+  return { kind = "container", children = children, gap = width(opts.gap, "container gap") }
+end
+
+---Blank cells between layout items. They render only between visible content,
+---and adjacent spacers render once at the largest width.
+---A missing `n` uses `modules.statusline.gap` at each redraw.
+---@param n? integer
+---@return Orbit.StatuslineSpacer
+function M.spacer(n)
+  return { kind = "spacer", width = width(n, "spacer width") }
+end
+
+---The flexible fill between the left and right sides.
+---@return Orbit.StatuslineMarker
+function M.fill()
+  return { kind = "marker", text = "%#OrbitStFill#%=" }
+end
+
+---The point where a long status line starts truncation.
+---@return Orbit.StatuslineMarker
+function M.truncate()
+  return { kind = "marker", text = "%<" }
+end
+
+---@param cells integer
 ---@return string
-local function join(sections, spacer)
+local function blank(cells)
+  return cells > 0 and part("OrbitStFill", string.rep(" ", cells)) or ""
+end
+
+---@param item Orbit.StatuslineChild
+---@param buffer integer
+---@param default integer
+---@return string
+local function evaluate(item, buffer, default)
+  if type(item) == "function" then
+    return item(buffer)
+  end
   local visible = {}
-  for _, section in ipairs(sections) do
-    if section ~= "" then
-      visible[#visible + 1] = section
+  for _, child in ipairs(item.children) do
+    local text = evaluate(child, buffer, default)
+    if text ~= "" then
+      visible[#visible + 1] = text
     end
   end
-  return table.concat(visible, spacer)
+  return table.concat(visible, blank(item.gap or default))
+end
+
+---Render a layout for one buffer.
+---@param layout Orbit.StatuslineItem[]
+---@param buffer integer
+---@return string
+function M.compose(layout, buffer)
+  local default = require("orbit.modules.statusline").gap()
+  local output, seen = {}, false
+  ---@type {index: integer, width: integer}?
+  local pending
+  for _, item in ipairs(layout) do
+    local kind = type(item) == "table" and item.kind or nil
+    if kind == "spacer" then
+      local cells = item.width or default
+      -- A spacer before any content has nothing to separate.
+      if pending then
+        pending.width = math.max(pending.width, cells)
+      elseif seen then
+        output[#output + 1] = ""
+        pending = { index = #output, width = cells }
+      end
+    elseif kind == "marker" then
+      output[#output + 1] = item.text
+    else
+      local text = evaluate(item, buffer, default)
+      if text ~= "" then
+        if pending then
+          output[pending.index] = blank(pending.width)
+          pending = nil
+        end
+        output[#output + 1] = text
+        seen = true
+      end
+    end
+  end
+  -- A trailing pending spacer stays empty.
+  return table.concat(output)
 end
 
 ---@param buffer integer
@@ -175,21 +279,25 @@ local function recording()
 end
 
 ---@return string
+local function symbols()
+  return require("orbit.modules.statusline.symbols").render()
+end
+
+---@type Orbit.StatuslineItem[]
+local layout = {
+  M.container({ mode, recording }),
+  M.truncate(),
+  M.spacer(),
+  M.container({ git, file, symbols }),
+  M.spacer(),
+  M.fill(),
+  M.container({ diagnostics, ai, lsp, workspace }),
+}
+
+---@return string
 function M.render()
   local win = tonumber(vim.g.statusline_winid) or vim.api.nvim_get_current_win()
-  local buffer = vim.api.nvim_win_get_buf(win)
-  local spacer = gap()
-  local tail = join({
-    git(buffer),
-    file(buffer),
-    require("orbit.modules.statusline.symbols").render(),
-  }, spacer)
-  return join({ mode(), recording() }, spacer)
-    .. "%<"
-    .. (tail ~= "" and spacer .. tail or "")
-    .. spacer
-    .. part("OrbitStFill", "%=")
-    .. join({ diagnostics(buffer), ai(buffer), lsp(buffer), workspace() }, spacer)
+  return M.compose(layout, vim.api.nvim_win_get_buf(win))
 end
 
 -- Default groups link to standard ones, so colorschemes can override them.
