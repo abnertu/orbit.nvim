@@ -103,18 +103,25 @@ local function diagnostics(buffer)
   return table.concat(result, " ")
 end
 
+---Each redraw passes one context to every component.
+---@class Orbit.StatuslineContext
+---@field buffer integer
+---@field win integer
+---@field width integer Status line width in cells.
+
 ---A component returns content without outer blank cells, or "" when empty.
----@alias Orbit.StatuslineComponent fun(buffer: integer): string
+---@alias Orbit.StatuslineComponent fun(ctx: Orbit.StatuslineContext): string
 ---@class Orbit.StatuslineContainer
 ---@field kind "container"
 ---@field children Orbit.StatuslineChild[]
 ---@field gap? integer
 ---@class Orbit.StatuslineSpacer
----@field kind "spacer"
+---@field kind "spacer"|"separator"
 ---@field width? integer
 ---@class Orbit.StatuslineMarker
 ---@field kind "marker"
 ---@field text string
+---@field boundary? boolean A side boundary ends the current spacer run.
 ---@alias Orbit.StatuslineChild Orbit.StatuslineComponent|Orbit.StatuslineContainer
 ---@alias Orbit.StatuslineItem Orbit.StatuslineChild|Orbit.StatuslineSpacer|Orbit.StatuslineMarker
 
@@ -154,10 +161,17 @@ function M.spacer(n)
   return { kind = "spacer", width = width(n, "spacer width") }
 end
 
+---A dim divider glyph with one gap on each side. It follows the spacer rules,
+---and a merged run that holds a separator renders the separator.
+---@return Orbit.StatuslineSpacer
+function M.separator()
+  return { kind = "separator" }
+end
+
 ---The flexible fill between the left and right sides.
 ---@return Orbit.StatuslineMarker
 function M.fill()
-  return { kind = "marker", text = "%#OrbitStFill#%=" }
+  return { kind = "marker", text = "%#OrbitStFill#%=", boundary = true }
 end
 
 ---The point where a long status line starts truncation.
@@ -173,16 +187,16 @@ local function blank(cells)
 end
 
 ---@param item Orbit.StatuslineChild
----@param buffer integer
+---@param ctx Orbit.StatuslineContext
 ---@param default integer
 ---@return string
-local function evaluate(item, buffer, default)
+local function evaluate(item, ctx, default)
   if type(item) == "function" then
-    return item(buffer)
+    return item(ctx)
   end
   local visible = {}
   for _, child in ipairs(item.children) do
-    local text = evaluate(child, buffer, default)
+    local text = evaluate(child, ctx, default)
     if text ~= "" then
       visible[#visible + 1] = text
     end
@@ -190,33 +204,58 @@ local function evaluate(item, buffer, default)
   return table.concat(visible, blank(item.gap or default))
 end
 
----Render a layout for one buffer.
+---@param win integer
+---@return Orbit.StatuslineContext
+local function context(win)
+  local global = vim.o.laststatus == 3
+  return {
+    buffer = vim.api.nvim_win_get_buf(win),
+    win = win,
+    width = global and vim.o.columns or vim.api.nvim_win_get_width(win),
+  }
+end
+
+---Render a layout for one window.
 ---@param layout Orbit.StatuslineItem[]
----@param buffer integer
+---@param win integer
 ---@return string
-function M.compose(layout, buffer)
+function M.compose(layout, win)
+  local ctx = context(win)
   local default = require("orbit.modules.statusline").gap()
   local output, seen = {}, false
-  ---@type {index: integer, width: integer}?
+  ---@type {index: integer, width: integer, separator: boolean}?
   local pending
   for _, item in ipairs(layout) do
     local kind = type(item) == "table" and item.kind or nil
-    if kind == "spacer" then
+    if kind == "spacer" or kind == "separator" then
       local cells = item.width or default
       -- A spacer before any content has nothing to separate.
       if pending then
         pending.width = math.max(pending.width, cells)
+        pending.separator = pending.separator or kind == "separator"
       elseif seen then
         output[#output + 1] = ""
-        pending = { index = #output, width = cells }
+        pending = { index = #output, width = cells, separator = kind == "separator" }
       end
     elseif kind == "marker" then
-      output[#output + 1] = item.text
-    else
-      local text = evaluate(item, buffer, default)
-      if text ~= "" then
+      if item.boundary then
+        -- A run never crosses the fill: it keeps blank space before the fill,
+        -- and the next side starts like the line start.
         if pending then
           output[pending.index] = blank(pending.width)
+          pending = nil
+        end
+        seen = false
+      end
+      output[#output + 1] = item.text
+    else
+      local text = evaluate(item, ctx, default)
+      if text ~= "" then
+        if pending then
+          local space = blank(pending.width)
+          output[pending.index] = pending.separator
+              and space .. part("OrbitStDivider", "·") .. space
+            or space
           pending = nil
         end
         output[#output + 1] = text
@@ -283,21 +322,29 @@ local function symbols()
   return require("orbit.modules.statusline.symbols").render()
 end
 
+---@param component fun(buffer: integer): string
+---@return Orbit.StatuslineComponent
+local function by_buffer(component)
+  return function(ctx)
+    return component(ctx.buffer)
+  end
+end
+
 ---@type Orbit.StatuslineItem[]
 local layout = {
   M.container({ mode, recording }),
   M.truncate(),
   M.spacer(),
-  M.container({ git, file, symbols }),
+  M.container({ by_buffer(git), by_buffer(file), symbols }),
   M.spacer(),
   M.fill(),
-  M.container({ diagnostics, ai, lsp, workspace }),
+  M.container({ by_buffer(diagnostics), by_buffer(ai), by_buffer(lsp), workspace }),
 }
 
 ---@return string
 function M.render()
   local win = tonumber(vim.g.statusline_winid) or vim.api.nvim_get_current_win()
-  return M.compose(layout, vim.api.nvim_win_get_buf(win))
+  return M.compose(layout, win)
 end
 
 -- Default groups link to standard ones, so colorschemes can override them.
@@ -311,6 +358,7 @@ local defaults = {
   OrbitStFile = "StatusLine",
   OrbitStGit = "StatusLine",
   OrbitStFill = "StatusLine",
+  OrbitStDivider = "Comment",
   OrbitStError = "DiagnosticError",
   OrbitStWarn = "DiagnosticWarn",
   OrbitStInfo = "DiagnosticInfo",

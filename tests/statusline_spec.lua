@@ -120,7 +120,7 @@ local render = require("orbit.modules.statusline.render")
 ---@return string
 local function composed(layout)
   return vim.api.nvim_eval_statusline(
-    render.compose(layout, vim.api.nvim_get_current_buf()),
+    render.compose(layout, vim.api.nvim_get_current_win()),
     { highlights = false, maxwidth = 400 }
   ).str
 end
@@ -157,11 +157,38 @@ check("spacers collapse at edges and next to empty items", function()
     render.spacer(1),
     render.fill(),
     component("b"),
-  }, vim.api.nvim_get_current_buf())
+  }, vim.api.nvim_get_current_win())
   assert(
     raw:find("a%%#OrbitStFill#  %%#OrbitStFill#%%=b"),
     "the merged spacer keeps the first position: " .. raw
   )
+end)
+
+check("separators follow the spacer rules and win a merged run", function()
+  local a, b = component("a"), component("b")
+  assert(composed({ render.separator(), a, render.separator() }) == "a")
+  assert(composed({ a, render.separator(), empty, render.separator(), b }) == "a · b")
+  assert(composed({ a, render.spacer(3), empty, render.separator(), b }) == "a   ·   b")
+  assert(composed({ a, render.separator(), render.container({ empty }) }) == "a")
+  local sides = composed({ a, render.separator(), render.fill(), empty, render.separator(), b })
+  assert(
+    sides:find("^a%s+b$") and not sides:find("·", 1, true),
+    "no divider crosses the fill: " .. sides
+  )
+end)
+
+check("components receive the window and status line width", function()
+  local seen
+  composed({
+    function(ctx)
+      seen = ctx
+      return ""
+    end,
+  })
+  assert(
+    seen.win == vim.api.nvim_get_current_win() and seen.buffer == vim.api.nvim_get_current_buf()
+  )
+  assert(seen.width == vim.o.columns, "a global status line spans the columns")
 end)
 
 check("invalid gap or spacer widths fail at declaration", function()
