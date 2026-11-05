@@ -171,6 +171,48 @@ local ok, err = pcall(function()
     )
   end)
 
+  check("the last normal window hides a live session beside an unrelated float", function()
+    local result = lua(
+      [[
+      local runtime = require("orbit.modules.terminal.runtime")
+      local buffer, job = ...
+      vim.cmd.tabnew()
+      local origin = vim.api.nvim_get_current_win()
+      assert(runtime.toggle("vsp", "acceptance"))
+      assert(vim.api.nvim_get_current_buf() == buffer, "the new tab started another terminal")
+      local terminal_window = vim.api.nvim_get_current_win()
+      vim.api.nvim_win_close(origin, true)
+      local foreign = vim.api.nvim_create_buf(false, true)
+      local popup = vim.api.nvim_open_win(foreign, false, {
+        relative = "editor", row = 1, col = 1, width = 10, height = 2,
+      })
+      local hidden = runtime.toggle("vsp", "acceptance")
+      local state = {
+        hidden = hidden,
+        kept = vim.api.nvim_win_is_valid(terminal_window),
+        popup = vim.api.nvim_win_is_valid(popup),
+        replaced = vim.api.nvim_get_current_buf() ~= buffer,
+        alive = vim.fn.jobwait({ job }, 0)[1] == -1,
+      }
+      state.reopened = runtime.toggle("vsp", "acceptance")
+        and vim.api.nvim_get_current_buf() == buffer
+      state.popup_after = vim.api.nvim_win_is_valid(popup)
+      vim.api.nvim_win_close(popup, true)
+      vim.api.nvim_buf_delete(foreign, { force = true })
+      vim.cmd.tabclose()
+      return state
+    ]],
+      session.buffer,
+      session.job
+    )
+    assert(result.hidden, "toggle did not hide the session")
+    assert(result.kept, "the tab's last normal window must remain")
+    assert(result.popup and result.popup_after, "the foreign popup was closed")
+    assert(result.replaced, "hiding must install a replacement normal buffer")
+    assert(result.alive, "hiding the last normal window stopped the shell")
+    assert(result.reopened, "toggle did not reopen the same session")
+  end)
+
   check("an exited shell is replaced by a new session", function()
     -- A failing exit keeps the terminal buffer, so reuse must check the job.
     lua([[vim.api.nvim_chan_send(...)]], session.job, "exit 3\r")
