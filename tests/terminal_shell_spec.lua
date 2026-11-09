@@ -36,6 +36,63 @@ local emulate_windows = [[
   end
 ]]
 
+---@param label string
+---@param body string
+local function startup(label, body)
+  local path = vim.fn.tempname() .. " shell startup.lua"
+  local source = table.concat({
+    "vim.opt.rtp:prepend(" .. vim.inspect(root) .. ")",
+    emulate_windows,
+    "local ok, err = xpcall(function()",
+    body,
+    "end, debug.traceback)",
+    "if not ok then io.stderr:write(err); vim.cmd.cquit({args={'1'}}) end",
+  }, "\n")
+  vim.fn.writefile(vim.split(source, "\n", { plain = true }), path)
+  local result = vim
+    .system({ vim.v.progpath, "--headless", "-u", path, "-i", "NONE" }, {
+      text = true,
+      timeout = 10000,
+    })
+    :wait()
+  vim.fn.delete(path)
+  assert(result.code == 0, "FAIL " .. label .. "\n" .. (result.stderr or ""))
+  passed = passed + 1
+  print("PASS " .. label)
+end
+
+startup(
+  "startup same-value shell and command overrides survive re-enable",
+  [[
+  local orbit = require('orbit')
+  local original, flags = vim.o.shell, vim.o.shellcmdflag
+  orbit.setup()
+  orbit.setup({modules={terminal={enabled=false}}})
+  vim.o.shell = original
+  vim.o.shellcmdflag = flags
+  orbit.setup()
+  assert(vim.o.shell == original and vim.o.shellcmdflag == flags)
+  vim.schedule(function() vim.cmd.qa() end)
+]]
+)
+
+startup(
+  "startup same-value override survives failed first activation",
+  [[
+  local orbit = require('orbit')
+  local original = vim.o.shell
+  local commands = require('orbit.modules.commands')
+  local setup = commands.setup
+  commands.setup = function() error('startup failure') end
+  assert(not pcall(orbit.setup))
+  commands.setup = setup
+  vim.o.shell = original
+  orbit.setup()
+  assert(vim.o.shell == original)
+  vim.schedule(function() vim.cmd.qa() end)
+]]
+)
+
 for _, available in ipairs({ "pwsh.exe", "powershell.exe", "none" }) do
   check("setup selects the available Windows shell: " .. available, function(run)
     run(emulate_windows)

@@ -48,6 +48,10 @@ local profiles = {
 local entries
 local active, writing = false, false
 local observing = false
+---@type table<Orbit.TerminalShellOption, Orbit.TerminalShellValue>?
+local pending
+local write_source =
+  vim.fs.joinpath(vim.fs.dirname(debug.getinfo(1, "S").source:sub(2)), "apply.lua")
 
 ---@return table<Orbit.TerminalShellOption, Orbit.TerminalShellValue>
 local function values()
@@ -63,38 +67,50 @@ local function refresh()
   if not entries then
     entries = {}
     for name, value in pairs(values()) do
+      local info = vim.api.nvim_get_option_info2(name, {})
       entries[name] = {
         original = value,
         observed = value,
-        explicit = vim.api.nvim_get_option_info2(name, {}).was_set,
+        source = info.last_set_sid,
+        explicit = info.was_set,
       }
     end
   end
   for name, value in pairs(values()) do
     local entry = entries[name]
-    if value ~= entry.observed then
+    local source = vim.api.nvim_get_option_info2(name, {}).last_set_sid
+    if value ~= entry.observed or source ~= entry.source then
       entry.original, entry.observed, entry.explicit, entry.owned = value, value, true, nil
+      entry.source = source
     end
   end
 end
 
 ---@param desired table<Orbit.TerminalShellOption, Orbit.TerminalShellValue>
 local function write(desired)
-  writing = true
+  writing, pending = true, desired
   local ok, err = pcall(function()
-    -- Restore shell first: setting it can change defaults for the other options.
-    for _, name in ipairs(option_names) do
-      if vim.api.nvim_get_option_value(name, { scope = "global" }) ~= desired[name] then
-        vim.api.nvim_set_option_value(name, desired[name], { scope = "global" })
-      end
-    end
+    vim.cmd.source({ args = { write_source }, mods = { noautocmd = true } })
   end)
-  writing = false
+  writing, pending = false, nil
   if not ok then
     error(err, 0)
   end
   for name, value in pairs(values()) do
     entries[name].observed = value
+    entries[name].source = vim.api.nvim_get_option_info2(name, {}).last_set_sid
+  end
+end
+
+---Called only by the sourced Lua bridge to give owned writes their own script ID.
+---@private
+function M.apply_pending()
+  assert(writing and pending, "no pending terminal shell options")
+  -- Restore shell first: setting it can change defaults for the other options.
+  for _, name in ipairs(option_names) do
+    if vim.api.nvim_get_option_value(name, { scope = "global" }) ~= pending[name] then
+      vim.api.nvim_set_option_value(name, pending[name], { scope = "global" })
+    end
   end
 end
 
@@ -113,6 +129,7 @@ local function observe()
       local entry = entries[event.match]
       local value = vim.api.nvim_get_option_value(event.match, { scope = "global" })
       entry.original, entry.observed, entry.explicit, entry.owned = value, value, true, nil
+      entry.source = vim.api.nvim_get_option_info2(event.match, {}).last_set_sid
       if active and event.match == "shell" then
         M.setup(true)
       end

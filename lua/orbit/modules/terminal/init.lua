@@ -6,7 +6,7 @@ local accepted
 
 ---@alias Orbit.TerminalShellOption 'shell'|'shellcmdflag'|'shellredir'|'shellpipe'|'shellquote'|'shellxquote'|'shelltemp'
 ---@alias Orbit.TerminalShellValue string|boolean
----@alias Orbit.TerminalShellEntry {original: Orbit.TerminalShellValue, observed: Orbit.TerminalShellValue, explicit: boolean, owned?: Orbit.TerminalShellValue}
+---@alias Orbit.TerminalShellEntry {original: Orbit.TerminalShellValue, observed: Orbit.TerminalShellValue, source: integer, explicit: boolean, owned?: Orbit.TerminalShellValue}
 ---@alias Orbit.TerminalShellSnapshot {values: table<Orbit.TerminalShellOption, Orbit.TerminalShellValue>, entries: table<Orbit.TerminalShellOption, Orbit.TerminalShellEntry>, active: boolean}
 ---@alias Orbit.TerminalShellProfile {executable: string, interactive: string[], options: table<Orbit.TerminalShellOption, Orbit.TerminalShellValue>}
 ---@alias Orbit.TerminalSnapshot {options?: Orbit.TerminalOptions, shell?: Orbit.TerminalShellSnapshot}
