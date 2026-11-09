@@ -54,7 +54,9 @@ end
 -- order skips unloaded buffers. Load each selection first, so listing it
 -- appends it in selection order. Registered as `jump` and `confirm`, because
 -- Snacks copies `confirm = jump` by value and routes split, tab and drop
--- through `confirm`.
+-- through `confirm`. A file whose load fails, such as on a swap conflict
+-- (E325) or an autocommand error, is unloaded again. Entering it later
+-- repeats the load and its prompt.
 ---@type snacks.picker.Action.fn
 local function open_selected(picker, item, action)
   local selected = picker:selected()
@@ -63,8 +65,14 @@ local function open_selected(picker, item, action)
     for _, entry in ipairs(selected) do
       local path = entry.buf == nil and snacks.picker.util.path(entry) or nil
       local buffer = entry.buf or (path and vim.fn.bufadd(path))
-      if buffer and vim.api.nvim_buf_is_valid(buffer) then
-        vim.fn.bufload(buffer)
+      if
+        buffer
+        and vim.api.nvim_buf_is_valid(buffer)
+        and not vim.api.nvim_buf_is_loaded(buffer)
+      then
+        if not pcall(vim.fn.bufload, buffer) and vim.api.nvim_buf_is_loaded(buffer) then
+          vim.cmd.bunload(buffer)
+        end
       end
     end
   end

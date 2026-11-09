@@ -94,7 +94,9 @@ local ok, err = xpcall(function()
   local picks = directory .. "/orbit-picks"
   assert(vim.fn.mkdir(picks, "p") == 1)
   local paths = {}
-  for _, name in ipairs({ "pick-a.txt", "pick-b.txt", "pick-c.txt" }) do
+  local names = { "pick-a.txt", "pick-b.txt", "pick-c.txt", "pick-d.txt", "pick-e.txt" }
+  vim.list_extend(names, { "pick-f.txt", "pick-broken.txt" })
+  for _, name in ipairs(names) do
     paths[name] = vim.fs.normalize(picks .. "/" .. name)
     assert(vim.fn.writefile({ name }, paths[name]) == 0)
   end
@@ -110,14 +112,15 @@ local ok, err = xpcall(function()
     end, vim.api.nvim_tabpage_list_wins(0))
   end
 
-  ---@param names string[] Files to select, in order; empty confirms the cursor item.
+  ---@param selection string[] Files to select, in order; empty confirms the cursor item.
   ---@param cursor string File under the cursor at confirm.
-  local function confirm(names, cursor)
+  ---@param key? string Confirm key; `<S-CR>` routes through `jump`.
+  local function confirm(selection, cursor, key)
     local before = tiled()
     local picker = Snacks.picker.files({ cwd = picks })
     assert(
       vim.wait(10000, function()
-        return picker:count() == 3 and not picker:is_active() and picker.input.win:valid()
+        return picker:count() == #names and not picker:is_active() and picker.input.win:valid()
       end, 20),
       "files picker did not list the fixtures"
     )
@@ -125,12 +128,12 @@ local ok, err = xpcall(function()
     for item in picker:iter() do
       items[vim.fs.basename(item.file)] = item
     end
-    for _, name in ipairs(names) do
+    for _, name in ipairs(selection) do
       picker.list:select(items[name])
     end
     picker.list:view(items[cursor].idx)
     vim.api.nvim_set_current_win(picker.input.win.win)
-    vim.api.nvim_feedkeys(vim.keycode("<CR>"), "xt", false)
+    vim.api.nvim_feedkeys(vim.keycode(key or "<CR>"), "xt", false)
     assert(
       vim.wait(5000, function()
         return picker.closed and vim.api.nvim_buf_get_name(0) == paths[cursor]
@@ -158,12 +161,30 @@ local ok, err = xpcall(function()
   assert(vim.api.nvim_buf_is_loaded(a), "second selected file stayed unloaded")
   results[#results + 1] = "PASS real Snacks multi-select confirm loads files in selection order"
 
-  confirm({}, "pick-c.txt")
-  local c = vim.fn.bufnr(paths["pick-c.txt"])
-  assert(
-    vim.deep_equal(ordered({ a, b, c }), { b, a, c }),
-    "single confirm did not append its file"
-  )
+  confirm({ "pick-d.txt", "pick-c.txt" }, "pick-d.txt", "<S-CR>")
+  local c, d = vim.fn.bufnr(paths["pick-c.txt"]), vim.fn.bufnr(paths["pick-d.txt"])
+  order = ordered({ c, d })
+  assert(vim.deep_equal(order, { d, c }), "jump route order " .. vim.inspect(order))
+  results[#results + 1] = "PASS real Snacks multi-select jump route loads every file"
+
+  -- A swap conflict (E325) aborts bufload only in a TUI. A failing read
+  -- autocommand takes the same path in headless Neovim.
+  vim.api.nvim_create_autocmd("BufReadPost", {
+    pattern = "*/pick-broken.txt",
+    callback = function()
+      error("orbit broken read")
+    end,
+  })
+  confirm({ "pick-e.txt", "pick-broken.txt" }, "pick-e.txt")
+  local e, broken = vim.fn.bufnr(paths["pick-e.txt"]), vim.fn.bufnr(paths["pick-broken.txt"])
+  assert(vim.deep_equal(ordered({ e, broken }), { e }), "failed load changed the order")
+  assert(not vim.api.nvim_buf_is_loaded(broken), "failed load left its buffer loaded")
+  results[#results + 1] = "PASS real Snacks multi-select confirm defers a failed load"
+
+  confirm({}, "pick-f.txt")
+  local f = vim.fn.bufnr(paths["pick-f.txt"])
+  order = ordered({ a, b, c, d, e, f })
+  assert(vim.deep_equal(order, { b, a, d, c, e, f }), "single confirm order " .. vim.inspect(order))
   results[#results + 1] = "PASS real Snacks single confirm appends the cursor file"
 end, debug.traceback)
 
