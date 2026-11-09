@@ -50,6 +50,27 @@ local function notification_filter(notif)
   return true
 end
 
+-- Snacks lists every selected file but loads only the first, and the buffer
+-- order skips unloaded buffers. Load each selection first, so listing it
+-- appends it in selection order. Registered as `jump` and `confirm`, because
+-- Snacks copies `confirm = jump` by value and routes split, tab and drop
+-- through `confirm`.
+---@type snacks.picker.Action.fn
+local function open_selected(picker, item, action)
+  local selected = picker:selected()
+  if #selected > 1 then
+    local snacks = require("snacks")
+    for _, entry in ipairs(selected) do
+      local path = entry.buf == nil and snacks.picker.util.path(entry) or nil
+      local buffer = entry.buf or (path and vim.fn.bufadd(path))
+      if buffer and vim.api.nvim_buf_is_valid(buffer) then
+        vim.fn.bufload(buffer)
+      end
+    end
+  end
+  return require("snacks.picker.actions").jump(picker, item, action)
+end
+
 ---@type table<string, snacks.picker.layout.Config>
 local layouts = {
   default = {
@@ -179,6 +200,7 @@ local function options(c)
     picker = {
       enabled = c.picker,
       sources = { files = { hidden = true }, grep = { hidden = true } },
+      actions = { jump = open_selected, confirm = open_selected },
       win = {
         list = { wo = { wrap = false } },
         input = {

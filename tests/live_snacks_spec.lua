@@ -87,8 +87,92 @@ local ok, err = xpcall(function()
     "notification stayed visible after hide"
   )
   results[#results + 1] = "PASS real Snacks notifier filters ignored sources"
+
+  -- Without an owner, list() falls back to handle order and hides the defect.
+  local buffers = require("orbit.buffers")
+  assert(buffers.attached("corekeys"), "corekeys did not attach the buffer order")
+  local picks = directory .. "/orbit-picks"
+  assert(vim.fn.mkdir(picks, "p") == 1)
+  local paths = {}
+  for _, name in ipairs({ "pick-a.txt", "pick-b.txt", "pick-c.txt" }) do
+    paths[name] = vim.fs.normalize(picks .. "/" .. name)
+    assert(vim.fn.writefile({ name }, paths[name]) == 0)
+  end
+  -- Unloaded buffers made in a-b order; selecting b first separates
+  -- selection order from handle order.
+  local a, b = vim.fn.bufadd(paths["pick-a.txt"]), vim.fn.bufadd(paths["pick-b.txt"])
+  assert(a < b)
+  vim.cmd("enew")
+
+  local function tiled()
+    return #vim.tbl_filter(function(win)
+      return vim.api.nvim_win_get_config(win).relative == ""
+    end, vim.api.nvim_tabpage_list_wins(0))
+  end
+
+  ---@param names string[] Files to select, in order; empty confirms the cursor item.
+  ---@param cursor string File under the cursor at confirm.
+  local function confirm(names, cursor)
+    local before = tiled()
+    local picker = Snacks.picker.files({ cwd = picks })
+    assert(
+      vim.wait(10000, function()
+        return picker:count() == 3 and not picker:is_active() and picker.input.win:valid()
+      end, 20),
+      "files picker did not list the fixtures"
+    )
+    local items = {}
+    for item in picker:iter() do
+      items[vim.fs.basename(item.file)] = item
+    end
+    for _, name in ipairs(names) do
+      picker.list:select(items[name])
+    end
+    picker.list:view(items[cursor].idx)
+    vim.api.nvim_set_current_win(picker.input.win.win)
+    vim.api.nvim_feedkeys(vim.keycode("<CR>"), "xt", false)
+    assert(
+      vim.wait(5000, function()
+        return picker.closed and vim.api.nvim_buf_get_name(0) == paths[cursor]
+      end, 20),
+      "confirm did not enter " .. cursor
+    )
+    vim.wait(50)
+    assert(tiled() == before, "confirm changed the window count")
+  end
+
+  ---@param wanted integer[]
+  ---@return integer[]
+  local function ordered(wanted)
+    return vim.tbl_filter(function(buffer)
+      return vim.list_contains(wanted, buffer)
+    end, buffers.list())
+  end
+
+  confirm({ "pick-b.txt", "pick-a.txt" }, "pick-b.txt")
+  local order = ordered({ a, b })
+  assert(
+    vim.deep_equal(order, { b, a }),
+    "multi-select confirm order " .. vim.inspect(order) .. ", want " .. vim.inspect({ b, a })
+  )
+  assert(vim.api.nvim_buf_is_loaded(a), "second selected file stayed unloaded")
+  results[#results + 1] = "PASS real Snacks multi-select confirm loads files in selection order"
+
+  confirm({}, "pick-c.txt")
+  local c = vim.fn.bufnr(paths["pick-c.txt"])
+  assert(
+    vim.deep_equal(ordered({ a, b, c }), { b, a, c }),
+    "single confirm did not append its file"
+  )
+  results[#results + 1] = "PASS real Snacks single confirm appends the cursor file"
 end, debug.traceback)
 
+-- Neovim can crash at exit while a picker float stays open.
+if not ok and rawget(_G, "Snacks") then
+  for _, picker in ipairs(Snacks.picker.get()) do
+    picker:close()
+  end
+end
 vim.fn.delete(directory, "rf")
 for _, line in ipairs(results) do
   print(line)
