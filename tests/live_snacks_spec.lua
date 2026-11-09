@@ -141,6 +141,7 @@ local ok, err = xpcall(function()
       "confirm did not enter " .. cursor
     )
     vim.wait(50)
+    assert(vim.api.nvim_buf_get_name(0) == paths[cursor], "confirm did not stay on " .. cursor)
     assert(tiled() == before, "confirm changed the window count")
   end
 
@@ -152,13 +153,24 @@ local ok, err = xpcall(function()
     end, buffers.list())
   end
 
+  -- Like an ftplugin, set a window option while the file is read.
+  vim.api.nvim_create_autocmd("BufReadPost", {
+    pattern = "*/pick-*.txt",
+    callback = function()
+      vim.wo.conceallevel = 2
+    end,
+  })
   confirm({ "pick-b.txt", "pick-a.txt" }, "pick-b.txt")
   local order = ordered({ a, b })
   assert(
     vim.deep_equal(order, { b, a }),
     "multi-select confirm order " .. vim.inspect(order) .. ", want " .. vim.inspect({ b, a })
   )
-  assert(vim.api.nvim_buf_is_loaded(a), "second selected file stayed unloaded")
+  -- Read-time window options reach every selected file, not only the first.
+  for _, buffer in ipairs({ b, a }) do
+    vim.cmd.buffer(buffer)
+    assert(vim.wo.conceallevel == 2, "lost read-time window option in " .. buffer)
+  end
   results[#results + 1] = "PASS real Snacks multi-select confirm loads files in selection order"
 
   confirm({ "pick-d.txt", "pick-c.txt" }, "pick-d.txt", "<S-CR>")

@@ -50,18 +50,26 @@ local function notification_filter(notif)
   return true
 end
 
--- Snacks lists every selected file but loads only the first, and the buffer
--- order skips unloaded buffers. Load each selection first, so listing it
--- appends it in selection order. Registered as `jump` and `confirm`, because
--- Snacks copies `confirm = jump` by value and routes split, tab and drop
--- through `confirm`. A file whose load fails, such as on a swap conflict
--- (E325) or an autocommand error, is unloaded again. Entering it later
--- repeats the load and its prompt.
+-- Snacks lists every selected file but enters only the first, and the
+-- buffer order skips unloaded buffers. After the jump, enter each other
+-- selection in the target window and return to the first. Entering, unlike
+-- bufload, keeps the window options of ftplugins and modelines. Registered
+-- as `jump` and `confirm`, because Snacks copies `confirm = jump` by value
+-- and routes split, tab and drop through `confirm`. A file whose load fails,
+-- such as an aborted swap dialog or an autocommand error, is unloaded again.
 ---@type snacks.picker.Action.fn
 local function open_selected(picker, item, action)
   local selected = picker:selected()
-  if #selected > 1 then
+  local result = require("snacks.picker.actions").jump(picker, item, action)
+  if #selected < 2 then
+    return result
+  end
+  -- Jump reschedules itself from insert mode; run after it either way.
+  vim.schedule(function()
     local snacks = require("snacks")
+    local first = vim.api.nvim_get_current_buf()
+    ---@type integer[]
+    local failed = {}
     for _, entry in ipairs(selected) do
       local path = entry.buf == nil and snacks.picker.util.path(entry) or nil
       local buffer = entry.buf or (path and vim.fn.bufadd(path))
@@ -70,13 +78,21 @@ local function open_selected(picker, item, action)
         and vim.api.nvim_buf_is_valid(buffer)
         and not vim.api.nvim_buf_is_loaded(buffer)
       then
-        if not pcall(vim.fn.bufload, buffer) and vim.api.nvim_buf_is_loaded(buffer) then
-          vim.cmd.bunload(buffer)
+        if not pcall(vim.cmd, "keepalt keepjumps buffer " .. buffer) then
+          failed[#failed + 1] = buffer
         end
       end
     end
-  end
-  return require("snacks.picker.actions").jump(picker, item, action)
+    if vim.api.nvim_get_current_buf() ~= first and vim.api.nvim_buf_is_valid(first) then
+      vim.cmd("keepalt keepjumps buffer " .. first)
+    end
+    for _, buffer in ipairs(failed) do
+      if vim.api.nvim_buf_is_loaded(buffer) then
+        pcall(vim.cmd.bunload, buffer)
+      end
+    end
+  end)
+  return result
 end
 
 ---@type table<string, snacks.picker.layout.Config>
