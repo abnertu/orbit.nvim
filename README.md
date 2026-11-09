@@ -140,8 +140,10 @@ Orbit restores prior buffer mappings after the last client detaches.
 `<leader>x` and `<leader>bd` share Snacks buffer deletion when active. Native buffer deletion also preserves split windows.
 Set `modules.terminal.enabled = false` to disable terminal actions without stopping saved sessions.
 
-Without an explicit `shell`, Windows terminals prefer available pwsh, then Windows PowerShell.
-PowerShell loads profiles and suppresses its startup banner. Explicit shell choices and flags take priority.
+Without an explicit `shell`, the terminal owner selects available pwsh, then Windows PowerShell, on Windows.
+Interactive PowerShell loads profiles and suppresses its startup banner. Explicit shell choices and flags take priority.
+External PowerShell commands skip profiles and use UTF-8 capture. `:make` collects diagnostics without live console output.
+Explicit command options take priority. Disabling the terminal owner restores its shell options and preserves later user changes.
 
 ## Development
 

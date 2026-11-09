@@ -80,11 +80,14 @@ Keep plugin loading with Lazy and tool state with hangar.nvim.
 - `corekeys` owns save, window navigation, buffer cycling and fixed editing keys. Escape is an expression mapping that does not load plugins.
 - Buffer-local LSP navigation follows client attachment and restores prior mappings after the last client detaches.
 - `keymaps` owns leader actions, conversions, comments and the theme picker. Terminal keys call the terminal owner.
-- `terminal` owns shell selection, window geometry and saved sessions. Setup and rollback preserve running sessions.
+- `terminal` owns shared shell options, window geometry and saved sessions. Setup and rollback preserve running sessions.
 - Buffer cleanup checks every candidate first and refuses modified buffers. It never runs `%bd|e#`.
 - Terminals open horizontal splits below and vertical splits right. They reuse live jobs and replace exited jobs.
 - Terminal argv preserves quoted shell paths and explicit flags. Windows PowerShell defaults to `-NoLogo` when no flags exist.
-- With no explicit Windows shell, terminals prefer pwsh, then Windows PowerShell, with profiles enabled and `-NoLogo`.
+- With no explicit Windows shell, setup selects pwsh, then Windows PowerShell. Interactive sessions load profiles with `-NoLogo`.
+- The internal shell helper declares candidates and flags, tracks user overrides, and restores owned options on disable or rollback.
+- External PowerShell commands skip profiles and capture UTF-8 output. Capture preserves native and PowerShell failure status.
+- Shell provenance survives disable and rollback because restoring option values cannot clear Neovim's `was_set` metadata.
 - `statusline` and `tabline` set only the global options through `%!` expressions and restore the previous values.
 - Trouble loads on `LspAttach` and supplies the statusline symbol path. The render loop never imports external plugins.
 - The theme owns bar and plugin highlights. [Appearance](appearance.md) records their sources and rendering contracts.

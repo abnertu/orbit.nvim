@@ -260,55 +260,6 @@ check("repurposed saved buffer is never reused as a terminal", function()
   term.is_live_terminal = previous_check
 end)
 
-check(
-  "untouched Windows shell selects an available PowerShell with profiles and no logo",
-  function()
-    local original = {
-      shell = vim.o.shell,
-      has = vim.fn.has,
-      executable = vim.fn.executable,
-      info = vim.api.nvim_get_option_info2,
-    }
-    vim.o.shell = "cmd.exe"
-    vim.fn.has = function(name)
-      return name == "win32" and 1 or original.has(name)
-    end
-    vim.api.nvim_get_option_info2 = function(name, opts)
-      local info = original.info(name, opts)
-      if name == "shell" then
-        info.was_set = false
-      end
-      return info
-    end
-    local ok, err = xpcall(function()
-      for _, available in ipairs({ "pwsh.exe", "powershell.exe", "cmd.exe" }) do
-        vim.fn.executable = function(name)
-          return (name == available or name == "cmd.exe") and 1 or 0
-        end
-        local expected = available == "cmd.exe" and { "cmd.exe" } or { available, "-NoLogo" }
-        assert(
-          vim.deep_equal(term.shell_argv(), expected),
-          "incorrect default shell: " .. available
-        )
-        assert(vim.o.shell == "cmd.exe", "terminal selection must preserve the global shell option")
-      end
-
-      vim.fn.executable = function(name)
-        return (name == "cmd.exe" or name == "pwsh.exe") and 1 or 0
-      end
-      vim.api.nvim_get_option_info2 = original.info
-      assert(
-        vim.deep_equal(term.shell_argv(), { "cmd.exe" }),
-        "an explicit shell must take priority"
-      )
-    end, debug.traceback)
-    vim.o.shell = original.shell
-    vim.fn.has, vim.fn.executable = original.has, original.executable
-    vim.api.nvim_get_option_info2 = original.info
-    assert(ok, err)
-  end
-)
-
 check("shell arguments are an argv vector and match the host platform", function()
   local original = vim.o.shell
   vim.o.shell = vim.fn.has("win32") == 1 and "pwsh.exe" or "/bin/sh"

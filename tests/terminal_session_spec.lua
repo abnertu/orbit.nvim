@@ -58,7 +58,7 @@ if windows then
   env.ORBIT_TERMINAL_PROFILE = ""
 end
 local init = workspace .. "/init.lua"
-local initialize_shell = windows and "" -- Exercise Neovim's untouched cmd.exe default on Windows.
+local initialize_shell = windows and "" -- Let setup select the shared Windows shell.
   or "vim.o.shell = " .. vim.inspect('"' .. vim.fn.exepath(shell) .. '" -i')
 vim.fn.writefile({
   "vim.opt.rtp:prepend(" .. vim.inspect(root) .. ")",
@@ -96,7 +96,7 @@ local ok, err = pcall(function()
   check("real " .. shell .. " input produces output in the toggled terminal", function()
     session.origin = lua("return vim.api.nvim_get_current_win()")
     if windows then
-      assert(not lua("return vim.api.nvim_get_option_info2('shell', {}).was_set"))
+      assert(lua("return vim.o.shell") == "pwsh.exe")
       assert(
         vim.deep_equal(
           lua("return require('orbit.modules.terminal.runtime').shell_argv()"),

@@ -8,40 +8,7 @@ local kinds = { sp = true, vsp = true, float = true }
 ---Build a shell argv vector instead of interpolating platform commands.
 ---@return string[]
 function M.shell_argv()
-  local shell = vim.o.shell
-  local windows = vim.fn.has("win32") == 1
-  if windows and not vim.api.nvim_get_option_info2("shell", {}).was_set then
-    -- Match orbitvim's defaults without changing shell options used by :! commands.
-    for _, candidate in ipairs({ "pwsh.exe", "powershell.exe" }) do
-      if vim.fn.executable(candidate) == 1 then
-        shell = candidate
-        break
-      end
-    end
-  end
-  local args = { shell }
-  -- Preserve executable paths with spaces. Otherwise, parse shell flags and quoted paths like nv-ui.
-  if vim.fn.executable(shell) ~= 1 then
-    args = {}
-    local pos = 1
-    while true do
-      local _, last, argument = shell:find('^%s*"([^"]*)"', pos)
-      if not last then
-        _, last, argument = shell:find("^%s*(%S+)", pos)
-      end
-      if not last then
-        break
-      end
-      args[#args + 1] = argument
-      pos = last + 1
-    end
-  end
-  local name = (args[1] or ""):match("[^/\\]+$") or ""
-  name = name:lower():gsub("%.exe$", "")
-  if #args == 1 and windows and (name == "powershell" or name == "pwsh") then
-    args[#args + 1] = "-NoLogo"
-  end
-  return args
+  return require("orbit.modules.terminal.shell").argv()
 end
 
 ---@return integer
