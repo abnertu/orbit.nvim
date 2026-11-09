@@ -95,7 +95,7 @@ local ok, err = xpcall(function()
   assert(vim.fn.mkdir(picks, "p") == 1)
   local paths = {}
   local names = { "pick-a.txt", "pick-b.txt", "pick-c.txt", "pick-d.txt", "pick-e.txt" }
-  vim.list_extend(names, { "pick-f.txt", "pick-broken.txt" })
+  vim.list_extend(names, { "pick-f.txt", "pick-g.txt", "pick-broken.txt" })
   for _, name in ipairs(names) do
     paths[name] = vim.fs.normalize(picks .. "/" .. name)
     assert(vim.fn.writefile({ name }, paths[name]) == 0)
@@ -175,16 +175,21 @@ local ok, err = xpcall(function()
       error("orbit broken read")
     end,
   })
-  confirm({ "pick-e.txt", "pick-broken.txt" }, "pick-e.txt")
+  confirm({ "pick-e.txt", "pick-broken.txt", "pick-g.txt" }, "pick-e.txt")
   local e, broken = vim.fn.bufnr(paths["pick-e.txt"]), vim.fn.bufnr(paths["pick-broken.txt"])
-  assert(vim.deep_equal(ordered({ e, broken }), { e }), "failed load changed the order")
+  local g = vim.fn.bufnr(paths["pick-g.txt"])
+  order = ordered({ e, broken, g })
+  assert(vim.deep_equal(order, { e, g }), "failed load order " .. vim.inspect(order))
   assert(not vim.api.nvim_buf_is_loaded(broken), "failed load left its buffer loaded")
   results[#results + 1] = "PASS real Snacks multi-select confirm defers a failed load"
 
   confirm({}, "pick-f.txt")
   local f = vim.fn.bufnr(paths["pick-f.txt"])
-  order = ordered({ a, b, c, d, e, f })
-  assert(vim.deep_equal(order, { b, a, d, c, e, f }), "single confirm order " .. vim.inspect(order))
+  order = ordered({ a, b, c, d, e, g, f })
+  assert(
+    vim.deep_equal(order, { b, a, d, c, e, g, f }),
+    "single confirm order " .. vim.inspect(order)
+  )
   results[#results + 1] = "PASS real Snacks single confirm appends the cursor file"
 end, debug.traceback)
 
