@@ -10,6 +10,7 @@ local accepted
 ---@alias Orbit.TerminalShellSnapshot {values: table<Orbit.TerminalShellOption, Orbit.TerminalShellValue>, entries: table<Orbit.TerminalShellOption, Orbit.TerminalShellEntry>, active: boolean}
 ---@alias Orbit.TerminalShellProfile {executable: string, interactive: string[], options: table<Orbit.TerminalShellOption, Orbit.TerminalShellValue>}
 ---@alias Orbit.TerminalSnapshot {options?: Orbit.TerminalOptions, shell?: Orbit.TerminalShellSnapshot}
+---@alias Orbit.TerminalJobEnvironment {PATH: string}
 
 ---@class Orbit.TerminalOptions # Native terminal windows, shells and persistent sessions.
 ---@field enabled? boolean @default(true) # Allow terminal actions from keymaps and Lua.

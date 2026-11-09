@@ -11,9 +11,32 @@ function M.shell_argv()
   return require("orbit.modules.terminal.shell").argv()
 end
 
+---@return Orbit.TerminalJobEnvironment?
+local function child_environment()
+  local path = vim.env.PATH
+  if vim.fn.has("win32") ~= 1 or not path then
+    return
+  end
+  local seen, compact = {}, {}
+  for entry in vim.gsplit(path, ";", { plain = true }) do
+    local key = vim.fn.tolower(entry)
+    if entry == "" or not seen[key] then
+      compact[#compact + 1] = entry
+      seen[key] = true
+    end
+  end
+  -- pnpm adds script paths before invoking cmd, which drops oversized PATH values.
+  -- Keep every unique directory and leave Neovim's own environment unchanged.
+  return { PATH = table.concat(compact, ";") }
+end
+
 ---@return integer
 function M.spawn()
-  local job = vim.fn.jobstart(M.shell_argv(), { term = true, detach = false })
+  local job = vim.fn.jobstart(M.shell_argv(), {
+    term = true,
+    detach = false,
+    env = child_environment(),
+  })
   assert(type(job) == "number" and job > 0, "failed to start a terminal job: " .. tostring(job))
   return job
 end
