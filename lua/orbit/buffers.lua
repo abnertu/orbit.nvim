@@ -12,10 +12,7 @@ local order = {}
 ---@param buffer any
 ---@return boolean
 local function eligible(buffer)
-  return type(buffer) == "number"
-    and vim.api.nvim_buf_is_valid(buffer)
-    and vim.api.nvim_buf_is_loaded(buffer)
-    and vim.bo[buffer].buflisted
+  return type(buffer) == "number" and vim.api.nvim_buf_is_valid(buffer) and vim.bo[buffer].buflisted
 end
 
 ---@param tab integer
@@ -71,16 +68,7 @@ local function activate()
   vim.api.nvim_create_autocmd({ "BufAdd", "BufEnter" }, {
     group = group,
     callback = function(args)
-      -- BufAdd runs before the buffer loads; recheck after the event settles.
-      local tab = vim.api.nvim_get_current_tabpage()
-      append(tab, args.buf)
-      if args.event == "BufAdd" then
-        vim.schedule(function()
-          if vim.api.nvim_tabpage_is_valid(tab) then
-            append(tab, args.buf)
-          end
-        end)
-      end
+      append(vim.api.nvim_get_current_tabpage(), args.buf)
     end,
   })
   vim.api.nvim_create_autocmd({ "BufDelete", "BufWipeout" }, {
@@ -118,8 +106,8 @@ function M.attached(owner)
   return owners[owner] == true
 end
 
----Return loaded listed buffers of a tab in first-entry order. Without
----tracked entries, return every loaded listed buffer in handle order.
+---Return listed buffers of a tab in first-entry order, loaded or not.
+---Without tracked entries, return every listed buffer in handle order.
 ---@param tab? integer
 ---@return integer[]
 function M.list(tab)

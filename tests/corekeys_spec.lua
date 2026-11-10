@@ -179,24 +179,29 @@ check("buffer cycling stays within the current tab", function()
   delete_buffers({ tab_first, tab_second, outer })
 end)
 
-check("buffer cycling skips unloaded and unlisted buffers", function()
+check("buffer cycling loads unloaded listed buffers and skips unlisted ones", function()
   local current = vim.api.nvim_get_current_buf()
   local first = vim.api.nvim_create_buf(true, false)
-  local unloaded = vim.api.nvim_create_buf(true, false)
+  -- A named buffer stays listed while unloaded, as after :badd or a picker.
+  local path = vim.fn.tempname() .. " corekeys unloaded.txt"
+  assert(vim.fn.writefile({ "unloaded" }, path) == 0)
+  local unloaded = vim.fn.bufadd(path)
+  vim.bo[unloaded].buflisted = true
   local unlisted = vim.api.nvim_create_buf(true, false)
-  local second = vim.api.nvim_create_buf(true, false)
-  vim.api.nvim_buf_delete(unloaded, { unload = true })
-  assert(vim.api.nvim_buf_is_valid(unloaded) and not vim.api.nvim_buf_is_loaded(unloaded))
   vim.bo[unlisted].buflisted = false
+  assert(not vim.api.nvim_buf_is_loaded(unloaded))
   vim.api.nvim_set_current_buf(first)
 
   tab_key("<Tab>")()
-  assert(vim.api.nvim_get_current_buf() == second, "next must skip ineligible buffers")
+  assert(vim.api.nvim_get_current_buf() == unloaded, "next must reach the unloaded buffer")
+  assert(vim.api.nvim_buf_is_loaded(unloaded), "cycling must load the buffer")
   tab_key("<S-Tab>")()
   assert(vim.api.nvim_get_current_buf() == first)
+  assert(not vim.list_contains(require("orbit.buffers").list(), unlisted))
 
   vim.api.nvim_set_current_buf(current)
-  delete_buffers({ first, unloaded, unlisted, second })
+  delete_buffers({ first, unloaded, unlisted })
+  vim.fn.delete(path)
 end)
 
 check("changing the save key restores the original user binding", function()

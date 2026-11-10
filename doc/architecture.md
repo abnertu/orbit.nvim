@@ -37,7 +37,7 @@ The project LuaLS configuration leaves library discovery to Neovim and LazyDev.
 | `lua/orbit/modules/manifest.json` | Module inventory and activation order |
 | `lua/orbit/modules/*/init.lua` | Settings contract and module owner |
 | `lua/orbit/plugins/init.lua` | Lazy spec import built from the manifest |
-| `lua/orbit/buffers.lua` | Tab-local order of loaded, listed buffers |
+| `lua/orbit/buffers.lua` | Tab-local order of listed buffers, loaded or not |
 | `lua/orbit/sqlfluff.lua` | Shared SQLFluff configuration for Conform and nvim-lint |
 | `lua/orbit/tooling/schema.lua`, `scripts/generate_schema.lua` | Deterministic schema generation |
 | `settings.schema.json` | Generated schema; do not edit |
