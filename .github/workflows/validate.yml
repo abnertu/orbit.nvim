@@ -1,4 +1,4 @@
-name: Validate orbit.nvim
+name: Validate
 
 on:
   push:
