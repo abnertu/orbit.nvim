@@ -4,7 +4,7 @@ local M = {}
 local accepted
 
 ---@class Orbit.DevOptions # Development tools for Orbit's own test runner.
----@field enabled? boolean @default(true) @restart(true) # Install telemetry.nvim, which `scripts/test.lua` uses to report suites.
+---@field enabled? boolean @default(true) @restart(true) # Install telemetry.lua, which `scripts/test.lua` uses to report suites.
 
 ---@return Orbit.DevOptions?
 function M.capture()
@@ -21,15 +21,15 @@ function M.setup(opts)
   accepted = require("orbit.config").resolve_module("dev", opts)
 end
 
----Declare telemetry.nvim on its default branch. The editor never loads it;
----`scripts/test.lua` finds the Lazy checkout under `stdpath("data")`.
+---Declare telemetry.lua; `lazy-lock.json` pins its release commit. The editor
+---never loads it; `scripts/test.lua` finds the Lazy checkout under `stdpath("data")`.
 ---@return LazySpec
 function M.spec()
   if not accepted or not accepted.enabled then
     return {}
   end
   return {
-    { "Orbit-Lua/telemetry.nvim", lazy = true },
+    { "Orbit-Lua/telemetry.lua", lazy = true },
   }
 end
 

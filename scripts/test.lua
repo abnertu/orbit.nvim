@@ -81,9 +81,9 @@ local function private_env(index)
   return env
 end
 
--- The dev module installs telemetry.nvim through Lazy. Without that
+-- The dev module installs telemetry.lua through Lazy. Without that
 -- checkout, as in CI, the loop below keeps the plain report.
-local telemetry_root = vim.fs.joinpath(vim.fn.stdpath("data"), "lazy", "telemetry.nvim")
+local telemetry_root = vim.fs.joinpath(vim.fn.stdpath("data"), "lazy", "telemetry.lua")
 if vim.uv.fs_stat(vim.fs.joinpath(telemetry_root, "lua", "telemetry", "init.lua")) then
   vim.opt.rtp:prepend(telemetry_root)
   local telemetry = require("telemetry")

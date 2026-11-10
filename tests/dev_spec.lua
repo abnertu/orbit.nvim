@@ -1,4 +1,4 @@
--- Verify the telemetry.nvim declaration and its restart-only enablement.
+-- Verify the telemetry.lua declaration and its restart-only enablement.
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.rtp:prepend(root)
 local orbit = require("orbit")
@@ -12,19 +12,19 @@ local function check(label, fn)
   print("PASS " .. label)
 end
 
-check("default setup declares telemetry.nvim as a lazy plugin", function()
+check("default setup declares telemetry.lua as a lazy plugin", function()
   assert(#dev.spec() == 0)
   orbit.setup()
   local specs = dev.spec()
-  assert(#specs == 1 and specs[1][1] == "Orbit-Lua/telemetry.nvim")
+  assert(#specs == 1 and specs[1][1] == "Orbit-Lua/telemetry.lua")
   assert(specs[1].lazy == true and specs[1].version == nil)
   assert(package.loaded.telemetry == nil)
 end)
 
-check("bundled spec import collects telemetry.nvim once", function()
+check("bundled spec import collects telemetry.lua once", function()
   local found = 0
   for _, item in ipairs(require("orbit.plugins")) do
-    if item[1] == "Orbit-Lua/telemetry.nvim" then
+    if item[1] == "Orbit-Lua/telemetry.lua" then
       found = found + 1
     end
   end

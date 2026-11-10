@@ -210,7 +210,7 @@
           "properties": {
             "enabled": {
               "default": true,
-              "description": "Install telemetry.nvim, which `scripts/test.lua` uses to report suites.",
+              "description": "Install telemetry.lua, which `scripts/test.lua` uses to report suites.",
               "type": "boolean",
               "x-orbit-restart": true
             }
