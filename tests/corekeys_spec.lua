@@ -187,8 +187,9 @@ check("buffer cycling loads unloaded listed buffers and skips unlisted ones", fu
   assert(vim.fn.writefile({ "unloaded" }, path) == 0)
   local unloaded = vim.fn.bufadd(path)
   vim.bo[unloaded].buflisted = true
-  local unlisted = vim.api.nvim_create_buf(true, false)
-  vim.bo[unlisted].buflisted = false
+  -- Entering the unlisted buffer offers it to the order through BufEnter.
+  local unlisted = vim.api.nvim_create_buf(false, false)
+  vim.api.nvim_set_current_buf(unlisted)
   assert(not vim.api.nvim_buf_is_loaded(unloaded))
   vim.api.nvim_set_current_buf(first)
 
