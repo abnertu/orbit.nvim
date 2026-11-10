@@ -16,11 +16,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The `mason` module owns hangar.nvim `^0.4` and its tool registry. Hangar loads even when Mason is disabled.
 - The Hangar registry lists the `typescript-tools` language server.
 - Lazy skips unused built-in runtime plugins: gzip, rplugin, spellfile, tar, tutor and zip.
-- The tab line and `<Tab>` cycling keep listed buffers that are not loaded yet, such as argument, session, `:badd` and `:bunload` buffers. Entering one loads it.
+- The tabline and `<Tab>` cycling keep unloaded listed buffers, such as argument, session, `:badd` and `:bunload` buffers. Entering one loads it.
 
 ### Fixed
 
-- A multi-select picker confirm shows every selected file in the tab line, in selection order.
+- A multi-select picker confirm shows every selected file in the tabline. New files append in selection order.
 - The startup dashboard shows the real startup time on its first render instead of `0ms`.
 - The startup dashboard no longer moves down one row when Noice loads.
 - Hangar 0.4.2 opens the parser tab without an error and never runs a disabled linter.
