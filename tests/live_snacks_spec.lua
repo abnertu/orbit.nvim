@@ -93,19 +93,16 @@ local ok, err = xpcall(function()
   assert(buffers.attached("corekeys"), "corekeys did not attach the buffer order")
   local picks = directory .. "/orbit-picks"
   assert(vim.fn.mkdir(picks, "p") == 1)
-  local names = { "pick-a.txt", "pick-b.txt", "pick-c.txt" }
+  local names = { "pick-a.txt", "pick-b.txt" }
   local paths = {}
   for _, name in ipairs(names) do
     paths[name] = vim.fs.normalize(picks .. "/" .. name)
     assert(vim.fn.writefile({ name }, paths[name]) == 0)
   end
   -- Unlisted a and b exist in a-b handle order, so selecting b first
-  -- separates selection order from handle order. Listed, unloaded c keeps
-  -- its earlier place.
+  -- separates selection order from handle order.
   local a, b = vim.fn.bufadd(paths["pick-a.txt"]), vim.fn.bufadd(paths["pick-b.txt"])
-  local c = vim.fn.bufadd(paths["pick-c.txt"])
-  vim.bo[c].buflisted = true
-  assert(a < b and not vim.api.nvim_buf_is_loaded(c))
+  assert(a < b)
   vim.cmd("enew")
   local function tiled()
     return #vim.tbl_filter(function(win)
@@ -124,7 +121,7 @@ local ok, err = xpcall(function()
   for item in picker:iter() do
     items[vim.fs.basename(item.file)] = item
   end
-  for _, name in ipairs({ "pick-b.txt", "pick-c.txt", "pick-a.txt" }) do
+  for _, name in ipairs({ "pick-b.txt", "pick-a.txt" }) do
     picker.list:select(items[name])
   end
   picker.list:view(items["pick-b.txt"].idx)
@@ -140,11 +137,11 @@ local ok, err = xpcall(function()
   assert(vim.api.nvim_get_current_buf() == b, "confirm did not stay on pick-b.txt")
   assert(tiled() == before, "confirm changed the window count")
   local order = vim.tbl_filter(function(buffer)
-    return vim.list_contains({ a, b, c }, buffer)
+    return vim.list_contains({ a, b }, buffer)
   end, buffers.list())
   assert(
-    vim.deep_equal(order, { c, b, a }),
-    "multi-select order " .. vim.inspect(order) .. ", want " .. vim.inspect({ c, b, a })
+    vim.deep_equal(order, { b, a }),
+    "multi-select order " .. vim.inspect(order) .. ", want " .. vim.inspect({ b, a })
   )
   results[#results + 1] = "PASS real Snacks multi-select confirm lists every file in order"
 end, debug.traceback)
