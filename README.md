@@ -2,7 +2,7 @@
 
 orbit.nvim is a modular Neovim configuration. Each feature is a module with its own validated settings, and a generated JSON Schema documents every option.
 
-[![Validate](https://github.com/Orbit-Lua/orbit.nvim/actions/workflows/validate.yml/badge.svg?branch=main)](https://github.com/Orbit-Lua/orbit.nvim/actions/workflows/validate.yml?query=branch%3Amain) [![Neovim](https://img.shields.io/badge/Neovim-0.12%2B-57A143?logo=neovim&logoColor=white)](https://neovim.io/)
+[![Validate](https://github.com/abnertu/orbit.nvim/actions/workflows/validate.yml/badge.svg?branch=main)](https://github.com/abnertu/orbit.nvim/actions/workflows/validate.yml?query=branch%3Amain) [![Neovim](https://img.shields.io/badge/Neovim-0.12%2B-57A143?logo=neovim&logoColor=white)](https://neovim.io/)
 
 ## Features
 
