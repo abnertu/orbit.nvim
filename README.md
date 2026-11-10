@@ -175,9 +175,8 @@ Do not edit `settings.schema.json` by hand. Read [architecture](doc/architecture
 - `validate.yml` runs `just schema`, `just test` and `just live luadoc` on Linux and Windows.
 - Validation runs on pushes, pull requests and a daily schedule on `main`.
 - Live suites check out each plugin at its `lazy-lock.json` commit.
-- `live-upstream.yml` installs pinned tools and runs `just live`.
-- It runs on Linux for pushes or pull requests that change `lazy-lock.json` or live tests.
-- It runs on Linux and Windows daily and on manual dispatch.
+- `live-upstream.yml` installs pinned tools and runs `just live` on Linux.
+- It runs on manual dispatch and on pushes or pull requests that change `lazy-lock.json` or live tests.
 - `release.yml` validates version tags before publishing. Releases do not run live suites.
 
 ## Releases

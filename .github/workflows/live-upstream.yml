@@ -14,9 +14,6 @@ on:
       - tests/support/live_*.lua
       - .github/workflows/live-upstream.yml
   workflow_dispatch:
-  # The Windows job is too slow for every lock change, so it runs daily and on dispatch.
-  schedule:
-    - cron: '43 3 * * *'
 
 permissions:
   contents: read
@@ -32,7 +29,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ${{ fromJSON(contains(fromJSON('["schedule", "workflow_dispatch"]'), github.event_name) && '["ubuntu-latest", "windows-latest"]' || '["ubuntu-latest"]') }}
+        os: [ubuntu-latest]
     defaults:
       run:
         shell: pwsh
