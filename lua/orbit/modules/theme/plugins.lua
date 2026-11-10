@@ -163,7 +163,7 @@ return function(c)
     ["NvimTreeOpenedFolderName"] = { fg = c.folder_bg },
     ["NvimTreeRootFolder"] = { bold = true, fg = c.red },
     ["NvimTreeSpecialFile"] = { bold = true, fg = c.yellow },
-    ["NvimTreeWinSeparator"] = { bg = c.darker_black, fg = c.darker_black },
+    ["NvimTreeWinSeparator"] = { fg = c.line },
     ["NvimTreeWindowPicker"] = { bg = c.black2, fg = c.red },
     -- whichkey
     ["WhichKey"] = { fg = c.blue },

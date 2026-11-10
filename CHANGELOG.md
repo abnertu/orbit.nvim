@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Fixed
 
 - A multi-select picker confirm shows every selected file in the tabline. New files append in selection order.
+- nvim-tree draws a visible right border. A horizontal split next to the tree joins it on a continuous line.
 - The startup dashboard shows the real startup time on its first render instead of `0ms`.
 - The startup dashboard no longer moves down one row when Noice loads.
 - Hangar 0.4.2 opens the parser tab without an error and never runs a disabled linter.
