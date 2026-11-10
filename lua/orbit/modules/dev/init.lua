@@ -21,15 +21,16 @@ function M.setup(opts)
   accepted = require("orbit.config").resolve_module("dev", opts)
 end
 
----Declare telemetry.lua; `lazy-lock.json` pins its release commit. The editor
----never loads it; `scripts/test.lua` finds the Lazy checkout under `stdpath("data")`.
+---Declare telemetry.lua within its 0.1 releases; `lazy-lock.json` pins the commit,
+---and the range keeps `:Lazy update` off `main`. The editor never loads it;
+---`scripts/test.lua` finds the Lazy checkout under `stdpath("data")`.
 ---@return LazySpec
 function M.spec()
   if not accepted or not accepted.enabled then
     return {}
   end
   return {
-    { "Orbit-Lua/telemetry.lua", lazy = true },
+    { "Orbit-Lua/telemetry.lua", lazy = true, version = "^0.1" },
   }
 end
 

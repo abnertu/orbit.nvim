@@ -17,7 +17,7 @@ check("default setup declares telemetry.lua as a lazy plugin", function()
   orbit.setup()
   local specs = dev.spec()
   assert(#specs == 1 and specs[1][1] == "Orbit-Lua/telemetry.lua")
-  assert(specs[1].lazy == true and specs[1].version == nil)
+  assert(specs[1].lazy == true and specs[1].version == "^0.1")
   assert(package.loaded.telemetry == nil)
 end)
 

@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- A `dev` module that installs telemetry.lua 0.1.0 through Lazy for the test runner.
+- A `dev` module that installs telemetry.lua `^0.1` through Lazy for the test runner. `:Lazy update` stays within 0.1 releases.
 
 ### Changed
 
