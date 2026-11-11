@@ -38,7 +38,7 @@ local ok, err = xpcall(function()
   assert(package.loaded.hangar == nil, "root setup must not load upstream Hangar")
   local declaration = owner.spec()[3]
   assert(declaration[1] == "Orbit-Lua/hangar.nvim")
-  assert(declaration.version == "^0.4")
+  assert(declaration.version == "^0.5")
   assert(
     vim.fn.filereadable(state_path) == 0,
     "Hangar state must not be created by initial root setup"

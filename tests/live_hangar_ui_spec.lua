@@ -85,6 +85,25 @@ local ok, err = xpcall(function()
   )
   print("PASS real :Hangar renders language tools and installs UI observers")
 
+  -- Exercise the same global Orbit window bindings as a normal session.
+  -- Hangar's local bindings must select its floating panes instead.
+  local function input(value)
+    vim.api.nvim_feedkeys(vim.keycode(value), "xt", false)
+  end
+  input("<C-l>")
+  assert(vim.bo.filetype == "HangarDetails", "Orbit right-window key missed Hangar details")
+  input("<C-h>")
+  assert(vim.api.nvim_get_current_win() == win, "Orbit left-window key missed Hangar list")
+  local header
+  for _, candidate in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.bo[candidate].filetype == "HangarNavigation" then
+      header = vim.api.nvim_buf_get_lines(candidate, 0, -1, false)
+    end
+  end
+  assert(header and header[2]:match("^%s*$") and header[4]:match("^%s*$"))
+  assert(header[3]:find("Buffer", 1, true) and header[5]:find("Tool", 1, true))
+  print("PASS real Orbit keys navigate floating Hangar panes with separated headers")
+
   vim.cmd("Hangar")
   local again_buf, again_win = hangar_body()
   assert(

@@ -58,7 +58,7 @@ local function hangar_spec(opts)
     { "MunifTanjim/nui.nvim", lazy = true },
     {
       "Orbit-Lua/hangar.nvim",
-      version = "^0.4",
+      version = "^0.5",
       -- Hangar gates tool owners that load later, so it loads at startup.
       lazy = false,
       priority = 900,

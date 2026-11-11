@@ -13,13 +13,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Changed
 
 - **Breaking:** Hangar settings moved from `modules.hangar` to `modules.mason.hangar`.
-- The `mason` module owns hangar.nvim `^0.4` and its tool registry. Hangar loads even when Mason is disabled.
+- The `mason` module owns hangar.nvim `^0.5` and its tool registry. Hangar loads even when Mason is disabled.
 - The Hangar registry lists the `typescript-tools` language server.
+- Hangar 0.5 separates its header rows and exposes heading, context and separator highlight groups.
 - Lazy skips unused built-in runtime plugins: gzip, rplugin, spellfile, tar, tutor and zip.
 - The tabline and `<Tab>` cycling keep unloaded listed buffers, such as argument, session, `:badd` and `:bunload` buffers. Entering one loads it.
 
 ### Fixed
 
+- Hangar 0.5 uses `<C-l>` and `<C-h>` for details navigation, rejects conflicting mappings and reports active LuaDoc injections.
 - A multi-select picker confirm shows every selected file in the tabline. New files append in selection order.
 - nvim-tree draws a visible right border. A horizontal split next to the tree joins it on a continuous line.
 - The startup dashboard shows the real startup time on its first render instead of `0ms`.

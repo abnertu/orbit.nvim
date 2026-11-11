@@ -72,12 +72,12 @@ check("registry is typed Hangar input and import does not load Hangar", function
   assert(package.loaded.hangar == nil)
 end)
 
-check("Hangar loads at startup on the 0.4 release line", function()
+check("Hangar loads at startup on the 0.5 release line", function()
   local specs = mason.spec()
   assert(specs[2][1] == "MunifTanjim/nui.nvim" and specs[2].lazy)
   local hangar = specs[3]
   assert(hangar[1] == "Orbit-Lua/hangar.nvim")
-  assert(hangar.version == "^0.4" and hangar.priority == 900 and hangar.lazy == false)
+  assert(hangar.version == "^0.5" and hangar.priority == 900 and hangar.lazy == false)
   assert(hangar.dependencies[1] == "MunifTanjim/nui.nvim")
 end)
 
