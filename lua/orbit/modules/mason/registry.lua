@@ -84,8 +84,8 @@ M.formatter = {
   ruff_organize_imports = { mason = "ruff", ft = { "python" } },
   ruff_format = { mason = "ruff", ft = { "python" } },
   shfmt = { mason = "shfmt", ft = { "sh" } },
-  deno_fmt = {
-    mason = "deno",
+  prettier = {
+    mason = "prettier",
     ft = {
       "css",
       "html",

@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The Hangar registry lists the `typescript-tools` language server.
 - Hangar 0.5 separates its header rows and exposes heading, context and separator highlight groups.
 - Lazy skips unused built-in runtime plugins: gzip, rplugin, spellfile, tar, tutor and zip.
+- Prettier replaces `deno_fmt` for CSS, HTML, JavaScript, TypeScript, JSX, JSON and JSONC.
 - The tabline and `<Tab>` cycling keep unloaded listed buffers, such as argument, session, `:badd` and `:bunload` buffers. Entering one loads it.
 
 ### Fixed
