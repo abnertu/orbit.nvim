@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Fixed
 
 - nvim-tree no longer rescans every expanded directory when you write an existing file or focus the tree on Windows. It reloads after new files, focus changes, terminal and shell commands, Oil changes and tree opens.
+- The .NET Run and Watch output no longer shows terminal control characters.
 - Hangar 0.5 uses `<C-l>` and `<C-h>` for details navigation, rejects conflicting mappings and reports active LuaDoc injections.
 - A multi-select picker confirm shows every selected file in the tabline. New files append in selection order.
 - nvim-tree draws a visible right border. A horizontal split next to the tree joins it on a continuous line.
