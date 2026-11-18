@@ -61,8 +61,8 @@ local function tree_options(c)
   local windows = vim.fn.has("win32") == 1
   return {
     filesystem_watchers = { enable = not windows },
-    auto_reload_on_write = true,
-    reload_on_bufenter = windows,
+    auto_reload_on_write = false,
+    reload_on_bufenter = false,
     filters = { dotfiles = false },
     disable_netrw = true,
     hijack_cursor = true,
@@ -100,6 +100,11 @@ end
 ---@param opts nvim_tree.config
 local function setup_tree(opts)
   require("nvim-tree").setup(opts)
+  local watching = opts.filesystem_watchers.enable
+  local refresh = require("orbit.modules.navigation.tree_refresh")
+  if not watching then
+    refresh.attach()
+  end
   if subscribed then
     return
   end
@@ -107,6 +112,9 @@ local function setup_tree(opts)
   api.events.subscribe(api.events.Event.FileCreated, function()
     vim.api.nvim_exec_autocmds("User", { pattern = "CreateFile", modeline = false })
   end)
+  if not watching then
+    api.events.subscribe(api.events.Event.TreeOpen, refresh.request)
+  end
   subscribed = true
 end
 

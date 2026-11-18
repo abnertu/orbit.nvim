@@ -25,7 +25,8 @@ check("import is inert and options keep their defaults", function()
   assert(specs[2][1] == "nvim-tree/nvim-tree.lua")
   assert(specs[2].opts.view.width == 40)
   assert(specs[2].opts.filesystem_watchers.enable == (vim.fn.has("win32") ~= 1))
-  assert(specs[2].opts.reload_on_bufenter == (vim.fn.has("win32") == 1))
+  assert(specs[2].opts.auto_reload_on_write == false)
+  assert(specs[2].opts.reload_on_bufenter == false)
 end)
 
 check("Oil callback resolves plugin only on demand", function()
@@ -57,10 +58,11 @@ check("tree FileCreated callback relays one CreateFile event", function()
     return {
       fs = { create = function() end },
       events = {
-        Event = { FileCreated = "created" },
+        Event = { FileCreated = "created", TreeOpen = "opened" },
         subscribe = function(name, cb)
-          assert(name == "created")
-          subscribers[#subscribers + 1] = cb
+          if name == "created" then
+            subscribers[#subscribers + 1] = cb
+          end
         end,
       },
     }
